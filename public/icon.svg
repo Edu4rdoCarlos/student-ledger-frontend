@@ -1,0 +1,38 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @media (prefers-color-scheme: light) {
+      .background { fill: #0f172a; }
+      .foreground { fill: #ffffff; }
+      .accent { fill: #3b82f6; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .background { fill: #ffffff; }
+      .foreground { fill: #0f172a; }
+      .accent { fill: #2563eb; }
+    }
+  </style>
+  <g clip-path="url(#clip0)">
+    <rect class="background" width="180" height="180" rx="37" />
+
+    <!-- Book/Document -->
+    <path class="foreground" d="M50 45C50 41.6863 52.6863 39 56 39H124C127.314 39 130 41.6863 130 45V135C130 138.314 127.314 141 124 141H56C52.6863 141 50 138.314 50 135V45Z"/>
+    <rect class="background" x="60" y="55" width="60" height="4" rx="2"/>
+    <rect class="background" x="60" y="67" width="50" height="4" rx="2"/>
+    <rect class="background" x="60" y="79" width="55" height="4" rx="2"/>
+    <rect class="background" x="60" y="91" width="45" height="4" rx="2"/>
+
+    <!-- Blockchain link -->
+    <circle class="accent" cx="140" cy="70" r="12"/>
+    <circle class="accent" cx="140" cy="110" r="12"/>
+    <rect class="accent" x="134" y="70" width="12" height="40" rx="2"/>
+
+    <!-- Academic cap accent -->
+    <path class="accent" d="M90 103L70 113L90 123L110 113L90 103Z"/>
+    <path class="accent" d="M110 113V120L90 130L70 120V113"/>
+  </g>
+  <defs>
+    <clipPath id="clip0">
+      <rect width="180" height="180" fill="white" />
+    </clipPath>
+  </defs>
+</svg>
