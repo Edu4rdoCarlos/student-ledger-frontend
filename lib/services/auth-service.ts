@@ -3,7 +3,7 @@ import type { LoginFormData } from "@/lib/validations/auth"
 
 export const authService = {
   async login(credentials: LoginFormData) {
-    return authRepository.login(credentials.email, credentials.password, credentials.authToken)
+    return authRepository.login(credentials.email, credentials.password)
   },
 
   async refresh() {
