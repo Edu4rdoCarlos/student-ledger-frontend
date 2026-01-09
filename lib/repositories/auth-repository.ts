@@ -13,7 +13,7 @@ interface RefreshData {
 }
 
 export interface AuthRepository {
-  login(email: string, password: string, authToken: string): Promise<{ accessToken: string }>
+  login(email: string, password: string): Promise<{ accessToken: string }>
   refresh(): Promise<{ accessToken: string }>
   logout(): Promise<void>
 }
@@ -21,7 +21,7 @@ export interface AuthRepository {
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true"
 
 const mockAuthRepository: AuthRepository = {
-  async login(email: string, password: string, authToken: string) {
+  async login(email: string, password: string) {
     await new Promise((resolve) => setTimeout(resolve, 1000))
     return {
       accessToken: "mock-access-token-" + Date.now(),
@@ -39,14 +39,14 @@ const mockAuthRepository: AuthRepository = {
 }
 
 const realAuthRepository: AuthRepository = {
-  async login(email: string, password: string, authToken: string) {
+  async login(email: string, password: string) {
     // POST /auth/login
-    // Body: { email, password, authToken }
+    // Body: { email, password }
     // Response: { data: { accessToken } }
     // O backend também deve enviar Set-Cookie com refreshToken httpOnly
     const response = await apiClient.post<ApiResponse<LoginData>>(
       "/auth/login",
-      { email, password, authToken },
+      { email, password },
       { skipAuth: true }
     )
     return {

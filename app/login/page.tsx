@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { GraduationCap, Lock, Mail, KeyRound, Shield, FileCheck, Users, Sparkles } from "lucide-react"
+import { GraduationCap, Lock, Mail, Shield, FileCheck, Users, Sparkles } from "lucide-react"
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared/card"
@@ -191,25 +191,6 @@ export default function LoginPage() {
                     />
                   </div>
                   {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="authToken" className="text-sm font-medium text-foreground">
-                    Token de Autenticação
-                  </label>
-                  <div className="relative">
-                    <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="authToken"
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
-                      placeholder="000000"
-                      className="pl-9 h-11 bg-background/50 tracking-widest text-center"
-                      {...register("authToken")}
-                    />
-                  </div>
-                  {errors.authToken && <p className="text-xs text-destructive">{errors.authToken.message}</p>}
                 </div>
 
                 <Button
