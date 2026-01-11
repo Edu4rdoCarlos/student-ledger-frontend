@@ -1,16 +1,11 @@
-export type UserRole = "secretario" | "coordenador" | "orientador" | "aluno"
+export * from "./user"
+export * from "./department"
+export * from "./course"
+export * from "./defense"
 
 export type DocumentStatus = "pendente" | "aprovado" | "inativo"
 
 export type DocumentType = "ata" | "ficha"
-
-export interface User {
-  id: string
-  name: string
-  email: string
-  role: UserRole
-  organizationId: string
-}
 
 export interface Student {
   id: string
@@ -52,7 +47,7 @@ export interface Document {
 export interface Approval {
   userId: string
   userName: string
-  role: UserRole
+  role: string
   approved: boolean
   justification?: string
   createdAt: string

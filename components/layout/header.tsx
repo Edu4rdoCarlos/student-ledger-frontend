@@ -1,20 +1,25 @@
 "use client"
 
+import { useState } from "react"
 import { Bell, Search, LogOut, User } from "lucide-react"
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { useAuthStore } from "@/lib/store/auth-store"
 import { useNotificationStore } from "@/lib/store/notification-store"
-import { RoleBadge } from "@/components/primitives/role-badge"
+import { getRoleTitle } from "@/lib/config/roles"
 import { useRouter } from "next/navigation"
 
 export function Header() {
   const { user, logout } = useAuthStore()
   const { unreadCount } = useNotificationStore()
   const router = useRouter()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
+    setIsLoggingOut(true)
     await logout()
+    // Aguarda o tema ser limpo antes de redirecionar
+    await new Promise((resolve) => setTimeout(resolve, 100))
     router.push("/login")
   }
 
@@ -49,21 +54,28 @@ export function Header() {
             <div className="flex items-center gap-3">
               <div className="hidden sm:block text-right">
                 <p className="text-sm font-semibold text-foreground">{user?.name}</p>
-                <div className="flex items-center justify-end gap-1 mt-0.5">
-                  {user?.role && <RoleBadge role={user.role} />}
-                </div>
+                {user?.role && (
+                  <p className="text-xs font-medium text-primary">
+                    {getRoleTitle(user.role)}
+                  </p>
+                )}
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30">
-                <User className="h-5 w-5 text-white" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/30">
+                <User className="h-5 w-5 text-primary-foreground" />
               </div>
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleLogout}
+              disabled={isLoggingOut}
               className="hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 rounded-xl cursor-pointer"
             >
-              <LogOut className="h-5 w-5" />
+              {isLoggingOut ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                <LogOut className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </div>

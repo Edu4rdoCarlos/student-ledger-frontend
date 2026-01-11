@@ -16,7 +16,7 @@ export default function StudentsPage() {
       key: "matricula",
       label: "Matrícula",
       render: (student: any) => (
-        <span className="inline-flex items-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:text-indigo-300">
+        <span className="inline-flex items-center rounded-full bg-primary/10 dark:bg-primary/20 px-2.5 py-0.5 text-xs font-medium text-primary">
           {student.matricula}
         </span>
       ),
@@ -26,8 +26,8 @@ export default function StudentsPage() {
       label: "Nome",
       render: (student: any) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-            <User className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+            <User className="h-5 w-5 text-primary" />
           </div>
           <div>
             <p className="font-semibold">{student.name}</p>
@@ -58,13 +58,13 @@ export default function StudentsPage() {
       render: (student: any) => (
         <div className="flex gap-2">
           <Link href={`/students/${student.id}`}>
-            <Button variant="ghost" size="sm" className="gap-2 hover:bg-indigo-100 hover:text-indigo-700 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-300 cursor-pointer">
+            <Button variant="ghost" size="sm" className="gap-2 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary cursor-pointer">
               <Eye className="h-4 w-4" />
               Ver perfil
             </Button>
           </Link>
           <Link href={`/documents?student=${student.id}`}>
-            <Button variant="ghost" size="sm" className="gap-2 hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-950/50 dark:hover:text-blue-300 cursor-pointer">
+            <Button variant="ghost" size="sm" className="gap-2 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary cursor-pointer">
               <FileText className="h-4 w-4" />
               Documentos
             </Button>
@@ -80,15 +80,15 @@ export default function StudentsPage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <GraduationCap className="h-6 w-6 text-indigo-600" />
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <GraduationCap className="h-6 w-6 text-primary" />
+              <h1 className="text-3xl font-bold text-primary">
                 Alunos
               </h1>
             </div>
             <p className="text-muted-foreground">Gerencie os alunos cadastrados no sistema</p>
           </div>
           <Link href="/students/new">
-            <Button className="gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/30 cursor-pointer">
+            <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 cursor-pointer">
               <Plus className="h-4 w-4" />
               Novo Aluno
             </Button>

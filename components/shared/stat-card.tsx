@@ -13,8 +13,7 @@ interface StatCardProps {
 export function StatCard({ title, value, icon: Icon, description, iconColor = "text-primary" }: StatCardProps) {
   return (
     <Card className="relative overflow-hidden border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all group">
-      {/* Gradient overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/50 group-hover:to-indigo-50/50 dark:group-hover:from-blue-950/20 dark:group-hover:to-indigo-950/20 transition-all" />
+      <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 dark:group-hover:bg-primary/10 transition-all" />
 
       <CardContent className="relative flex items-start justify-between p-6">
         <div className="space-y-2 flex-1">
@@ -31,13 +30,12 @@ export function StatCard({ title, value, icon: Icon, description, iconColor = "t
             )}
           </div>
         </div>
-        <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 group-hover:scale-110 transition-transform ${iconColor}`}>
+        <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 group-hover:scale-110 transition-transform ${iconColor}`}>
           <Icon className="h-6 w-6" />
         </div>
       </CardContent>
 
-      {/* Bottom accent border */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
     </Card>
   )
 }

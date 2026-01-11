@@ -21,8 +21,8 @@ export default function DocumentsPage() {
       label: "Título",
       render: (doc: any) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-            <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+            <FileText className="h-5 w-5 text-primary" />
           </div>
           <div className="space-y-1">
             <p className="font-semibold">{doc.title}</p>
@@ -64,7 +64,7 @@ export default function DocumentsPage() {
       label: "Ações",
       render: (doc: any) => (
         <Link href={`/documents/${doc.id}`}>
-          <Button variant="ghost" size="sm" className="gap-2 hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-950/50 dark:hover:text-blue-300 cursor-pointer">
+          <Button variant="ghost" size="sm" className="gap-2 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary cursor-pointer">
             <Eye className="h-4 w-4" />
             Ver detalhes
           </Button>
@@ -79,15 +79,15 @@ export default function DocumentsPage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <FileText className="h-6 w-6 text-blue-600" />
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <FileText className="h-6 w-6 text-primary" />
+              <h1 className="text-3xl font-bold text-primary">
                 Documentos
               </h1>
             </div>
             <p className="text-muted-foreground">Gerencie atas e fichas de avaliação de TCC</p>
           </div>
           <Link href="/documents/new">
-            <Button className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 cursor-pointer">
+            <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 cursor-pointer">
               <Plus className="h-4 w-4" />
               Novo Documento
             </Button>

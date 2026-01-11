@@ -1,7 +1,10 @@
+import { toast } from "sonner"
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
 
 interface RequestOptions extends RequestInit {
   skipAuth?: boolean
+  skipToast?: boolean
 }
 
 class ApiClient {
@@ -19,7 +22,7 @@ class ApiClient {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: "POST",
-        credentials: "include", // Envia o refreshToken cookie httpOnly
+        credentials: "include",
       })
 
       if (!response.ok) {
@@ -34,8 +37,17 @@ class ApiClient {
     }
   }
 
+  private showErrorToast(message: string, skipToast?: boolean) {
+    if (skipToast || typeof window === "undefined") return
+
+    toast.error(message, {
+      description: "Por favor, tente novamente mais tarde.",
+      duration: 5000,
+    })
+  }
+
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { skipAuth = false, ...fetchOptions } = options
+    const { skipAuth = false, skipToast = false, ...fetchOptions } = options
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -46,40 +58,56 @@ class ApiClient {
       ;(headers as Record<string, string>)["Authorization"] = `Bearer ${this.accessToken}`
     }
 
-    let response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...fetchOptions,
-      headers,
-      credentials: "include", // Sempre envia cookies (para o refreshToken)
-    })
+    try {
+      let response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...fetchOptions,
+        headers,
+        credentials: "include",
+      })
 
-    // Se receber 401 e não for uma requisição sem auth, tenta refresh
-    if (response.status === 401 && !skipAuth) {
-      const newToken = await this.refreshToken()
+      if (response.status === 401 && !skipAuth) {
+        const newToken = await this.refreshToken()
 
-      if (newToken) {
-        // Retry com o novo token
-        ;(headers as Record<string, string>)["Authorization"] = `Bearer ${newToken}`
-        response = await fetch(`${API_BASE_URL}${endpoint}`, {
-          ...fetchOptions,
-          headers,
-          credentials: "include",
-        })
-      } else {
-        // Refresh falhou - dispatch evento para logout
-        window.dispatchEvent(new CustomEvent("auth:logout"))
-        throw new Error("Sessão expirada")
+        if (newToken) {
+          ;(headers as Record<string, string>)["Authorization"] = `Bearer ${newToken}`
+          response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...fetchOptions,
+            headers,
+            credentials: "include",
+          })
+        } else {
+          window.dispatchEvent(new CustomEvent("auth:logout"))
+          throw new Error("Sessão expirada")
+        }
       }
-    }
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: "Erro na requisição" }))
-      throw new Error(error.message || `HTTP ${response.status}`)
-    }
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: "Erro na requisição" }))
+        throw new Error(error.message || `HTTP ${response.status}`)
+      }
 
-    return response.json()
+      return response.json()
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        this.showErrorToast("Serviço indisponível", skipToast)
+        throw new Error("Não foi possível conectar ao servidor. Verifique sua conexão.")
+      }
+
+      if (error instanceof Error &&
+          (error.message.toLowerCase().includes("network") ||
+           error.message.toLowerCase().includes("failed to fetch"))) {
+        this.showErrorToast("Serviço indisponível", skipToast)
+        throw new Error("Não foi possível conectar ao servidor. Verifique sua conexão.")
+      }
+
+      if (error instanceof Error) {
+        throw error
+      }
+
+      throw new Error("Erro desconhecido")
+    }
   }
 
-  // Métodos de conveniência
   get<T>(endpoint: string, options?: RequestOptions) {
     return this.request<T>(endpoint, { ...options, method: "GET" })
   }

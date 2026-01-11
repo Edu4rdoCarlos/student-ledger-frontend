@@ -31,15 +31,24 @@ export default function LoginPage() {
     try {
       setLoading(true)
 
-      // Login retorna apenas accessToken
       const { accessToken } = await authService.login(data)
 
-      // Seta o token temporariamente para fazer requisições autenticadas
-      setAuth({ id: "", name: "", email: "", role: "secretario", organizationId: "" }, accessToken)
+      setAuth(
+        {
+          id: "",
+          name: "",
+          email: "",
+          role: "ADMIN",
+          metadata: {},
+        },
+        accessToken
+      )
 
-      // Busca dados do usuário via /users/me
       const user = await userService.getMe()
       setAuth(user, accessToken)
+
+      // Aguarda o tema ser aplicado antes de redirecionar
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       router.push("/dashboard")
     } catch (error) {

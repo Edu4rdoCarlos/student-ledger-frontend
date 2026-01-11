@@ -4,7 +4,6 @@ import type { User } from "@/lib/types"
 import { apiClient } from "@/lib/api/client"
 import { authRepository } from "@/lib/repositories/auth-repository"
 
-// Helper para gerenciar o cookie de sessão (usado pelo middleware)
 function setSessionCookie(hasSession: boolean) {
   if (typeof document === "undefined") return
   if (hasSession) {
@@ -48,7 +47,6 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authRepository.logout()
         } catch {
-          // Ignora erro no logout
         }
         apiClient.setAccessToken(null)
         setSessionCookie(false)
@@ -56,7 +54,6 @@ export const useAuthStore = create<AuthState>()(
       },
 
       initialize: () => {
-        // Restaura o token no apiClient ao carregar a página
         const state = get()
         if (state.accessToken) {
           apiClient.setAccessToken(state.accessToken)
@@ -72,7 +69,6 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
-        // Quando o estado é restaurado do localStorage
         if (state?.accessToken) {
           apiClient.setAccessToken(state.accessToken)
           setSessionCookie(true)
@@ -85,7 +81,6 @@ export const useAuthStore = create<AuthState>()(
   ),
 )
 
-// Listener para logout automático quando o token expira
 if (typeof window !== "undefined") {
   window.addEventListener("auth:logout", () => {
     useAuthStore.getState().logout()

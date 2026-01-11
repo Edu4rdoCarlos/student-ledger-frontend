@@ -26,24 +26,24 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="h-6 w-6 text-blue-600" />
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <Sparkles className="h-6 w-6 text-primary" />
+              <h1 className="text-3xl font-bold text-primary">
                 Dashboard
               </h1>
             </div>
             <p className="text-muted-foreground">Visão geral do sistema de gerenciamento de TCC</p>
           </div>
-          <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200/50 dark:border-blue-800/30">
-            <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Blockchain Secured</span>
+          <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
+            <Shield className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Blockchain Secured</span>
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Total de Documentos" value={stats.total} icon={FileText} iconColor="text-blue-600" />
+          <StatCard title="Total de Documentos" value={stats.total} icon={FileText} iconColor="text-primary" />
           <StatCard title="Pendentes" value={stats.pending} icon={Clock} iconColor="text-amber-600" />
           <StatCard title="Aprovados" value={stats.approved} icon={CheckCircle} iconColor="text-emerald-600" />
-          <StatCard title="Alunos" value={stats.students} icon={Users} iconColor="text-indigo-600" />
+          <StatCard title="Alunos" value={stats.students} icon={Users} iconColor="text-primary" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -51,7 +51,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-blue-600" />
+                  <FileText className="h-5 w-5 text-primary" />
                   Documentos Recentes
                 </CardTitle>
                 <CardDescription>Últimas atualizações de documentos acadêmicos</CardDescription>
@@ -60,7 +60,7 @@ export default function DashboardPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-2 border-blue-200 hover:bg-blue-100 hover:text-blue-700 hover:border-blue-300 dark:border-blue-800 dark:hover:bg-blue-950/50 dark:hover:text-blue-300 dark:hover:border-blue-700 cursor-pointer"
+                  className="gap-2 border-primary/20 hover:bg-primary/10 hover:text-primary hover:border-primary/30 dark:border-primary/30 dark:hover:bg-primary/20 dark:hover:text-primary dark:hover:border-primary/40 cursor-pointer"
                 >
                   Ver todos
                   <ArrowRight className="h-4 w-4" />
@@ -70,7 +70,7 @@ export default function DashboardPage() {
             <CardContent>
               {loading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
                 </div>
               ) : recentDocuments.length === 0 ? (
                 <div className="text-center py-8">
@@ -82,14 +82,14 @@ export default function DashboardPage() {
                   {recentDocuments.map((doc) => (
                     <div
                       key={doc.id}
-                      className="group flex items-center justify-between rounded-xl border border-border/50 bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-800/50 dark:to-slate-900/50 p-4 transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800"
+                      className="group flex items-center justify-between rounded-xl border border-border/50 bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-800/50 dark:to-slate-900/50 p-4 transition-all hover:shadow-md hover:border-primary/30 dark:hover:border-primary/30"
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
-                          <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 group-hover:bg-primary/20 dark:group-hover:bg-primary/30 transition-colors">
+                          <FileText className="h-5 w-5 text-primary" />
                         </div>
                         <div className="space-y-1 flex-1">
-                          <p className="font-semibold text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          <p className="font-semibold text-sm group-hover:text-primary transition-colors">
                             {doc.title}
                           </p>
                           <p className="text-xs text-muted-foreground">
@@ -108,20 +108,20 @@ export default function DashboardPage() {
           <Card className="border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-xl">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
+                <TrendingUp className="h-5 w-5 text-primary" />
                 Ações Rápidas
               </CardTitle>
               <CardDescription>Operações frequentes</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               <Link href="/documents">
-                <Button variant="outline" className="w-full justify-start gap-2 hover:bg-blue-100 hover:text-blue-700 hover:border-blue-300 dark:hover:bg-blue-950/50 dark:hover:text-blue-300 dark:hover:border-blue-800 cursor-pointer">
+                <Button variant="outline" className="w-full justify-start gap-2 hover:bg-primary/10 hover:text-primary hover:border-primary/30 dark:hover:bg-primary/20 dark:hover:text-primary dark:hover:border-primary/40 cursor-pointer">
                   <FileText className="h-4 w-4" />
                   Novo Documento
                 </Button>
               </Link>
               <Link href="/students">
-                <Button variant="outline" className="w-full justify-start gap-2 hover:bg-indigo-100 hover:text-indigo-700 hover:border-indigo-300 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-300 dark:hover:border-indigo-800 cursor-pointer">
+                <Button variant="outline" className="w-full justify-start gap-2 hover:bg-primary/10 hover:text-primary hover:border-primary/30 dark:hover:bg-primary/20 dark:hover:text-primary dark:hover:border-primary/40 cursor-pointer">
                   <Users className="h-4 w-4" />
                   Gerenciar Alunos
                 </Button>
