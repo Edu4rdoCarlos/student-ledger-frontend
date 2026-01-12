@@ -128,7 +128,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-5xl !w-[85vw] h-[48vh] max-h-[48vh] overflow-y-auto flex flex-col">
+      <DialogContent className="!max-w-5xl !w-[85vw] max-h-[85vh] overflow-y-auto flex flex-col">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-3">
