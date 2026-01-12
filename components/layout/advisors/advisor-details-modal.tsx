@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shared/ta
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select"
-import { Switch } from "@/components/primitives/switch"
 import { User, Trophy, Mail, GraduationCap, Calendar, CheckCircle2, XCircle, Clock, MapPin, Users, Briefcase, Edit2, Save, X } from "lucide-react"
 import type { Advisor } from "@/lib/types"
 import { Badge } from "@/components/primitives/badge"
@@ -26,7 +25,7 @@ interface AdvisorDetailsModalProps {
 
 export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvisor, loading = false }: AdvisorDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const { courses, loading: loadingCourses } = useCourses()
+  const { myCourses, loading: loadingCourses } = useCourses()
 
   const {
     register,
@@ -278,7 +277,7 @@ export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvis
                                   <SelectValue placeholder={loadingCourses ? "Carregando cursos..." : "Selecione o curso"} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {courses.map((course) => (
+                                  {myCourses.map((course) => (
                                     <SelectItem key={course.id} value={course.id}>
                                       {course.name} ({course.code})
                                     </SelectItem>
@@ -350,43 +349,6 @@ export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvis
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground">Orientador Ativo</label>
-                      {isEditing ? (
-                        <Controller
-                          name="isActive"
-                          control={control}
-                          render={({ field }) => (
-                            <div className="flex items-center gap-3">
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                disabled={isSubmitting}
-                              />
-                              <span className="text-sm">
-                                {field.value ? "Ativo" : "Inativo"}
-                              </span>
-                            </div>
-                          )}
-                        />
-                      ) : (
-                        <div>
-                          {(advisor.isActive ?? true) ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-400">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Ativo
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-400">
-                              <XCircle className="h-3 w-3" />
-                              Inativo
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
                 </div>
               </TabsContent>
 

@@ -18,12 +18,12 @@ export function CourseCard({ course, onViewDetails, onEdit, canEdit = false }: C
     <Card className="flex flex-col h-full">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shrink-0">
               <Book className="h-5 w-5 text-primary" />
             </div>
-            <div className="min-w-0">
-              <CardTitle className="text-base truncate">{course.name}</CardTitle>
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base break-words">{course.name}</CardTitle>
               <p className="text-sm text-muted-foreground font-mono">{course.code}</p>
             </div>
           </div>

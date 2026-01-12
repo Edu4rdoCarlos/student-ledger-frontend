@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { GraduationCap, Lock, Mail, Shield, FileCheck, Users, Sparkles } from "lucide-react"
+import { GraduationCap, Lock, Mail, Shield, FileCheck, Users } from "lucide-react"
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared/card"
@@ -161,7 +161,6 @@ export default function LoginPage() {
           <Card className="border-border/50 bg-white/80 backdrop-blur-sm shadow-xl dark:bg-slate-900/80">
             <CardHeader className="space-y-2">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-blue-600" />
                 <CardTitle className="text-2xl">Bem-vindo de volta</CardTitle>
               </div>
               <CardDescription>
@@ -222,7 +221,6 @@ export default function LoginPage() {
 
               <div className="mt-6 rounded-lg bg-blue-50/50 dark:bg-blue-950/30 p-4 border border-blue-200/50 dark:border-blue-800/50">
                 <div className="flex items-start gap-2">
-                  <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                   <p className="text-xs text-blue-900 dark:text-blue-100">
                     <strong>Protegido por blockchain:</strong> Todas as operações são registradas de forma imutável no Hyperledger Fabric.
                   </p>

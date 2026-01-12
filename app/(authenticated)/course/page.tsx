@@ -100,7 +100,7 @@ export default function CoursePage() {
         {user && isCoordinator(user) && myCourses.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Meus Cursos</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {myCourses.map((course) => (
                 <CourseCard
                   key={course.id}
@@ -137,7 +137,7 @@ export default function CoursePage() {
             </Card>
           ) : otherCourses.length > 0 ? (
             <>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {otherCourses.map((course) => (
                   <CourseCard
                     key={course.id}
