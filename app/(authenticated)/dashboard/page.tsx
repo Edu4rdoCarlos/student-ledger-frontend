@@ -1,25 +1,40 @@
 "use client"
-import { FileText, Users, CheckCircle, Clock, Shield, ArrowRight, Sparkles, AlertCircle, User, LayoutDashboard } from "lucide-react"
+import { FileText, Users, CheckCircle, Clock, Shield, ArrowRight, AlertCircle, User, LayoutDashboard } from "lucide-react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { StatCard } from "@/components/shared/stat-card"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/shared/card"
-import { useDocuments } from "@/hooks/use-documents"
 import { useApprovals, type PendingApproval } from "@/hooks/use-approvals"
 import { useDocumentsSummary } from "@/hooks/use-documents-summary"
-import { StatusBadge } from "@/components/primitives/status-badge"
 import { Button } from "@/components/primitives/button"
 import { ApprovalDetailsModal } from "@/components/layout/approvals/approval-details-modal"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { defenseService } from "@/lib/services/defense-service"
+import type { Defense } from "@/lib/types"
 
 export default function DashboardPage() {
-  const { documents, loading } = useDocuments()
   const { approvals, loading: approvalsLoading } = useApprovals()
   const { summary } = useDocumentsSummary()
   const [selectedApproval, setSelectedApproval] = useState<PendingApproval | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [recentDefenses, setRecentDefenses] = useState<Defense[]>([])
+  const [defensesLoading, setDefensesLoading] = useState(true)
 
-  const recentDocuments = documents.slice(0, 5)
+  useEffect(() => {
+    const fetchRecentDefenses = async () => {
+      try {
+        setDefensesLoading(true)
+        const response = await defenseService.getAllDefenses(1, 4, "desc")
+        setRecentDefenses(response.data)
+      } catch (error) {
+        console.error("Error fetching recent defenses:", error)
+      } finally {
+        setDefensesLoading(false)
+      }
+    }
+
+    fetchRecentDefenses()
+  }, [])
 
   const handleApprovalClick = (approval: PendingApproval) => {
     setSelectedApproval(approval)
@@ -62,7 +77,7 @@ export default function DashboardPage() {
                 </CardTitle>
                 <CardDescription>Últimas atualizações de TCCs acadêmicos</CardDescription>
               </div>
-              <Link href="/documents">
+              <Link href="/defenses">
                 <Button
                   variant="outline"
                   size="sm"
@@ -74,36 +89,54 @@ export default function DashboardPage() {
               </Link>
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {defensesLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
                 </div>
-              ) : recentDocuments.length === 0 ? (
+              ) : recentDefenses.length === 0 ? (
                 <div className="text-center py-8">
                   <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                  <p className="text-sm text-muted-foreground">Nenhum documento encontrado</p>
+                  <p className="text-sm text-muted-foreground">Nenhuma defesa encontrada</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {recentDocuments.map((doc) => (
+                  {recentDefenses.map((defense) => (
                     <div
-                      key={doc.id}
-                      className="group flex items-center justify-between rounded-xl border border-border/50 bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-800/50 dark:to-slate-900/50 p-4 transition-all hover:shadow-md hover:border-primary/30 dark:hover:border-primary/30"
+                      key={defense.id}
+                      className="flex items-center justify-between rounded-xl border border-border/50 bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-800/50 dark:to-slate-900/50 p-4"
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 group-hover:bg-primary/20 dark:group-hover:bg-primary/30 transition-colors">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
                           <FileText className="h-5 w-5 text-primary" />
                         </div>
                         <div className="space-y-1 flex-1">
-                          <p className="font-semibold text-sm group-hover:text-primary transition-colors">
-                            {doc.title}
+                          <p className="font-semibold text-sm">
+                            {defense.title}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {doc.studentName} • {doc.course}
+                            {defense.students.map((s) => s.name).join(", ")} • {new Date(defense.defenseDate).toLocaleDateString("pt-BR")}
                           </p>
                         </div>
                       </div>
-                      <StatusBadge status={doc.status} />
+                      <div className="flex items-center gap-2">
+                        {defense.result === "APPROVED" && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+                            <CheckCircle className="h-3 w-3" />
+                            Aprovado
+                          </span>
+                        )}
+                        {defense.result === "FAILED" && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium">
+                            Reprovado
+                          </span>
+                        )}
+                        {defense.result === "PENDING" && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-medium">
+                            <Clock className="h-3 w-3" />
+                            Pendente
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
