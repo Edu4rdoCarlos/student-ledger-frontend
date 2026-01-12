@@ -2,7 +2,7 @@
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Button } from "@/components/primitives/button"
-import { GraduationCap, User, Eye } from "lucide-react"
+import { GraduationCap, User, Eye, Plus, CheckCircle2, XCircle } from "lucide-react"
 import { DataTable } from "@/components/shared/data-table"
 import { TablePagination } from "@/components/shared/table-pagination"
 import { useAdvisors } from "@/hooks/use-advisors"
@@ -10,6 +10,7 @@ import { Card } from "@/components/shared/card"
 import type { Advisor } from "@/lib/types"
 import { useState } from "react"
 import { AdvisorDetailsModal } from "@/components/layout/advisors/advisor-details-modal"
+import { AddAdvisorDialog } from "@/components/layout/advisors/add-advisor-dialog"
 import { advisorService } from "@/lib/services/advisor-service"
 
 export default function AdvisorsPage() {
@@ -17,8 +18,9 @@ export default function AdvisorsPage() {
   const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loadingDetails, setLoadingDetails] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
-  const { advisors, metadata, loading } = useAdvisors(currentPage, 10)
+  const { advisors, metadata, loading, refetch } = useAdvisors(currentPage, 10)
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -29,7 +31,7 @@ export default function AdvisorsPage() {
       setLoadingDetails(true)
       setIsModalOpen(true)
 
-      const fullAdvisorData = await advisorService.getAdvisorById(advisor.id)
+      const fullAdvisorData = await advisorService.getAdvisorById(advisor.userId)
       setSelectedAdvisor(fullAdvisorData)
     } catch (error) {
       console.error("Erro ao buscar detalhes do orientador:", error)
@@ -39,46 +41,68 @@ export default function AdvisorsPage() {
     }
   }
 
+  const handleUpdateAdvisor = async (id: string, data: { name: string; specialization: string; courseId: string; isActive: boolean }) => {
+    try {
+      await advisorService.updateAdvisor(id, data)
+      const updatedAdvisor = await advisorService.getAdvisorById(id)
+      setSelectedAdvisor(updatedAdvisor)
+      await refetch(currentPage, 10)
+    } catch (error) {
+      console.error("Erro ao atualizar orientador:", error)
+      throw error
+    }
+  }
+
   const columns = [
     {
       key: "name",
       label: "Nome",
-      render: (advisor: Advisor) => (
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
-            <User className="h-5 w-5 text-primary" />
+      render: (advisor: Advisor) => {
+        const isActive = advisor.isActive ?? true
+        return (
+          <div className={`flex items-center gap-3 ${!isActive ? "opacity-50" : ""}`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? "bg-primary/10 dark:bg-primary/20" : "bg-muted"}`}>
+              <User className={`h-5 w-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+            </div>
+            <div>
+              <p className={`font-semibold ${!isActive ? "text-muted-foreground" : ""}`}>{advisor.name}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-semibold">{advisor.name}</p>
-          </div>
-        </div>
-      ),
+        )
+      },
     },
     {
       key: "email",
       label: "Email",
-      render: (advisor: Advisor) => (
-        <span className="text-sm text-muted-foreground">{advisor.email}</span>
-      ),
+      render: (advisor: Advisor) => {
+        const isActive = advisor.isActive ?? true
+        return (
+          <span className={`text-sm text-muted-foreground ${!isActive ? "opacity-50" : ""}`}>{advisor.email}</span>
+        )
+      },
     },
     {
       key: "specialization",
       label: "Especialização",
-      render: (advisor: Advisor) => (
-        <span className="text-sm font-medium">{advisor.specialization}</span>
-      ),
+      render: (advisor: Advisor) => {
+        const isActive = advisor.isActive ?? true
+        return (
+          <span className={`text-sm font-medium ${!isActive ? "opacity-50 text-muted-foreground" : ""}`}>{advisor.specialization}</span>
+        )
+      },
     },
     {
       key: "course",
       label: "Curso",
       render: (advisor: Advisor) => {
+        const isActive = advisor.isActive ?? true
         const courseDisplay = `${advisor.course.name} (${advisor.course.code})`
 
         return (
-          <div className="flex items-center gap-2" title={courseDisplay}>
+          <div className={`flex items-center gap-2 ${!isActive ? "opacity-50" : ""}`} title={courseDisplay}>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
             <div className="flex flex-col">
-              <span className="text-sm font-medium">{advisor.course.name}</span>
+              <span className={`text-sm font-medium ${!isActive ? "text-muted-foreground" : ""}`}>{advisor.course.name}</span>
               <span className="text-xs text-muted-foreground">{advisor.course.code}</span>
             </div>
           </div>
@@ -89,13 +113,37 @@ export default function AdvisorsPage() {
       key: "activeAdvisorships",
       label: "Orientações Ativas",
       render: (advisor: Advisor) => {
+        const isActive = advisor.isActive ?? true
         const count = advisor.activeAdvisorshipsCount
 
         return (
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 dark:bg-primary/20 px-2.5 py-1 text-xs font-medium text-primary">
+          <div className={`flex items-center gap-2 ${!isActive ? "opacity-50" : ""}`}>
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${isActive ? "bg-primary/10 dark:bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
               {count} {count === 1 ? "orientação" : "orientações"}
             </span>
+          </div>
+        )
+      },
+    },
+    {
+      key: "isActive",
+      label: "Status",
+      render: (advisor: Advisor) => {
+        const isActive = advisor.isActive ?? true
+
+        return (
+          <div>
+            {isActive ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-400">
+                <CheckCircle2 className="h-3 w-3" />
+                Ativo
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-400">
+                <XCircle className="h-3 w-3" />
+                Inativo
+              </span>
+            )}
           </div>
         )
       },
@@ -130,6 +178,13 @@ export default function AdvisorsPage() {
             </div>
             <p className="text-muted-foreground">Gerencie os orientadores cadastrados no sistema</p>
           </div>
+          <Button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 cursor-pointer"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Orientador
+          </Button>
         </div>
 
         <Card className="border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-xl">
@@ -148,7 +203,14 @@ export default function AdvisorsPage() {
         advisor={selectedAdvisor}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+        onUpdateAdvisor={handleUpdateAdvisor}
         loading={loadingDetails}
+      />
+
+      <AddAdvisorDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSuccess={() => refetch(currentPage, 10)}
       />
     </DashboardLayout>
   )

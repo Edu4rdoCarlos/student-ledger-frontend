@@ -1,5 +1,5 @@
 export type DefenseResult = "PENDING" | "APPROVED" | "FAILED"
-export type DefenseStatus = "SCHEDULED" | "COMPLETED" | "CANCELLED"
+export type DefenseStatus = "SCHEDULED" | "COMPLETED" | "CANCELED"
 export type DocumentStatus = "PENDING" | "APPROVED" | "INACTIVE"
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED"
 export type ApprovalRole = "COORDINATOR" | "ADVISOR" | "STUDENT"
@@ -74,19 +74,29 @@ export interface Defense {
 }
 
 export interface StudentDefense {
-  documentId: string
-  ipfsCid: string
   studentRegistration: string
   title: string
   defenseDate: string
   location?: string
   finalGrade: number
   result: DefenseResult
-  version: number
   reason: string
   registeredBy: string
-  status: ApprovalStatus
+  defenseStatus: DefenseStatus
+  validatedAt: string
+  advisor?: {
+    id: string
+    name: string
+    email: string
+    specialization: string
+  }
   examBoard?: Array<{
+    name: string
+    email: string
+  }>
+  coStudents?: Array<{
+    id: string
+    registration: string
     name: string
     email: string
   }>
@@ -97,7 +107,16 @@ export interface StudentDefense {
     status: ApprovalStatus
     justification?: string
   }>
-  validatedAt: string
+  documents: Array<{
+    id: string
+    version: number
+    status: DocumentStatus
+    blockchainTxId?: string
+    blockchainRegisteredAt?: string
+    createdAt: string
+    downloadUrl?: string
+    changeReason?: string
+  }>
 }
 
 export interface AdvisorDefense {

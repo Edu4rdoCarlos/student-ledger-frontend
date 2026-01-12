@@ -14,10 +14,10 @@ import { AddStudentDialog } from "@/components/layout/students/add-student-dialo
 import { studentService } from "@/lib/services/student-service"
 
 const getDefenseStatusBadge = (student: Student) => {
-  const status = student.status || (student.defenses && student.defenses.length > 0 ? student.defenses[0].result : null)
   const defensesCount = student.defensesCount ?? student.defenses?.length ?? 0
+  const defenseStatus = student.defenseStatus ?? student.defenses?.[0]?.defenseStatus
 
-  if (!status || status === "NO_DEFENSE" || defensesCount === 0) {
+  if (!defenseStatus || defensesCount === 0) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-400" title="Nenhuma defesa cadastrada">
         <Clock className="h-3 w-3" />
@@ -26,37 +26,37 @@ const getDefenseStatusBadge = (student: Student) => {
     )
   }
 
-  if (status === "APPROVED") {
+  if (defenseStatus === "COMPLETED") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-400" title="Aprovado">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-400" title="Defesa concluída">
         <CheckCircle2 className="h-3 w-3" />
-        Aprovado
+        Concluída
       </span>
     )
   }
 
-  if (status === "FAILED") {
+  if (defenseStatus === "CANCELED") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-400" title="Reprovado">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-400" title="Defesa cancelada">
         <XCircle className="h-3 w-3" />
-        Reprovado
+        Cancelada
       </span>
     )
   }
 
-  if (status === "UNDER_APPROVAL") {
+  if (defenseStatus === "SCHEDULED") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-400" title="Em aprovação">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-400" title="Defesa agendada">
         <Clock className="h-3 w-3" />
-        Em aprovação
+        Agendada
       </span>
     )
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 px-2.5 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-400" title="Defesa pendente">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 px-2.5 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-400" title="Status desconhecido">
       <Clock className="h-3 w-3" />
-      Pendente
+      Desconhecido
     </span>
   )
 }
@@ -175,7 +175,7 @@ export default function StudentsPage() {
               <Trophy className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">{defensesCount}</span>
             </div>
-            {lastDefense && (
+            {lastDefense && lastDefense.result !== "PENDING" && (
               <span className="text-xs text-muted-foreground" title={`Nota: ${lastDefense.finalGrade}`}>
                 ({lastDefense.finalGrade})
               </span>

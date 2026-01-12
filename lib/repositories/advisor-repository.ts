@@ -1,4 +1,5 @@
 import type { Advisor, PaginationMetadata } from "@/lib/types"
+import type { AddAdvisorFormData, EditAdvisorFormData } from "@/lib/validations/advisor"
 import { apiClient } from "@/lib/api/client"
 
 export interface PaginatedAdvisorsResponse {
@@ -13,6 +14,8 @@ export interface AdvisorDetailResponse {
 export interface AdvisorRepository {
   getAll(page?: number, perPage?: number): Promise<PaginatedAdvisorsResponse>
   getById(id: string): Promise<AdvisorDetailResponse>
+  create(data: AddAdvisorFormData): Promise<Advisor>
+  update(id: string, data: EditAdvisorFormData): Promise<Advisor>
 }
 
 export const advisorRepository: AdvisorRepository = {
@@ -24,5 +27,13 @@ export const advisorRepository: AdvisorRepository = {
 
   async getById(id: string) {
     return apiClient.get<AdvisorDetailResponse>(`/advisors/${id}`)
+  },
+
+  async create(data: AddAdvisorFormData) {
+    return apiClient.post<Advisor>("/advisors", data)
+  },
+
+  async update(id: string, data: EditAdvisorFormData) {
+    return apiClient.put<Advisor>(`/advisors/${id}`, data)
   },
 }

@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/shared/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shared/tabs"
-import { User, Trophy, FileText, History, Mail, GraduationCap, Calendar, CheckCircle2, XCircle, Clock, Edit2, Save, X, Download, MapPin, Users } from "lucide-react"
+import { User, Trophy, FileText, History, Mail, GraduationCap, Calendar, CheckCircle2, XCircle, Clock, Edit2, Save, X, Download, MapPin, Users, Briefcase } from "lucide-react"
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select"
@@ -100,25 +100,29 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
     })
   }
 
-  const getDefenseStatusIcon = (result: string) => {
-    switch (result) {
+  const getDocumentStatusIcon = (documentStatus: string) => {
+    switch (documentStatus) {
       case "APPROVED":
         return <CheckCircle2 className="h-4 w-4 text-green-600" />
-      case "FAILED":
+      case "INACTIVE":
         return <XCircle className="h-4 w-4 text-red-600" />
-      default:
+      case "PENDING":
         return <Clock className="h-4 w-4 text-yellow-600" />
+      default:
+        return <Clock className="h-4 w-4 text-gray-600" />
     }
   }
 
-  const getDefenseStatusText = (result: string) => {
-    switch (result) {
+  const getDocumentStatusText = (documentStatus: string) => {
+    switch (documentStatus) {
       case "APPROVED":
         return "Aprovado"
-      case "FAILED":
-        return "Reprovado"
-      default:
+      case "INACTIVE":
+        return "Inativo"
+      case "PENDING":
         return "Pendente"
+      default:
+        return "Desconhecido"
     }
   }
 
@@ -327,9 +331,9 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
               </div>
             ) : (
               <div className="space-y-4">
-                {student.defenses.map((defense, index) => (
+                {student.defenses.map((defense, idx) => (
                   <div
-                    key={defense.documentId}
+                    key={defense.documents?.[0]?.id || `defense-${idx}`}
                     className="border border-border rounded-lg p-4 space-y-3 hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-start justify-between">
@@ -340,23 +344,87 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                             <Calendar className="h-3.5 w-3.5" />
                             {formatDate(defense.defenseDate)}
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <Trophy className="h-3.5 w-3.5" />
-                            Nota: {defense.finalGrade}
-                          </div>
+                          {defense.result !== "PENDING" && (
+                            <div className="flex items-center gap-1.5">
+                              <Trophy className="h-3.5 w-3.5" />
+                              Nota: {defense.finalGrade}
+                            </div>
+                          )}
                           {defense.location && (
                             <div className="flex items-center gap-1.5">
                               <MapPin className="h-3.5 w-3.5" />
                               {defense.location}
                             </div>
                           )}
+                          {defense.coStudents && defense.coStudents.length > 0 && (
+                            <div className="flex items-center gap-1.5">
+                              <Users className="h-3.5 w-3.5" />
+                              <span className="font-medium">Defesa Compartilhada</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {getDefenseStatusIcon(defense.result)}
-                        <span className="text-sm font-medium">{getDefenseStatusText(defense.result)}</span>
+                        {defense.result === "APPROVED" && <CheckCircle2 className="h-4 w-4 text-green-600" />}
+                        {defense.result === "FAILED" && <XCircle className="h-4 w-4 text-red-600" />}
+                        {defense.result === "PENDING" && <Clock className="h-4 w-4 text-yellow-600" />}
+                        <span className="text-sm font-medium">
+                          {defense.result === "APPROVED" && "Aprovado"}
+                          {defense.result === "FAILED" && "Reprovado"}
+                          {defense.result === "PENDING" && "Pendente"}
+                        </span>
                       </div>
                     </div>
+
+                    {defense.coStudents && defense.coStudents.length > 0 && (
+                      <div className="border-t border-border pt-3 mt-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <Users className="h-3.5 w-3.5" />
+                          Colegas ({defense.coStudents.length})
+                        </p>
+                        <div className="grid grid-cols-1 gap-2">
+                          {defense.coStudents.map((coStudent) => (
+                            <div key={coStudent.id} className="bg-muted/30 rounded-lg p-3">
+                              <div className="flex flex-col gap-1">
+                                <p className="font-medium text-sm">{coStudent.name}</p>
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <User className="h-3 w-3" />
+                                  {coStudent.registration}
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <Mail className="h-3 w-3" />
+                                  {coStudent.email}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {defense.advisor && (
+                      <div className="border-t border-border pt-3 mt-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <Briefcase className="h-3.5 w-3.5" />
+                          Orientador
+                        </p>
+                        <div className="bg-muted/30 rounded-lg p-3">
+                          <div className="flex flex-col gap-1">
+                            <p className="font-medium text-sm">{defense.advisor.name}</p>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Mail className="h-3 w-3" />
+                              {defense.advisor.email}
+                            </div>
+                            {defense.advisor.specialization && (
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <GraduationCap className="h-3 w-3" />
+                                {defense.advisor.specialization}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {defense.examBoard && defense.examBoard.length > 0 && (
                       <div className="border-t border-border pt-3 mt-3">
@@ -400,65 +468,102 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
 
           {/* Tab: Documentos */}
           <TabsContent value="documents" className="space-y-4 mt-6 flex-1 overflow-y-auto">
-            {!student.defenses || student.defenses.length === 0 ? (
+            {!student.defenses || student.defenses.length === 0 || student.defenses.filter(d => d.documents && d.documents.length > 0).length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground">Nenhum documento disponível</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {student.defenses.map((defense) => (
-                  <div
-                    key={defense.documentId}
-                    className="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shrink-0">
-                        <FileText className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-base mb-1">{defense.title}</p>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                          <span>Versão {defense.version}</span>
-                          {defense.ipfsCid && (
-                            <span className="font-mono">IPFS: {defense.ipfsCid.slice(0, 12)}...</span>
+              <div className="space-y-4">
+                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                  <p className="text-xs text-blue-800 dark:text-blue-300">
+                    <strong>Status do Documento:</strong> Indica se o documento foi aprovado por todas as assinaturas necessárias para registro no Hyperledger Fabric.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  {student.defenses
+                    .filter(defense => defense.documents && defense.documents.length > 0)
+                    .flatMap(defense =>
+                      defense.documents.map(doc => ({
+                        defense,
+                        doc
+                      }))
+                    )
+                    .map(({ defense, doc }) => (
+                    <div
+                      key={doc.id}
+                      className="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shrink-0">
+                            <FileText className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-base mb-1">{defense.title}</p>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                <span>Versão {doc.version}</span>
+                                <span>Enviado em {formatDate(doc.createdAt)}</span>
+                              </div>
+                              {doc.changeReason && doc.version > 1 && (
+                                <div className="text-xs text-muted-foreground">
+                                  <span className="font-medium">Motivo da atualização:</span> {doc.changeReason}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50">
+                            {getDocumentStatusIcon(doc.status)}
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium">{getDocumentStatusText(doc.status)}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {doc.status === "APPROVED" && "Registrado no Hyperledger"}
+                                {doc.status === "PENDING" && (() => {
+                                  const approvedCount = defense.signatures?.filter(s => s.status === "APPROVED").length || 0
+                                  const totalCount = defense.signatures?.length || 0
+                                  return `Aguardando ${approvedCount}/${totalCount} assinaturas`
+                                })()}
+                                {doc.status === "INACTIVE" && "Documento inativado"}
+                              </span>
+                            </div>
+                          </div>
+                          {doc.status === "APPROVED" && doc.downloadUrl && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  const blob = await documentService.downloadDocument(doc.id)
+                                  const url = window.URL.createObjectURL(blob)
+                                  const a = document.createElement('a')
+                                  a.href = url
+                                  a.download = `${defense.title}.pdf`
+                                  document.body.appendChild(a)
+                                  a.click()
+                                  window.URL.revokeObjectURL(url)
+                                  document.body.removeChild(a)
+                                } catch (error) {
+                                  console.error('Erro ao baixar documento:', error)
+                                  toast.error('Erro ao baixar documento', {
+                                    description: 'Não foi possível baixar o documento. Tente novamente mais tarde.',
+                                  })
+                                }
+                              }}
+                              className="gap-2 cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                            >
+                              <Download className="h-4 w-4" />
+                              Baixar
+                            </Button>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Badge variant={defense.status === "APPROVED" ? "default" : "secondary"}>
-                          {defense.status}
-                        </Badge>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={async () => {
-                            try {
-                              const blob = await documentService.downloadDocument(defense.documentId)
-                              const url = window.URL.createObjectURL(blob)
-                              const a = document.createElement('a')
-                              a.href = url
-                              a.download = `${defense.title}.pdf`
-                              document.body.appendChild(a)
-                              a.click()
-                              window.URL.revokeObjectURL(url)
-                              document.body.removeChild(a)
-                            } catch (error) {
-                              console.error('Erro ao baixar documento:', error)
-                              toast.error('Erro ao baixar documento', {
-                                description: 'Não foi possível baixar o documento. Tente novamente mais tarde.',
-                              })
-                            }
-                          }}
-                          className="gap-2"
-                        >
-                          <Download className="h-4 w-4" />
-                          Baixar
-                        </Button>
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </TabsContent>
@@ -479,14 +584,15 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
 
                   {student.defenses && student.defenses.length > 0 && (
                     <>
-                      {student.defenses.map((defense, index) => (
-                        <div key={defense.documentId} className="relative">
+                      {student.defenses.map((defense, idx) => (
+                        <div key={defense.documents?.[0]?.id || `history-defense-${idx}`} className="relative">
                           <div className="absolute -left-[1.6rem] mt-1.5 h-3 w-3 rounded-full border-2 border-primary bg-background"></div>
                           <div className="space-y-1">
                             <p className="text-sm font-medium">Defesa: {defense.title}</p>
                             <p className="text-xs text-muted-foreground">{formatDate(defense.defenseDate)}</p>
                             <p className="text-xs text-muted-foreground">
-                              Resultado: {getDefenseStatusText(defense.result)} - Nota: {defense.finalGrade}
+                              Resultado: {defense.result === "APPROVED" ? "Aprovado" : defense.result === "FAILED" ? "Reprovado" : "Pendente"}
+                              {defense.result !== "PENDING" && ` - Nota: ${defense.finalGrade}`}
                             </p>
                           </div>
                         </div>

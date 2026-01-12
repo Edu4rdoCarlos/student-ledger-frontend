@@ -24,13 +24,12 @@ export interface Student {
   orientadorId?: string
   defenses?: StudentDefense[]
   defensesCount?: number
-  status?: "NO_DEFENSE" | "APPROVED" | "FAILED" | "PENDING" | "UNDER_APPROVAL"
+  defenseStatus?: "SCHEDULED" | "COMPLETED" | "CANCELED"
   createdAt: string
   updatedAt: string
 }
 
 export interface Advisor {
-  id: string
   userId: string
   name: string
   email: string
@@ -40,6 +39,7 @@ export interface Advisor {
     name: string
     code: string
   }
+  isActive: boolean
   hasActiveAdvisorship: boolean
   activeAdvisorshipsCount: number
   defenses?: AdvisorDefense[]
