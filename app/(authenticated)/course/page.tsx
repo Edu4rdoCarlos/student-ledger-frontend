@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/shared/ca
 import { Button } from "@/components/primitives/button"
 import { Book, Plus } from "lucide-react"
 import { useUser } from "@/lib/hooks/use-user-role"
-import { isAdmin, isCoordinator, isStudent } from "@/lib/types"
+import { isAdmin, isAdvisor, isCoordinator, isStudent } from "@/lib/types"
 import type { Course } from "@/lib/types/course"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { useCourses } from "@/hooks/use-courses"
@@ -35,7 +35,7 @@ export default function CoursePage() {
   const canCreate = user ? isAdmin(user) : false 
   const canEditCourse = (course: Course) => {
     if (!user) return false
-    if (isStudent(user)) return false
+    if (isStudent(user) || isAdvisor(user)) return false
     if (isAdmin(user)) return true
     if (isCoordinator(user) && course.coordinator?.email === user.email) return true
     return false
