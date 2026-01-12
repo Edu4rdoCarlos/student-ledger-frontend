@@ -106,3 +106,10 @@ export interface PaginationMetadata {
   total: number
   totalPages: number
 }
+
+export interface DashboardSummary {
+  totalDocuments: number
+  pendingDocuments: number
+  approvedDocuments: number
+  totalStudents: number
+}

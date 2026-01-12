@@ -13,7 +13,7 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout"
 const statusConfig: Record<DefenseStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   SCHEDULED: { label: "Agendada", variant: "default" },
   COMPLETED: { label: "Concluída", variant: "secondary" },
-  CANCELLED: { label: "Cancelada", variant: "destructive" },
+  CANCELED: { label: "Cancelada", variant: "destructive" },
 }
 
 const resultConfig: Record<DefenseResult, { label: string; icon: any; color: string }> = {
@@ -50,7 +50,7 @@ export default function DefensesPage() {
 
       setDefenses(prev => prev.map(defense => ({
         ...defense,
-        documents: defense.documents.map(d =>
+        documents: defense?.documents?.map(d =>
           d.id === doc.id
             ? {
                 ...d,
@@ -133,7 +133,7 @@ export default function DefensesPage() {
                           <ResultIcon className="h-3 w-3 mr-1" />
                           {resultConfig[defense.result].label}
                         </Badge>
-                        {defense.finalGrade > 0 && (
+                        {defense.finalGrade && defense.finalGrade > 0 && (
                           <Badge variant="secondary">
                             Nota: {defense.finalGrade.toFixed(1)}
                           </Badge>
@@ -160,34 +160,40 @@ export default function DefensesPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                      <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium">Local</p>
-                        <p className="text-sm text-muted-foreground">{defense.location}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium">Orientador</p>
-                        <p className="text-sm text-muted-foreground">{defense.advisor.name}</p>
-                        <p className="text-xs text-muted-foreground">{defense.advisor.specialization}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium">Banca Examinadora</p>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          {defense.examBoard.map((member) => (
-                            <p key={member.id}>{member.name}</p>
-                          ))}
+                    {defense.location && (
+                      <div className="flex items-start gap-3">
+                        <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Local</p>
+                          <p className="text-sm text-muted-foreground">{defense.location}</p>
                         </div>
                       </div>
-                    </div>
+                    )}
+
+                    {defense.advisor && (
+                      <div className="flex items-start gap-3">
+                        <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Orientador</p>
+                          <p className="text-sm text-muted-foreground">{defense.advisor.name}</p>
+                          <p className="text-xs text-muted-foreground">{defense.advisor.specialization}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {defense.examBoard && defense.examBoard.length > 0 && (
+                      <div className="flex items-start gap-3">
+                        <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Banca Examinadora</p>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            {defense.examBoard.map((member) => (
+                              <p key={member.id}>{member.name}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {defense.documents && defense.documents.length > 0 && (

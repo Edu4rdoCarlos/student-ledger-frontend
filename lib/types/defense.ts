@@ -61,16 +61,18 @@ export interface Defense {
   id: string
   title: string
   defenseDate: string
-  location: string
-  finalGrade: number
   result: DefenseResult
   status: DefenseStatus
-  advisor: DefenseAdvisor
-  students: DefenseStudent[]
-  examBoard: DefenseExamBoardMember[]
-  documents: DefenseDocument[]
-  createdAt: string
-  updatedAt: string
+  advisorName: string
+  studentNames: string[]
+  location?: string
+  finalGrade?: number
+  advisor?: DefenseAdvisor
+  students?: DefenseStudent[]
+  examBoard?: DefenseExamBoardMember[]
+  documents?: DefenseDocument[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface StudentDefense {
