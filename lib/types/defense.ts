@@ -82,6 +82,7 @@ export interface Defense {
   students?: DefenseStudent[]
   examBoard?: DefenseExamBoardMember[]
   documents?: DefenseDocument[]
+  signatures?: DocumentSignature[]
   createdAt?: string
   updatedAt?: string
 }

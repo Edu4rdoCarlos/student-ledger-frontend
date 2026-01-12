@@ -14,8 +14,8 @@ import { AddStudentDialog } from "@/components/layout/students/add-student-dialo
 import { studentService } from "@/lib/services/student-service"
 
 const getDefenseStatusBadge = (student: Student) => {
-  const defensesCount = student.defensesCount ?? student.defenses?.length ?? 0
-  const defenseStatus = student.defenseStatus ?? student.defenses?.[0]?.defenseStatus
+  const defensesCount = student.defensesCount ?? student.defenseIds?.length ?? 0
+  const defenseStatus = student.defenseStatus
 
   if (!defenseStatus || defensesCount === 0) {
     return (
@@ -166,8 +166,7 @@ export default function StudentsPage() {
       key: "defenses",
       label: "Defesas",
       render: (student: Student) => {
-        const defensesCount = student.defensesCount ?? student.defenses?.length ?? 0
-        const lastDefense = student.defenses?.[0]
+        const defensesCount = student.defensesCount ?? student.defenseIds?.length ?? 0
 
         return (
           <div className="flex items-center gap-2" title={defensesCount > 0 ? `${defensesCount} defesa(s) registrada(s)` : 'Nenhuma defesa'}>
@@ -175,11 +174,6 @@ export default function StudentsPage() {
               <Trophy className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">{defensesCount}</span>
             </div>
-            {lastDefense && lastDefense.result !== "PENDING" && (
-              <span className="text-xs text-muted-foreground" title={`Nota: ${lastDefense.finalGrade}`}>
-                ({lastDefense.finalGrade})
-              </span>
-            )}
           </div>
         )
       },

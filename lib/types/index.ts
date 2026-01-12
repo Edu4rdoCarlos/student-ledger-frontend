@@ -7,10 +7,9 @@ export type DocumentStatus = "pendente" | "aprovado" | "inativo"
 
 export type DocumentType = "ata" | "ficha"
 
-import type { StudentDefense, AdvisorDefense } from "./defense"
+import type { AdvisorDefense } from "./defense"
 
 export interface Student {
-  id?: string
   userId: string
   matricula?: string
   registration: string
@@ -22,7 +21,7 @@ export interface Student {
     code: string
   }
   orientadorId?: string
-  defenses?: StudentDefense[]
+  defenseIds?: string[]
   defensesCount?: number
   defenseStatus?: "SCHEDULED" | "COMPLETED" | "CANCELED"
   createdAt: string

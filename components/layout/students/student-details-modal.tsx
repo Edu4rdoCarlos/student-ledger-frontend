@@ -15,6 +15,7 @@ import { editStudentSchema, type EditStudentFormData } from "@/lib/validations/s
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import { useCourses } from "@/hooks/use-courses"
+import { useStudentWithDefenses } from "@/hooks/use-student-with-defenses"
 
 interface StudentDetailsModalProps {
   student: Student | null
@@ -27,6 +28,12 @@ interface StudentDetailsModalProps {
 export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStudent, loading = false }: StudentDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false)
   const { courses, loading: loadingCourses } = useCourses()
+
+  const registration = student?.registration || student?.matricula || null
+  const { defenses, loading: loadingDefenses } = useStudentWithDefenses(
+    open ? registration : null,
+    true
+  )
 
   const {
     register,
@@ -161,9 +168,9 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
             <TabsTrigger value="defenses" className="gap-2">
               <Trophy className="h-4 w-4" />
               Defesas
-              {student.defenses && student.defenses.length > 0 && (
+              {defenses.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
-                  {student.defenses.length}
+                  {defenses.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -324,14 +331,21 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
 
           {/* Tab: Defesas */}
           <TabsContent value="defenses" className="space-y-4 mt-6 flex-1 overflow-y-auto">
-            {!student.defenses || student.defenses.length === 0 ? (
+            {loadingDefenses ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                  <p className="text-sm text-muted-foreground">Carregando defesas...</p>
+                </div>
+              </div>
+            ) : defenses.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Trophy className="h-12 w-12 text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground">Nenhuma defesa registrada</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {student.defenses.map((defense, idx) => (
+                {defenses.map((defense, idx) => (
                   <div
                     key={defense.documents?.[0]?.id || `defense-${idx}`}
                     className="border border-border rounded-lg p-4 space-y-3 hover:bg-muted/30 transition-colors"
@@ -356,7 +370,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                               {defense.location}
                             </div>
                           )}
-                          {defense.coStudents && defense.coStudents.length > 0 && (
+                          {defense.students && defense.students.length > 1 && (
                             <div className="flex items-center gap-1.5">
                               <Users className="h-3.5 w-3.5" />
                               <span className="font-medium">Defesa Compartilhada</span>
@@ -376,24 +390,24 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                       </div>
                     </div>
 
-                    {defense.coStudents && defense.coStudents.length > 0 && (
+                    {defense.students && defense.students.length > 0 && (
                       <div className="border-t border-border pt-3 mt-3">
                         <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5" />
-                          Colegas ({defense.coStudents.length})
+                          Estudantes ({defense.students.length})
                         </p>
                         <div className="grid grid-cols-1 gap-2">
-                          {defense.coStudents.map((coStudent) => (
-                            <div key={coStudent.id} className="bg-muted/30 rounded-lg p-3">
+                          {defense.students.map((defenseStudent) => (
+                            <div key={defenseStudent.id} className="bg-muted/30 rounded-lg p-3">
                               <div className="flex flex-col gap-1">
-                                <p className="font-medium text-sm">{coStudent.name}</p>
+                                <p className="font-medium text-sm">{defenseStudent.name}</p>
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                   <User className="h-3 w-3" />
-                                  {coStudent.registration}
+                                  {defenseStudent.registration}
                                 </div>
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                   <Mail className="h-3 w-3" />
-                                  {coStudent.email}
+                                  {defenseStudent.email}
                                 </div>
                               </div>
                             </div>
@@ -460,6 +474,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                         </div>
                       </div>
                     )}
+
                   </div>
                 ))}
               </div>
@@ -468,7 +483,14 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
 
           {/* Tab: Documentos */}
           <TabsContent value="documents" className="space-y-4 mt-6 flex-1 overflow-y-auto">
-            {!student.defenses || student.defenses.length === 0 || student.defenses.filter(d => d.documents && d.documents.length > 0).length === 0 ? (
+            {loadingDefenses ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                  <p className="text-sm text-muted-foreground">Carregando documentos...</p>
+                </div>
+              </div>
+            ) : defenses.length === 0 || defenses.filter(d => d.documents && d.documents.length > 0).length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground">Nenhum documento disponível</p>
@@ -481,10 +503,10 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                   </p>
                 </div>
                 <div className="space-y-3">
-                  {student.defenses
+                  {defenses
                     .filter(defense => defense.documents && defense.documents.length > 0)
                     .flatMap(defense =>
-                      defense.documents.map(doc => ({
+                      defense.documents!.map(doc => ({
                         defense,
                         doc
                       }))
@@ -523,8 +545,8 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                               <span className="text-xs text-muted-foreground">
                                 {doc.status === "APPROVED" && "Registrado no Hyperledger"}
                                 {doc.status === "PENDING" && (() => {
-                                  const approvedCount = defense.signatures?.filter(s => s.status === "APPROVED").length || 0
-                                  const totalCount = defense.signatures?.length || 0
+                                  const approvedCount = doc.signatures?.filter(s => s.status === "APPROVED").length || 0
+                                  const totalCount = doc.signatures?.length || 0
                                   return `Aguardando ${approvedCount}/${totalCount} assinaturas`
                                 })()}
                                 {doc.status === "INACTIVE" && "Documento inativado"}
@@ -582,10 +604,10 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                     </div>
                   </div>
 
-                  {student.defenses && student.defenses.length > 0 && (
+                  {defenses.length > 0 && (
                     <>
-                      {student.defenses.map((defense, idx) => (
-                        <div key={defense.documents?.[0]?.id || `history-defense-${idx}`} className="relative">
+                      {defenses.map((defense, idx) => (
+                        <div key={defense.id || `history-defense-${idx}`} className="relative">
                           <div className="absolute -left-[1.6rem] mt-1.5 h-3 w-3 rounded-full border-2 border-primary bg-background"></div>
                           <div className="space-y-1">
                             <p className="text-sm font-medium">Defesa: {defense.title}</p>
@@ -613,18 +635,18 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground">Total de Defesas</p>
-                  <p className="text-2xl font-bold">{student.defenses?.length || 0}</p>
+                  <p className="text-2xl font-bold">{defenses.length}</p>
                 </div>
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground">Aprovadas</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {student.defenses?.filter(d => d.result === "APPROVED").length || 0}
+                    {defenses.filter(d => d.result === "APPROVED").length}
                   </p>
                 </div>
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground">Reprovadas</p>
                   <p className="text-2xl font-bold text-red-600">
-                    {student.defenses?.filter(d => d.result === "FAILED").length || 0}
+                    {defenses.filter(d => d.result === "FAILED").length}
                   </p>
                 </div>
               </div>
