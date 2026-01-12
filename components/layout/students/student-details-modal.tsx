@@ -11,6 +11,10 @@ import { Badge } from "@/components/primitives/badge"
 import { useState, useEffect } from "react"
 import { documentService } from "@/lib/services/document-service"
 import { toast } from "sonner"
+import { editStudentSchema, type EditStudentFormData } from "@/lib/validations/student"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm, Controller } from "react-hook-form"
+import { useCourses } from "@/hooks/use-courses"
 
 interface StudentDetailsModalProps {
   student: Student | null
@@ -22,16 +26,30 @@ interface StudentDetailsModalProps {
 
 export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStudent, loading = false }: StudentDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [editedName, setEditedName] = useState("")
-  const [editedCourseId, setEditedCourseId] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
+  const { courses, loading: loadingCourses } = useCourses()
+
+  const {
+    register,
+    control,
+    reset,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<EditStudentFormData>({
+    resolver: zodResolver(editStudentSchema),
+    defaultValues: {
+      name: "",
+      courseId: "",
+    },
+  })
 
   useEffect(() => {
     if (student) {
-      setEditedName(student.name)
-      setEditedCourseId(typeof student.course === 'string' ? '' : student.course.id)
+      reset({
+        name: student.name,
+        courseId: typeof student.course === 'string' ? '' : student.course.id,
+      })
     }
-  }, [student])
+  }, [student, reset])
 
   if (!student) return null
 
@@ -40,25 +58,32 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
   }
 
   const handleCancel = () => {
-    setEditedName(student.name)
-    setEditedCourseId(typeof student.course === 'string' ? '' : student.course.id)
+    reset({
+      name: student.name,
+      courseId: typeof student.course === 'string' ? '' : student.course.id,
+    })
     setIsEditing(false)
   }
 
-  const handleSave = async () => {
+  const onSubmit = async (data: EditStudentFormData) => {
     if (!onUpdateStudent) return
 
-    setIsSaving(true)
     try {
       await onUpdateStudent(student.id || student.userId, {
-        name: editedName,
-        courseId: editedCourseId,
+        name: data.name,
+        courseId: data.courseId,
       })
       setIsEditing(false)
-    } catch (error) {
+      toast.success("Estudante atualizado com sucesso!")
+    } catch (error: any) {
       console.error("Erro ao atualizar estudante:", error)
-    } finally {
-      setIsSaving(false)
+
+      // Extrair mensagem de erro da API
+      const errorMessage = error?.response?.data?.message || error?.message || "Erro desconhecido"
+
+      toast.error("Erro ao atualizar estudante", {
+        description: errorMessage,
+      })
     }
   }
 
@@ -163,7 +188,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                     variant="outline"
                     size="sm"
                     onClick={handleCancel}
-                    disabled={isSaving}
+                    disabled={isSubmitting}
                     className="gap-2"
                   >
                     <X className="h-4 w-4" />
@@ -172,12 +197,12 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                   <Button
                     variant="default"
                     size="sm"
-                    onClick={handleSave}
-                    disabled={isSaving}
+                    onClick={handleSubmit(onSubmit)}
+                    disabled={isSubmitting}
                     className="gap-2 bg-primary hover:bg-primary/90"
                   >
                     <Save className="h-4 w-4" />
-                    {isSaving ? "Salvando..." : "Salvar"}
+                    {isSubmitting ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>
               )}
@@ -188,12 +213,17 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground">Nome Completo</label>
                   {isEditing ? (
-                    <Input
-                      value={editedName}
-                      onChange={(e) => setEditedName(e.target.value)}
-                      placeholder="Nome completo do estudante"
-                      className="w-full"
-                    />
+                    <>
+                      <Input
+                        {...register("name")}
+                        placeholder="Nome completo do estudante"
+                        className="w-full"
+                        disabled={isSubmitting}
+                      />
+                      {errors.name && (
+                        <p className="text-sm text-red-600">{errors.name.message}</p>
+                      )}
+                    </>
                   ) : (
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
@@ -220,22 +250,33 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground">Curso</label>
                   {isEditing ? (
-                    <Select
-                      value={editedCourseId || undefined}
-                      onValueChange={setEditedCourseId}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione o curso" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {typeof student.course !== 'string' && student.course.id && (
-                          <SelectItem value={student.course.id}>
-                            {student.course.name} ({student.course.code})
-                          </SelectItem>
+                    <>
+                      <Controller
+                        name="courseId"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            disabled={isSubmitting || loadingCourses}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder={loadingCourses ? "Carregando cursos..." : "Selecione o curso"} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {courses.map((course) => (
+                                <SelectItem key={course.id} value={course.id}>
+                                  {course.name} ({course.code})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         )}
-                        {/* Mais opções de cursos virão da API */}
-                      </SelectContent>
-                    </Select>
+                      />
+                      {errors.courseId && (
+                        <p className="text-sm text-red-600">{errors.courseId.message}</p>
+                      )}
+                    </>
                   ) : (
                     <div className="flex items-center gap-2">
                       <GraduationCap className="h-4 w-4 text-muted-foreground" />

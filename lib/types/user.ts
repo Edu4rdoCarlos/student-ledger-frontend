@@ -30,6 +30,7 @@ export interface CoordinatorMetadata {
   userId: string
   isActive: boolean
   course: Course
+  courses?: Array<{ code: string; name: string; active: boolean }>
   department: Department
 }
 

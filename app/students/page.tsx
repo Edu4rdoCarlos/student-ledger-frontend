@@ -6,11 +6,11 @@ import { Plus, GraduationCap, Eye, User, CheckCircle2, XCircle, Clock, Trophy } 
 import { DataTable } from "@/components/shared/data-table"
 import { TablePagination } from "@/components/shared/table-pagination"
 import { useStudents } from "@/hooks/use-students"
-import Link from "next/link"
 import { Card } from "@/components/shared/card"
 import type { Student } from "@/lib/types"
 import { useState } from "react"
 import { StudentDetailsModal } from "@/components/layout/students/student-details-modal"
+import { AddStudentDialog } from "@/components/layout/students/add-student-dialog"
 import { studentService } from "@/lib/services/student-service"
 
 const getDefenseStatusBadge = (student: Student) => {
@@ -65,6 +65,7 @@ export default function StudentsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [loadingDetails, setLoadingDetails] = useState(false)
 
   const { students, metadata, loading, refetch } = useStudents(currentPage, 10)
@@ -218,12 +219,13 @@ export default function StudentsPage() {
             </div>
             <p className="text-muted-foreground">Gerencie os alunos cadastrados no sistema</p>
           </div>
-          <Link href="/students/new">
-            <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 cursor-pointer">
-              <Plus className="h-4 w-4" />
-              Novo Aluno
-            </Button>
-          </Link>
+          <Button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 cursor-pointer"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Aluno
+          </Button>
         </div>
 
         <Card className="border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-xl">
@@ -244,6 +246,12 @@ export default function StudentsPage() {
         onOpenChange={setIsModalOpen}
         onUpdateStudent={handleUpdateStudent}
         loading={loadingDetails}
+      />
+
+      <AddStudentDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSuccess={() => refetch(currentPage, 10)}
       />
     </DashboardLayout>
   )
