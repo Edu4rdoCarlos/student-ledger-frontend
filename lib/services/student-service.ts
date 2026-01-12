@@ -15,7 +15,7 @@ export const studentService = {
     return studentRepository.create(data)
   },
 
-  async updateStudent(id: string, data: Partial<StudentFormData>) {
-    return studentRepository.update(id, data)
+  async updateStudent(registration: string, data: { name: string; courseId: string }) {
+    return studentRepository.update(registration, data)
   },
 }

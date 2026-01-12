@@ -20,7 +20,7 @@ interface StudentDetailsModalProps {
   student: Student | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onUpdateStudent?: (studentId: string, data: { name: string; courseId: string }) => Promise<void>
+  onUpdateStudent?: (registration: string, data: { name: string; courseId: string }) => Promise<void>
   loading?: boolean
 }
 
@@ -68,8 +68,16 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
   const onSubmit = async (data: EditStudentFormData) => {
     if (!onUpdateStudent) return
 
+    const registration = student.registration || student.matricula
+    if (!registration) {
+      toast.error("Erro", {
+        description: "Matrícula do estudante não encontrada",
+      })
+      return
+    }
+
     try {
-      await onUpdateStudent(student.id || student.userId, {
+      await onUpdateStudent(registration, {
         name: data.name,
         courseId: data.courseId,
       })
@@ -77,10 +85,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
       toast.success("Estudante atualizado com sucesso!")
     } catch (error: any) {
       console.error("Erro ao atualizar estudante:", error)
-
-      // Extrair mensagem de erro da API
       const errorMessage = error?.response?.data?.message || error?.message || "Erro desconhecido"
-
       toast.error("Erro ao atualizar estudante", {
         description: errorMessage,
       })

@@ -13,10 +13,9 @@ export interface StudentDetailResponse {
 
 export interface StudentRepository {
   getAll(page?: number, perPage?: number): Promise<PaginatedStudentsResponse>
-  getById(id: string): Promise<StudentDetailResponse>
   getByRegistration(registration: string): Promise<StudentDetailResponse>
   create(data: StudentFormData): Promise<Student>
-  update(id: string, data: Partial<StudentFormData>): Promise<Student>
+  update(registration: string, data: { name: string; courseId: string }): Promise<Student>
 }
 
 export const studentRepository: StudentRepository = {
@@ -26,9 +25,6 @@ export const studentRepository: StudentRepository = {
     )
   },
 
-  async getById(id: string) {
-    return apiClient.get<StudentDetailResponse>(`/students/${id}`)
-  },
 
   async getByRegistration(registration: string) {
     return apiClient.get<StudentDetailResponse>(`/students/${registration}`)
@@ -38,7 +34,7 @@ export const studentRepository: StudentRepository = {
     return apiClient.post<Student>("/students", data)
   },
 
-  async update(id: string, data: Partial<StudentFormData>) {
-    return apiClient.patch<Student>(`/students/${id}`, data)
+  async update(registration: string, data: { name: string; courseId: string }) {
+    return apiClient.put<Student>(`/students/${registration}`, data)
   },
 }

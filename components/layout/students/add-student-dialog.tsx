@@ -59,10 +59,7 @@ export function AddStudentDialog({ open, onOpenChange, onSuccess }: AddStudentDi
       onSuccess?.()
     } catch (error: any) {
       console.error("Erro ao cadastrar aluno:", error)
-
-      // Extrair mensagem de erro da API
       const errorMessage = error?.response?.data?.message || error?.message || "Erro desconhecido"
-
       toast.error("Erro ao cadastrar aluno", {
         description: errorMessage,
       })

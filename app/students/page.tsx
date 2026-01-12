@@ -96,14 +96,14 @@ export default function StudentsPage() {
     }
   }
 
-  const handleUpdateStudent = async (studentId: string, data: { name: string; courseId: string }) => {
+  const handleUpdateStudent = async (registration: string, data: { name: string; courseId: string }) => {
     try {
-      console.log("Atualizando estudante:", studentId, data)
+      await studentService.updateStudent(registration, data)
+      const updatedStudent = await studentService.getStudentByRegistration(registration)
+      setSelectedStudent(updatedStudent)
       await refetch(currentPage, 10)
-      alert("Estudante atualizado com sucesso!")
     } catch (error) {
       console.error("Erro ao atualizar estudante:", error)
-      alert("Erro ao atualizar estudante")
       throw error
     }
   }
