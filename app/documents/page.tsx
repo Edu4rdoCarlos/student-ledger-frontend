@@ -1,132 +1,277 @@
 "use client"
 
-import { useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/primitives/button"
-import { Plus, Filter, FileText, Sparkles, Eye } from "lucide-react"
-import { DataTable } from "@/components/shared/data-table"
-import { StatusBadge } from "@/components/primitives/status-badge"
-import { useDocuments } from "@/hooks/use-documents"
-import Link from "next/link"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select"
-import { Card } from "@/components/shared/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared/card"
+import { Badge } from "@/components/primitives/badge"
+import { Input } from "@/components/primitives/input"
+import {
+  FileText,
+  Download,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Upload,
+  History,
+  Shield,
+  Search
+} from "lucide-react"
+import { useUser } from "@/lib/hooks/use-user-role"
+import { isStudent } from "@/lib/types"
+import type { Document, DocumentStatus } from "@/lib/types"
+import { DocumentVersionsModal } from "@/components/documents/document-versions-modal"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
+
+const statusConfig: Record<DocumentStatus, { label: string; variant: "default" | "secondary" | "destructive"; icon: any; color: string }> = {
+  pendente: {
+    label: "Pendente",
+    variant: "default",
+    icon: Clock,
+    color: "text-yellow-600"
+  },
+  aprovado: {
+    label: "Aprovado",
+    variant: "secondary",
+    icon: CheckCircle2,
+    color: "text-green-600"
+  },
+  inativo: {
+    label: "Inativo",
+    variant: "destructive",
+    icon: XCircle,
+    color: "text-red-600"
+  },
+}
 
 export default function DocumentsPage() {
-  const [statusFilter, setStatusFilter] = useState<string>()
-  const { documents, loading } = useDocuments({ status: statusFilter })
+  const { user } = useUser()
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
+  const [showVersionsModal, setShowVersionsModal] = useState(false)
 
-  const columns = [
-    {
-      key: "title",
-      label: "Título",
-      render: (doc: any) => (
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
-            <FileText className="h-5 w-5 text-primary" />
-          </div>
-          <div className="space-y-1">
-            <p className="font-semibold">{doc.title}</p>
-            <p className="text-xs text-muted-foreground">{doc.type === "ata" ? "Ata de Defesa" : "Ficha de Avaliação"}</p>
-          </div>
+  useEffect(() => {
+    if (user && isStudent(user)) {
+      // TODO: Buscar documentos do estudante da API
+      // Por enquanto, usando dados mockados
+      const mockDocuments: Document[] = []
+      setDocuments(mockDocuments)
+      setLoading(false)
+    }
+  }, [user])
+
+  const filteredDocuments = documents.filter(doc =>
+    doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.type.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const handleDownload = (doc: Document) => {
+    // TODO: Implementar download real
+    console.log("Download documento:", doc.id)
+  }
+
+  const handleValidate = (doc: Document) => {
+    // TODO: Implementar validação real (verificar hash na blockchain)
+    console.log("Validar documento:", doc.hash)
+  }
+
+  const handleViewVersions = (doc: Document) => {
+    setSelectedDocument(doc)
+    setShowVersionsModal(true)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Carregando documentos...</p>
         </div>
-      ),
-    },
-    {
-      key: "studentName",
-      label: "Aluno",
-      render: (doc: any) => (
-        <div>
-          <p className="font-medium">{doc.studentName}</p>
-          <p className="text-xs text-muted-foreground">{doc.course}</p>
-        </div>
-      ),
-    },
-    {
-      key: "orientadorName",
-      label: "Orientador",
-    },
-    {
-      key: "status",
-      label: "Status",
-      render: (doc: any) => <StatusBadge status={doc.status} />,
-    },
-    {
-      key: "version",
-      label: "Versão",
-      render: (doc: any) => (
-        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-xs font-medium">
-          v{doc.version}
-        </span>
-      ),
-    },
-    {
-      key: "actions",
-      label: "Ações",
-      render: (doc: any) => (
-        <Link href={`/documents/${doc.id}`}>
-          <Button variant="ghost" size="sm" className="gap-2 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary cursor-pointer">
-            <Eye className="h-4 w-4" />
-            Ver detalhes
-          </Button>
-        </Link>
-      ),
-    },
-  ]
+      </div>
+    )
+  }
+
+  if (!user || !isStudent(user)) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Acesso Negado</CardTitle>
+            <CardDescription>Você não tem permissão para visualizar esta página.</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className="h-6 w-6 text-primary" />
-              <h1 className="text-3xl font-bold text-primary">
-                Documentos
-              </h1>
-            </div>
-            <p className="text-muted-foreground">Gerencie atas e fichas de avaliação de TCC</p>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Meus Documentos</h1>
+            <p className="text-muted-foreground">
+              Gerencie seus documentos de TCC, faça download e valide a autenticidade
+            </p>
           </div>
-          <Link href="/documents/new">
-            <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 cursor-pointer">
-              <Plus className="h-4 w-4" />
-              Novo Documento
-            </Button>
-          </Link>
+          <Button className="gap-2">
+            <Upload className="h-4 w-4" />
+            Enviar Documento
+          </Button>
         </div>
 
-        <Card className="p-4 border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Filter className="h-4 w-4" />
-              Filtros:
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[200px] border-border/50 bg-background/50">
-                <SelectValue placeholder="Filtrar por status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="pendente">Pendente</SelectItem>
-                <SelectItem value="aprovado">Aprovado</SelectItem>
-                <SelectItem value="inativo">Inativo</SelectItem>
-              </SelectContent>
-            </Select>
-            {statusFilter && statusFilter !== "all" && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setStatusFilter(undefined)}
-                className="h-8 text-xs cursor-pointer"
-              >
-                Limpar filtros
-              </Button>
-            )}
-          </div>
-        </Card>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar documentos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
 
-        <Card className="border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-xl">
-          <DataTable data={documents} columns={columns} loading={loading} emptyMessage="Nenhum documento encontrado" />
+      {filteredDocuments.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              {searchTerm ? "Nenhum documento encontrado" : "Nenhum documento enviado"}
+            </h3>
+            <p className="text-muted-foreground text-center max-w-md">
+              {searchTerm
+                ? "Tente ajustar sua busca ou limpe os filtros."
+                : "Você ainda não enviou nenhum documento. Clique em 'Enviar Documento' para começar."}
+            </p>
+          </CardContent>
         </Card>
+      ) : (
+        <div className="grid gap-4">
+          {filteredDocuments.map((doc) => {
+            const StatusIcon = statusConfig[doc.status].icon
+            return (
+              <Card key={doc.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                        <FileText className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="text-lg mb-2">{doc.title}</CardTitle>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          <Badge variant={statusConfig[doc.status].variant} className="gap-1">
+                            <StatusIcon className="h-3 w-3" />
+                            {statusConfig[doc.status].label}
+                          </Badge>
+                          <Badge variant="outline">
+                            {doc.type === "ata" ? "Ata de Defesa" : "Ficha de Avaliação"}
+                          </Badge>
+                          <Badge variant="outline">
+                            Versão {doc.version}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p>Orientador: {doc.orientadorName}</p>
+                          <p>Curso: {doc.course}</p>
+                          <p>Enviado em: {new Date(doc.createdAt).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Hash do documento */}
+                    <div className="rounded-lg bg-muted/50 p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Shield className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-xs font-medium text-muted-foreground">Hash Blockchain</p>
+                      </div>
+                      <p className="text-xs font-mono break-all">{doc.hash}</p>
+                    </div>
+
+                    {/* Aprovações */}
+                    {doc.approvals && doc.approvals.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium mb-2">Aprovações</p>
+                        <div className="space-y-2">
+                          {doc.approvals.map((approval, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/30">
+                              <div>
+                                <p className="font-medium">{approval.userName}</p>
+                                <p className="text-xs text-muted-foreground">{approval.role}</p>
+                              </div>
+                              <Badge variant={approval.approved ? "secondary" : "destructive"}>
+                                {approval.approved ? "Aprovado" : "Rejeitado"}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Aprovações pendentes */}
+                    {doc.pendingApprovals && doc.pendingApprovals.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium mb-2">Aguardando Aprovação</p>
+                        <div className="flex flex-wrap gap-2">
+                          {doc.pendingApprovals.map((name, idx) => (
+                            <Badge key={idx} variant="outline">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Ações */}
+                    <div className="flex flex-wrap gap-2 pt-2 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownload(doc)}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleValidate(doc)}
+                      >
+                        <Shield className="h-4 w-4 mr-2" />
+                        Validar Hash
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewVersions(doc)}
+                      >
+                        <History className="h-4 w-4 mr-2" />
+                        Histórico de Versões
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Modal de Histórico de Versões */}
+      {selectedDocument && (
+        <DocumentVersionsModal
+          document={selectedDocument}
+          open={showVersionsModal}
+          onClose={() => {
+            setShowVersionsModal(false)
+            setSelectedDocument(null)
+          }}
+        />
+      )}
       </div>
     </DashboardLayout>
   )

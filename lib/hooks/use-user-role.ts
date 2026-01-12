@@ -45,3 +45,5 @@ export function useUserRole() {
     isAdmin: user?.role === "ADMIN",
   }
 }
+
+export const useUser = useUserRole

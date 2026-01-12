@@ -9,29 +9,13 @@ export interface NavigationItem {
 }
 
 export function getNavigationItems(user: User): NavigationItem[] {
-  const baseItems: NavigationItem[] = [
-    {
-      label: "Dashboard",
-      href: "/dashboard",
-      icon: "home",
-      description: "Visão geral do sistema",
-    },
-  ]
-
   if (isStudent(user)) {
     return [
-      ...baseItems,
       {
         label: "Minhas Defesas",
         href: "/defenses",
         icon: "presentation",
         description: "Acompanhe suas defesas de TCC",
-      },
-      {
-        label: "Documentos",
-        href: "/documents",
-        icon: "file",
-        description: "Envie e gerencie seus documentos",
       },
       {
         label: "Meu Curso",
@@ -42,9 +26,17 @@ export function getNavigationItems(user: User): NavigationItem[] {
     ]
   }
 
+  const baseItems: NavigationItem[] = [
+    {
+      label: "Dashboard",
+      href: "/dashboard",
+      icon: "home",
+      description: "Visão geral do sistema",
+    },
+  ]
+
   if (isAdvisor(user)) {
     return [
-      ...baseItems,
       {
         label: "Defesas",
         href: "/defenses",

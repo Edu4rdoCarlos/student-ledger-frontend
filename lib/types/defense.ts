@@ -1,5 +1,8 @@
-export type DefenseResult = "PENDING" | "APPROVED" | "REJECTED"
+export type DefenseResult = "PENDING" | "APPROVED" | "FAILED"
 export type DefenseStatus = "SCHEDULED" | "COMPLETED" | "CANCELLED"
+export type DocumentStatus = "PENDING" | "APPROVED" | "INACTIVE"
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED"
+export type ApprovalRole = "COORDINATOR" | "ADVISOR" | "STUDENT"
 
 export interface DefenseStudent {
   id: string
@@ -21,20 +24,37 @@ export interface DefenseExamBoardMember {
   email: string
 }
 
+export interface DocumentApproval {
+  id: string
+  role: ApprovalRole
+  status: ApprovalStatus
+  justification?: string
+  approvedAt?: string
+  approverId?: string
+  approver?: {
+    id: string
+    name: string
+    email: string
+  }
+  createdAt: string
+  updatedAt: string
+}
+
 export interface DefenseDocument {
   id: string
   type: string
   version: number
-  documentHash: string
-  documentCid: string
-  status: string
-  blockchainTxId: string
-  blockchainRegisteredAt: string
+  documentHash?: string
+  documentCid?: string
+  status: DocumentStatus
+  blockchainTxId?: string
+  blockchainRegisteredAt?: string
   defenseId: string
   previousVersionId: string | null
   createdAt: string
   updatedAt: string
-  downloadUrl: string
+  downloadUrl?: string
+  approvals?: DocumentApproval[]
 }
 
 export interface Defense {

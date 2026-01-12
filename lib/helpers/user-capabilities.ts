@@ -59,6 +59,13 @@ export function userCan(user: User, permission: Permission): boolean {
   return permissions.includes(permission)
 }
 
+export function getUserCapabilities(user: User) {
+  return {
+    permissions: getUserPermissions(user),
+    can: (permission: Permission) => userCan(user, permission),
+  }
+}
+
 export function getUserInfo(user: User) {
   if (isStudent(user)) {
     return {

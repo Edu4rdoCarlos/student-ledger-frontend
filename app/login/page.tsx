@@ -12,6 +12,7 @@ import { loginSchema, type LoginFormData } from "@/lib/validations/auth"
 import { authService } from "@/lib/services/auth-service"
 import { userService } from "@/lib/services/user-service"
 import { useAuthStore } from "@/lib/store/auth-store"
+import { getHomeRouteForUser } from "@/lib/helpers/navigation-helpers"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -50,7 +51,8 @@ export default function LoginPage() {
       // Aguarda o tema ser aplicado antes de redirecionar
       await new Promise((resolve) => setTimeout(resolve, 100))
 
-      router.push("/dashboard")
+      const homeRoute = getHomeRouteForUser(user)
+      router.push(homeRoute)
     } catch (error) {
       setError("password", {
         type: "manual",

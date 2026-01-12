@@ -19,10 +19,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Se tem sessão e está tentando acessar rota pública (ex: login), redireciona para dashboard
   if (hasSession && isPublicRoute) {
-    const dashboardUrl = new URL("/dashboard", request.url)
-    return NextResponse.redirect(dashboardUrl)
+    const homeUrl = new URL("/", request.url)
+    return NextResponse.redirect(homeUrl)
   }
 
   return NextResponse.next()
