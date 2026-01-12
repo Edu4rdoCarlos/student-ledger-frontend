@@ -30,26 +30,15 @@ export function useCourses(page = 1, perPage = 100) {
     fetchCourses()
   }, [page, perPage])
 
-  const filteredCourses = useMemo(() => {
-    if (!user) return courses
+  const myCourses = useMemo(() => {
+    if (!user) return []
 
-    if (isCoordinator(user)) {
-      if (user.metadata.coordinator.courses && user.metadata.coordinator.courses.length > 0) {
-        const coordinatorCourseCodes = user.metadata.coordinator.courses
-          .filter(c => c.active)
-          .map(c => c.code)
-
-        return courses.filter(course => coordinatorCourseCodes.includes(course.code))
-      }
-
-      return courses.filter(course => course.coordinator?.id === user.id)
-    }
-
-    return courses
+    return courses.filter(course => course.coordinator?.email === user.email)
   }, [courses, user])
 
   return {
-    courses: filteredCourses,
+    courses,
+    myCourses,
     metadata,
     loading,
     error,
