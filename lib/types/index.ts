@@ -29,6 +29,23 @@ export interface Student {
   updatedAt: string
 }
 
+export interface Advisor {
+  id: string
+  userId: string
+  name: string
+  email: string
+  specialization: string
+  course: {
+    id: string
+    name: string
+    code: string
+  }
+  hasActiveAdvisorship: boolean
+  activeAdvisorshipsCount: number
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Orientador {
   id: string
   name: string
