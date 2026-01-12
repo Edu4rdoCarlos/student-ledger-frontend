@@ -82,16 +82,6 @@ export default function AdvisorsPage() {
       },
     },
     {
-      key: "specialization",
-      label: "Especialização",
-      render: (advisor: Advisor) => {
-        const isActive = advisor.isActive ?? true
-        return (
-          <span className={`text-sm font-medium ${!isActive ? "opacity-50 text-muted-foreground" : ""}`}>{advisor.specialization}</span>
-        )
-      },
-    },
-    {
       key: "course",
       label: "Curso",
       render: (advisor: Advisor) => {

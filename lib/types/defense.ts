@@ -16,6 +16,7 @@ export interface DefenseAdvisor {
   name: string
   email: string
   specialization: string
+  isActive?: boolean
 }
 
 export interface DefenseExamBoardMember {
@@ -40,21 +41,31 @@ export interface DocumentApproval {
   updatedAt: string
 }
 
+export interface DocumentSignature {
+  role: string
+  email: string
+  timestamp: string
+  status: ApprovalStatus
+  justification?: string
+}
+
 export interface DefenseDocument {
   id: string
-  type: string
+  type?: string
   version: number
   documentHash?: string
   documentCid?: string
   status: DocumentStatus
   blockchainTxId?: string
   blockchainRegisteredAt?: string
-  defenseId: string
-  previousVersionId: string | null
+  defenseId?: string
+  previousVersionId?: string | null
   createdAt: string
-  updatedAt: string
+  updatedAt?: string
   downloadUrl?: string
   approvals?: DocumentApproval[]
+  signatures?: DocumentSignature[]
+  changeReason?: string
 }
 
 export interface Defense {

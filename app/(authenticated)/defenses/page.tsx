@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/primitives/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/shared/card"
 import { Badge } from "@/components/primitives/badge"
-import { Calendar, MapPin, Users, FileText, Download, CheckCircle2, Clock, XCircle, Shield, AlertCircle } from "lucide-react"
-import { useUser } from "@/lib/hooks/use-user-role"
-import { isStudent } from "@/lib/types"
+import { Calendar, MapPin, Users, FileText, Download, CheckCircle2, Clock, XCircle, Shield, AlertCircle, Eye } from "lucide-react"
 import type { Defense, DefenseStatus, DefenseResult, DocumentStatus, DefenseDocument } from "@/lib/types/defense"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import { defenseService } from "@/lib/services/defense-service"
+import { DefenseDetailsModal } from "@/components/layout/defenses/defense-details-modal"
 
 const statusConfig: Record<DefenseStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   SCHEDULED: { label: "Agendada", variant: "default" },
@@ -29,17 +29,44 @@ const documentStatusConfig: Record<DocumentStatus, { label: string; variant: "de
 }
 
 export default function DefensesPage() {
-  const { user } = useUser()
   const [defenses, setDefenses] = useState<Defense[]>([])
   const [loading, setLoading] = useState(true)
   const [validatingDoc, setValidatingDoc] = useState<string | null>(null)
+  const [selectedDefense, setSelectedDefense] = useState<Defense | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [loadingDetails, setLoadingDetails] = useState(false)
 
   useEffect(() => {
-    if (user && isStudent(user)) {
-      setDefenses(user.metadata.student.defenses || [])
-      setLoading(false)
+    const fetchDefenses = async () => {
+      try {
+        setLoading(true)
+        const response = await defenseService.getAllDefenses(1, 100, "desc")
+        setDefenses(response.data)
+      } catch (error) {
+        console.error("Error fetching defenses:", error)
+        setDefenses([])
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [user])
+
+    fetchDefenses()
+  }, [])
+
+  const handleViewDetails = async (defense: Defense) => {
+    try {
+      setLoadingDetails(true)
+      setIsModalOpen(true)
+
+      const fullDefenseData = await defenseService.getDefenseById(defense.id)
+      setSelectedDefense(fullDefenseData)
+    } catch (error) {
+      console.error("Erro ao buscar detalhes da defesa:", error)
+      setSelectedDefense(defense)
+    } finally {
+      setLoadingDetails(false)
+    }
+  }
 
   const handleApproveDocument = async (doc: DefenseDocument) => {
     try {
@@ -71,47 +98,30 @@ export default function DefensesPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Carregando defesas...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user || !isStudent(user)) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle>Acesso Negado</CardTitle>
-            <CardDescription>Você não tem permissão para visualizar esta página.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    )
-  }
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Minhas Defesas</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Defesas de TCC</h1>
           <p className="text-muted-foreground">
-            Acompanhe suas defesas de TCC e visualize os documentos relacionados
+            Acompanhe as defesas de TCC e visualize os documentos relacionados
           </p>
         </div>
 
-      {defenses.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Carregando defesas...</p>
+          </div>
+        </div>
+      ) : defenses.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Nenhuma defesa encontrada</h3>
             <p className="text-muted-foreground text-center max-w-md">
-              Você ainda não possui defesas agendadas. Aguarde o coordenador agendar sua defesa.
+              Não há defesas cadastradas no sistema no momento.
             </p>
           </CardContent>
         </Card>
@@ -140,6 +150,15 @@ export default function DefensesPage() {
                         )}
                       </div>
                     </div>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleViewDetails(defense)}
+                      className="gap-2 bg-primary hover:bg-primary/90 shadow-sm cursor-pointer"
+                    >
+                      <Eye className="h-4 w-4" />
+                      Ver Detalhes
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -323,6 +342,13 @@ export default function DefensesPage() {
         </div>
       )}
       </div>
+
+      <DefenseDetailsModal
+        defense={selectedDefense}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        loading={loadingDetails}
+      />
     </DashboardLayout>
   )
 }

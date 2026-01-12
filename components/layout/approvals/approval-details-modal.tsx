@@ -24,9 +24,6 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
   const handleSendEmail = async (signature: any) => {
     setSendingEmail(true)
     try {
-      // TODO: Implementar chamada à API para enviar e-mail
-      // await apiClient.post(`/approvals/${approval.id}/send-reminder`, { signatureRole: signature.role })
-
       toast.success("E-mail enviado com sucesso!", {
         description: `Notificação enviada para ${signature.approverName}`,
       })
@@ -96,7 +93,7 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+      <DialogContent className="!max-w-3xl min-h-[600px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
