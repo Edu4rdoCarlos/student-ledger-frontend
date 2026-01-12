@@ -99,3 +99,17 @@ export interface StudentDefense {
   }>
   validatedAt: string
 }
+
+export interface AdvisorDefense {
+  id: string
+  title: string
+  defenseDate: string
+  location: string
+  finalGrade: number
+  result: DefenseResult
+  status: DefenseStatus
+  students: DefenseStudent[]
+  examBoard: DefenseExamBoardMember[]
+  createdAt: string
+  updatedAt: string
+}

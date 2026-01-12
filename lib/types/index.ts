@@ -7,7 +7,7 @@ export type DocumentStatus = "pendente" | "aprovado" | "inativo"
 
 export type DocumentType = "ata" | "ficha"
 
-import type { StudentDefense } from "./defense"
+import type { StudentDefense, AdvisorDefense } from "./defense"
 
 export interface Student {
   id?: string
@@ -42,6 +42,7 @@ export interface Advisor {
   }
   hasActiveAdvisorship: boolean
   activeAdvisorshipsCount: number
+  defenses?: AdvisorDefense[]
   createdAt: string
   updatedAt: string
 }

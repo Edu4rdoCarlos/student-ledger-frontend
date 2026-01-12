@@ -9,9 +9,14 @@ import { useAdvisors } from "@/hooks/use-advisors"
 import { Card } from "@/components/shared/card"
 import type { Advisor } from "@/lib/types"
 import { useState } from "react"
+import { AdvisorDetailsModal } from "@/components/layout/advisors/advisor-details-modal"
+import { advisorService } from "@/lib/services/advisor-service"
 
 export default function AdvisorsPage() {
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [loadingDetails, setLoadingDetails] = useState(false)
 
   const { advisors, metadata, loading } = useAdvisors(currentPage, 10)
 
@@ -19,9 +24,19 @@ export default function AdvisorsPage() {
     setCurrentPage(page)
   }
 
-  const handleViewDetails = (advisor: Advisor) => {
-    // TODO: Implementar modal de detalhes do orientador
-    console.log("Ver detalhes do orientador:", advisor)
+  const handleViewDetails = async (advisor: Advisor) => {
+    try {
+      setLoadingDetails(true)
+      setIsModalOpen(true)
+
+      const fullAdvisorData = await advisorService.getAdvisorById(advisor.id)
+      setSelectedAdvisor(fullAdvisorData)
+    } catch (error) {
+      console.error("Erro ao buscar detalhes do orientador:", error)
+      setSelectedAdvisor(advisor)
+    } finally {
+      setLoadingDetails(false)
+    }
   }
 
   const columns = [
@@ -128,6 +143,13 @@ export default function AdvisorsPage() {
           )}
         </Card>
       </div>
+
+      <AdvisorDetailsModal
+        advisor={selectedAdvisor}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        loading={loadingDetails}
+      />
     </DashboardLayout>
   )
 }
