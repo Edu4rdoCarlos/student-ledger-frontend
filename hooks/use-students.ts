@@ -2,22 +2,24 @@
 
 import { useState, useEffect } from "react"
 import { studentService } from "@/lib/services/student-service"
-import type { Student } from "@/lib/types"
+import type { Student, PaginationMetadata } from "@/lib/types"
 
-export function useStudents() {
+export function useStudents(page = 1, perPage = 10) {
   const [students, setStudents] = useState<Student[]>([])
+  const [metadata, setMetadata] = useState<PaginationMetadata | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadStudents()
-  }, [])
+    loadStudents(page, perPage)
+  }, [page, perPage])
 
-  const loadStudents = async () => {
+  const loadStudents = async (currentPage = 1, currentPerPage = 10) => {
     try {
       setLoading(true)
-      const data = await studentService.getAllStudents()
-      setStudents(data)
+      const response = await studentService.getAllStudents(currentPage, currentPerPage)
+      setStudents(response.data)
+      setMetadata(response.metadata)
       setError(null)
     } catch (err) {
       setError("Erro ao carregar alunos")
@@ -40,6 +42,7 @@ export function useStudents() {
 
   return {
     students,
+    metadata,
     loading,
     error,
     refetch: loadStudents,

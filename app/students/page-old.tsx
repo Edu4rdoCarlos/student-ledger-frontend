@@ -5,18 +5,15 @@ import { Button } from "@/components/primitives/button"
 import { Plus, GraduationCap, Eye, User, CheckCircle2, XCircle, Clock, Trophy } from "lucide-react"
 import { DataTable } from "@/components/shared/data-table"
 import { TablePagination } from "@/components/shared/table-pagination"
+import { StudentDetailsModal } from "@/components/layout/students/student-details-modal"
 import { useStudents } from "@/hooks/use-students"
 import Link from "next/link"
 import { Card } from "@/components/shared/card"
-import type { Student } from "@/lib/types"
+import type { Student, PaginationMetadata } from "@/lib/types"
 import { useState } from "react"
-import { StudentDetailsModal } from "@/components/layout/students/student-details-modal"
 
 const getDefenseStatusBadge = (student: Student) => {
-  const status = student.status || (student.defenses && student.defenses.length > 0 ? student.defenses[0].result : null)
-  const defensesCount = student.defensesCount ?? student.defenses?.length ?? 0
-
-  if (!status || status === "NO_DEFENSE" || defensesCount === 0) {
+  if (!student.defenses || student.defenses.length === 0) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-400" title="Nenhuma defesa cadastrada">
         <Clock className="h-3 w-3" />
@@ -25,29 +22,22 @@ const getDefenseStatusBadge = (student: Student) => {
     )
   }
 
-  if (status === "APPROVED") {
+  const lastDefense = student.defenses[0]
+
+  if (lastDefense.result === "APPROVED") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-400" title="Aprovado">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-400" title={`Aprovado com nota ${lastDefense.finalGrade}`}>
         <CheckCircle2 className="h-3 w-3" />
         Aprovado
       </span>
     )
   }
 
-  if (status === "FAILED") {
+  if (lastDefense.result === "FAILED") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-400" title="Reprovado">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-400" title={`Reprovado com nota ${lastDefense.finalGrade}`}>
         <XCircle className="h-3 w-3" />
         Reprovado
-      </span>
-    )
-  }
-
-  if (status === "UNDER_APPROVAL") {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-400" title="Em aprovação">
-        <Clock className="h-3 w-3" />
-        Em aprovação
       </span>
     )
   }
@@ -61,11 +51,17 @@ const getDefenseStatusBadge = (student: Student) => {
 }
 
 export default function StudentsPage() {
+  const { students, loading } = useStudents()
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  
-  const { students, metadata, loading, refetch } = useStudents(currentPage, 10)
+
+  const mockMetadata: PaginationMetadata = {
+    page: currentPage,
+    perPage: 10,
+    total: 100,
+    totalPages: 10,
+  }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -79,7 +75,6 @@ export default function StudentsPage() {
   const handleUpdateStudent = async (studentId: string, data: { name: string; courseId: string }) => {
     try {
       console.log("Atualizando estudante:", studentId, data)
-      await refetch(currentPage, 10)
       alert("Estudante atualizado com sucesso!")
     } catch (error) {
       console.error("Erro ao atualizar estudante:", error)
@@ -146,7 +141,7 @@ export default function StudentsPage() {
       key: "defenses",
       label: "Defesas",
       render: (student: Student) => {
-        const defensesCount = student.defensesCount ?? student.defenses?.length ?? 0
+        const defensesCount = student.defenses?.length || 0
         const lastDefense = student.defenses?.[0]
 
         return (
@@ -166,7 +161,7 @@ export default function StudentsPage() {
     },
     {
       key: "status",
-      label: "Status do TCC",
+      label: "Status",
       render: (student: Student) => getDefenseStatusBadge(student),
     },
     {
@@ -209,13 +204,11 @@ export default function StudentsPage() {
 
         <Card className="border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-xl">
           <DataTable data={students} columns={columns} loading={loading} emptyMessage="Nenhum aluno encontrado" />
-          {metadata && (
-            <TablePagination
-              metadata={metadata}
-              onPageChange={handlePageChange}
-              disabled={loading}
-            />
-          )}
+          <TablePagination
+            metadata={mockMetadata}
+            onPageChange={handlePageChange}
+            disabled={loading}
+          />
         </Card>
       </div>
 

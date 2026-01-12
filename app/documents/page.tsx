@@ -19,7 +19,7 @@ import {
 import { useUser } from "@/lib/hooks/use-user-role"
 import { isStudent } from "@/lib/types"
 import type { Document, DocumentStatus } from "@/lib/types"
-import { DocumentVersionsModal } from "@/components/documents/document-versions-modal"
+import { DocumentVersionsModal } from "@/components/layout/documents/document-versions-modal"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 
 const statusConfig: Record<DocumentStatus, { label: string; variant: "default" | "secondary" | "destructive"; icon: any; color: string }> = {

@@ -72,3 +72,25 @@ export interface Defense {
   createdAt: string
   updatedAt: string
 }
+
+export interface StudentDefense {
+  documentId: string
+  ipfsCid: string
+  studentRegistration: string
+  title: string
+  defenseDate: string
+  finalGrade: number
+  result: DefenseResult
+  version: number
+  reason: string
+  registeredBy: string
+  status: ApprovalStatus
+  signatures: Array<{
+    role: string
+    email: string
+    timestamp: string
+    status: ApprovalStatus
+    justification?: string
+  }>
+  validatedAt: string
+}

@@ -7,14 +7,26 @@ export type DocumentStatus = "pendente" | "aprovado" | "inativo"
 
 export type DocumentType = "ata" | "ficha"
 
+import type { StudentDefense } from "./defense"
+
 export interface Student {
-  id: string
-  matricula: string
+  id?: string
+  userId: string
+  matricula?: string
+  registration: string
   name: string
   email: string
-  course: string
-  orientadorId: string
+  course: {
+    id: string
+    name: string
+    code: string
+  }
+  orientadorId?: string
+  defenses?: StudentDefense[]
+  defensesCount?: number
+  status?: "NO_DEFENSE" | "APPROVED" | "FAILED" | "PENDING" | "UNDER_APPROVAL"
   createdAt: string
+  updatedAt: string
 }
 
 export interface Orientador {
@@ -68,4 +80,11 @@ export interface Notification {
   message: string
   read: boolean
   createdAt: string
+}
+
+export interface PaginationMetadata {
+  page: number
+  perPage: number
+  total: number
+  totalPages: number
 }

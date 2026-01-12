@@ -2,8 +2,8 @@ import { studentRepository } from "@/lib/repositories/student-repository"
 import type { StudentFormData } from "@/lib/validations/student"
 
 export const studentService = {
-  async getAllStudents() {
-    return studentRepository.getAll()
+  async getAllStudents(page = 1, perPage = 10) {
+    return studentRepository.getAll(page, perPage)
   },
 
   async getStudentById(id: string) {
