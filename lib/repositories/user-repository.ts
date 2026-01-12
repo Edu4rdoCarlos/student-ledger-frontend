@@ -26,12 +26,6 @@ const MOCK_USER_DATA: Record<string, User> = {
           id: "course-1",
           code: "CC",
           name: "Ciência da Computação",
-          department: {
-            id: "dept-1",
-            name: "Departamento de Computação",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
           coordinator: {
             id: "2",
             email: "coordenador.cc@ufrgs.edu.br",
@@ -69,12 +63,6 @@ const MOCK_USER_DATA: Record<string, User> = {
           id: "course-1",
           code: "CC",
           name: "Ciência da Computação",
-          department: {
-            id: "dept-1",
-            name: "Departamento de Computação",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
           coordinator: {
             id: "2",
             email: "coordenador.cc@ufrgs.edu.br",
@@ -101,12 +89,6 @@ const MOCK_USER_DATA: Record<string, User> = {
           id: "course-1",
           code: "CC",
           name: "Ciência da Computação",
-          department: {
-            id: "dept-1",
-            name: "Departamento de Computação",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
           coordinator: {
             id: "2",
             email: "coordenador.cc@ufrgs.edu.br",

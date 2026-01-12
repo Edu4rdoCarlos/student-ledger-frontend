@@ -51,10 +51,6 @@ export function RoleBasedInfo() {
                     <span className="font-medium">{userInfo.course?.name}</span>
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Departamento:</span>{" "}
-                    <span className="font-medium">{userInfo.course?.department.name}</span>
-                  </p>
-                  <p>
                     <span className="text-muted-foreground">Defesas:</span>{" "}
                     <span className="font-medium">{userInfo.defenses.length}</span>
                   </p>
@@ -125,37 +121,37 @@ export function RoleBasedInfo() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <div
-                  className={`h-2 w-2 rounded-full ${capabilities.canViewDefenses ? "bg-green-500" : "bg-gray-300"}`}
+                  className={`h-2 w-2 rounded-full ${capabilities.can("view_defenses") ? "bg-green-500" : "bg-gray-300"}`}
                 />
                 <span>Visualizar Defesas</span>
               </div>
               <div className="flex items-center gap-2">
                 <div
-                  className={`h-2 w-2 rounded-full ${capabilities.canCreateDefense ? "bg-green-500" : "bg-gray-300"}`}
+                  className={`h-2 w-2 rounded-full ${capabilities.can("create_defense") ? "bg-green-500" : "bg-gray-300"}`}
                 />
                 <span>Criar Defesa</span>
               </div>
               <div className="flex items-center gap-2">
                 <div
-                  className={`h-2 w-2 rounded-full ${capabilities.canUploadDocument ? "bg-green-500" : "bg-gray-300"}`}
+                  className={`h-2 w-2 rounded-full ${capabilities.can("upload_document") ? "bg-green-500" : "bg-gray-300"}`}
                 />
                 <span>Enviar Documento</span>
               </div>
               <div className="flex items-center gap-2">
                 <div
-                  className={`h-2 w-2 rounded-full ${capabilities.canApproveDocument ? "bg-green-500" : "bg-gray-300"}`}
+                  className={`h-2 w-2 rounded-full ${capabilities.can("approve_document") ? "bg-green-500" : "bg-gray-300"}`}
                 />
                 <span>Aprovar Documento</span>
               </div>
               <div className="flex items-center gap-2">
                 <div
-                  className={`h-2 w-2 rounded-full ${capabilities.canManageStudents ? "bg-green-500" : "bg-gray-300"}`}
+                  className={`h-2 w-2 rounded-full ${capabilities.can("manage_students") ? "bg-green-500" : "bg-gray-300"}`}
                 />
                 <span>Gerenciar Estudantes</span>
               </div>
               <div className="flex items-center gap-2">
                 <div
-                  className={`h-2 w-2 rounded-full ${capabilities.canManageAdvisors ? "bg-green-500" : "bg-gray-300"}`}
+                  className={`h-2 w-2 rounded-full ${capabilities.can("manage_advisors") ? "bg-green-500" : "bg-gray-300"}`}
                 />
                 <span>Gerenciar Orientadores</span>
               </div>
