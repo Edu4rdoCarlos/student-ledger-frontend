@@ -79,12 +79,17 @@ export interface StudentDefense {
   studentRegistration: string
   title: string
   defenseDate: string
+  location?: string
   finalGrade: number
   result: DefenseResult
   version: number
   reason: string
   registeredBy: string
   status: ApprovalStatus
+  examBoard?: Array<{
+    name: string
+    email: string
+  }>
   signatures: Array<{
     role: string
     email: string

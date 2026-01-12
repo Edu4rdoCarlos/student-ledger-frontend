@@ -6,12 +6,9 @@ export const studentService = {
     return studentRepository.getAll(page, perPage)
   },
 
-  async getStudentById(id: string) {
-    return studentRepository.getById(id)
-  },
-
-  async getStudentByMatricula(matricula: string) {
-    return studentRepository.getByMatricula(matricula)
+  async getStudentByRegistration(registration: string) {
+    const response = await studentRepository.getByRegistration(registration)
+    return response.data
   },
 
   async createStudent(data: StudentFormData) {

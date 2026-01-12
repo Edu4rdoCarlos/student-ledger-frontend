@@ -11,6 +11,7 @@ export interface DocumentRepository {
     approval: ApprovalFormData & { userId: string; userName: string; role: string },
   ): Promise<Document>
   verifyHash(hash: string): Promise<Document | null>
+  download(id: string): Promise<Blob>
 }
 
 export const documentRepository: DocumentRepository = {
@@ -204,5 +205,20 @@ export const documentRepository: DocumentRepository = {
     }
 
     return null
+  },
+
+  async download(id: string) {
+    const response = await fetch(`/api/documents/${id}/download`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Erro ao baixar documento')
+    }
+
+    return response.blob()
   },
 }

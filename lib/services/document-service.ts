@@ -27,6 +27,10 @@ export const documentService = {
     return documentRepository.verifyHash(hash)
   },
 
+  async downloadDocument(id: string) {
+    return documentRepository.download(id)
+  },
+
   calculateFileHash(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()

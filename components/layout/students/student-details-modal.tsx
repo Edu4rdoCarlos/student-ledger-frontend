@@ -2,22 +2,25 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/shared/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shared/tabs"
-import { User, Trophy, FileText, History, Mail, GraduationCap, Calendar, CheckCircle2, XCircle, Clock, Edit2, Save, X } from "lucide-react"
+import { User, Trophy, FileText, History, Mail, GraduationCap, Calendar, CheckCircle2, XCircle, Clock, Edit2, Save, X, Download, MapPin, Users } from "lucide-react"
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select"
 import type { Student } from "@/lib/types"
 import { Badge } from "@/components/primitives/badge"
 import { useState, useEffect } from "react"
+import { documentService } from "@/lib/services/document-service"
+import { toast } from "sonner"
 
 interface StudentDetailsModalProps {
   student: Student | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onUpdateStudent?: (studentId: string, data: { name: string; courseId: string }) => Promise<void>
+  loading?: boolean
 }
 
-export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStudent }: StudentDetailsModalProps) {
+export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStudent, loading = false }: StudentDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedName, setEditedName] = useState("")
   const [editedCourseId, setEditedCourseId] = useState("")
@@ -91,23 +94,32 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3 text-2xl">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
-              <User className="h-6 w-6 text-primary" />
+      <DialogContent className="!max-w-5xl !w-[85vw] h-[48vh] max-h-[48vh] overflow-y-auto flex flex-col">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+              <p className="text-sm text-muted-foreground">Carregando detalhes...</p>
             </div>
-            <div>
-              <p>{student.name}</p>
-              <p className="text-sm font-normal text-muted-foreground mt-1">
-                {student.registration || student.matricula}
-              </p>
-            </div>
-          </DialogTitle>
-        </DialogHeader>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-2xl">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+                  <User className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p>{student.name}</p>
+                  <p className="text-sm font-normal text-muted-foreground mt-1">
+                    {student.registration || student.matricula}
+                  </p>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
 
-        <Tabs defaultValue="profile" className="mt-6">
-          <TabsList className="grid w-full grid-cols-4">
+            <Tabs defaultValue="profile" className="mt-6 flex-1 flex flex-col min-h-0">
+          <TabsList className="grid w-full grid-cols-4 shrink-0">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" />
               Perfil
@@ -132,7 +144,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
           </TabsList>
 
           {/* Tab: Perfil */}
-          <TabsContent value="profile" className="space-y-6 mt-6">
+          <TabsContent value="profile" className="space-y-6 mt-6 flex-1 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold">Informações do Estudante</h3>
               {!isEditing ? (
@@ -261,7 +273,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
           </TabsContent>
 
           {/* Tab: Defesas */}
-          <TabsContent value="defenses" className="space-y-4 mt-6">
+          <TabsContent value="defenses" className="space-y-4 mt-6 flex-1 overflow-y-auto">
             {!student.defenses || student.defenses.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Trophy className="h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -277,7 +289,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                     <div className="flex items-start justify-between">
                       <div className="space-y-1 flex-1">
                         <h4 className="font-semibold text-base">{defense.title}</h4>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5" />
                             {formatDate(defense.defenseDate)}
@@ -286,6 +298,12 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                             <Trophy className="h-3.5 w-3.5" />
                             Nota: {defense.finalGrade}
                           </div>
+                          {defense.location && (
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="h-3.5 w-3.5" />
+                              {defense.location}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -293,6 +311,25 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                         <span className="text-sm font-medium">{getDefenseStatusText(defense.result)}</span>
                       </div>
                     </div>
+
+                    {defense.examBoard && defense.examBoard.length > 0 && (
+                      <div className="border-t border-border pt-3 mt-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <Users className="h-3.5 w-3.5" />
+                          Banca Examinadora ({defense.examBoard.length})
+                        </p>
+                        <div className="grid grid-cols-1 gap-2">
+                          {defense.examBoard.map((member, memberIndex) => (
+                            <div key={memberIndex} className="flex items-center gap-2 text-xs">
+                              <div className="flex flex-col">
+                                <span className="font-medium">{member.name}</span>
+                                <span className="text-muted-foreground">{member.email}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {defense.signatures && defense.signatures.length > 0 && (
                       <div className="border-t border-border pt-3 mt-3">
@@ -316,7 +353,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
           </TabsContent>
 
           {/* Tab: Documentos */}
-          <TabsContent value="documents" className="space-y-4 mt-6">
+          <TabsContent value="documents" className="space-y-4 mt-6 flex-1 overflow-y-auto">
             {!student.defenses || student.defenses.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -327,22 +364,52 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                 {student.defenses.map((defense) => (
                   <div
                     key={defense.documentId}
-                    className="border border-border rounded-lg p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
+                    className="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shrink-0">
                         <FileText className="h-5 w-5 text-primary" />
                       </div>
-                      <div>
-                        <p className="font-medium">{defense.title}</p>
-                        <p className="text-xs text-muted-foreground">Versão {defense.version}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-base mb-1">{defense.title}</p>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                          <span>Versão {defense.version}</span>
+                          {defense.ipfsCid && (
+                            <span className="font-mono">IPFS: {defense.ipfsCid.slice(0, 12)}...</span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge variant={defense.status === "APPROVED" ? "default" : "secondary"}>
-                        {defense.status}
-                      </Badge>
-                      <p className="text-xs text-muted-foreground">IPFS: {defense.ipfsCid.slice(0, 8)}...</p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge variant={defense.status === "APPROVED" ? "default" : "secondary"}>
+                          {defense.status}
+                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const blob = await documentService.downloadDocument(defense.documentId)
+                              const url = window.URL.createObjectURL(blob)
+                              const a = document.createElement('a')
+                              a.href = url
+                              a.download = `${defense.title}.pdf`
+                              document.body.appendChild(a)
+                              a.click()
+                              window.URL.revokeObjectURL(url)
+                              document.body.removeChild(a)
+                            } catch (error) {
+                              console.error('Erro ao baixar documento:', error)
+                              toast.error('Erro ao baixar documento', {
+                                description: 'Não foi possível baixar o documento. Tente novamente mais tarde.',
+                              })
+                            }
+                          }}
+                          className="gap-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          Baixar
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -351,7 +418,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
           </TabsContent>
 
           {/* Tab: Histórico */}
-          <TabsContent value="history" className="space-y-4 mt-6">
+          <TabsContent value="history" className="space-y-4 mt-6 flex-1 overflow-y-auto">
             <div className="space-y-6">
               <div className="space-y-3">
                 <h4 className="font-semibold">Timeline Acadêmica</h4>
@@ -412,6 +479,8 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
             </div>
           </TabsContent>
         </Tabs>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )
