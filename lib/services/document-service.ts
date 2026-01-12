@@ -27,6 +27,10 @@ export const documentService = {
     return documentRepository.verifyHash(hash)
   },
 
+  async validateDocument(file: File) {
+    return documentRepository.validateDocument(file)
+  },
+
   async downloadDocument(id: string) {
     return documentRepository.download(id)
   },

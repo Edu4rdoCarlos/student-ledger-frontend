@@ -11,6 +11,7 @@ export interface DocumentRepository {
     approval: ApprovalFormData & { userId: string; userName: string; role: string },
   ): Promise<Document>
   verifyHash(hash: string): Promise<Document | null>
+  validateDocument(file: File): Promise<Document | null>
   download(id: string): Promise<Blob>
 }
 
@@ -205,6 +206,25 @@ export const documentRepository: DocumentRepository = {
     }
 
     return null
+  },
+
+  async validateDocument(file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch('/api/documents/validate', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null
+      }
+      throw new Error('Erro ao validar documento')
+    }
+
+    return response.json()
   },
 
   async download(id: string) {

@@ -1,10 +1,9 @@
 "use client"
-import { FileText, Users, CheckCircle, Clock, Shield, ArrowRight, AlertCircle, User, LayoutDashboard } from "lucide-react"
+import { FileText, CheckCircle, Clock, Shield, ArrowRight, AlertCircle, User, LayoutDashboard } from "lucide-react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { StatCard } from "@/components/shared/stat-card"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/shared/card"
 import { useApprovals, type PendingApproval } from "@/hooks/use-approvals"
-import { useDocumentsSummary } from "@/hooks/use-documents-summary"
 import { Button } from "@/components/primitives/button"
 import { ApprovalDetailsModal } from "@/components/layout/approvals/approval-details-modal"
 import Link from "next/link"
@@ -14,7 +13,6 @@ import type { Defense } from "@/lib/types"
 
 export default function DashboardPage() {
   const { approvals, loading: approvalsLoading } = useApprovals()
-  const { summary } = useDocumentsSummary()
   const [selectedApproval, setSelectedApproval] = useState<PendingApproval | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [recentDefenses, setRecentDefenses] = useState<Defense[]>([])
@@ -61,10 +59,10 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Total de Documentos" value={summary.totalDocuments} icon={FileText} iconColor="text-primary" />
-          <StatCard title="Pendentes" value={summary.pendingDocuments} icon={Clock} iconColor="text-amber-600" />
-          <StatCard title="Aprovados" value={summary.approvedDocuments} icon={CheckCircle} iconColor="text-emerald-600" />
-          <StatCard title="Alunos" value={summary.totalStudents} icon={Users} iconColor="text-primary" />
+          <StatCard title="Total de Defesas" value={recentDefenses.length} icon={FileText} iconColor="text-primary" />
+          <StatCard title="Aprovações Pendentes" value={approvals.length} icon={Clock} iconColor="text-amber-600" />
+          <StatCard title="Defesas Aprovadas" value={recentDefenses.filter(d => d.result === "APPROVED").length} icon={CheckCircle} iconColor="text-emerald-600" />
+          <StatCard title="Sistema Seguro" value={0} icon={Shield} iconColor="text-primary" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -229,7 +227,7 @@ export default function DashboardPage() {
                     )
                   })}
                   {approvals.length > 5 && (
-                    <Link href="/documents">
+                    <Link href="/verify">
                       <Button
                         variant="ghost"
                         size="sm"

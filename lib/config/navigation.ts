@@ -44,10 +44,10 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Defesas que você participa",
       },
       {
-        label: "Documentos",
-        href: "/documents",
-        icon: "file",
-        description: "Documentos para aprovação",
+        label: "Verificar Documentos",
+        href: "/verify",
+        icon: "shield",
+        description: "Verificar autenticidade de documentos",
       },
       {
         label: "Estudantes",
@@ -86,10 +86,10 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Gerenciar orientadores",
       },
       {
-        label: "Documentos",
-        href: "/documents",
-        icon: "file",
-        description: "Todos os documentos do curso",
+        label: "Verificar Documentos",
+        href: "/verify",
+        icon: "shield",
+        description: "Verificar autenticidade de documentos",
       },
       {
         label: "Curso",
@@ -140,10 +140,10 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Gerenciar estudantes",
       },
       {
-        label: "Documentos",
-        href: "/documents",
-        icon: "file",
-        description: "Todos os documentos",
+        label: "Verificar Documentos",
+        href: "/verify",
+        icon: "shield-check",
+        description: "Verificar autenticidade de documentos",
       },
     ]
   }
@@ -155,10 +155,10 @@ export function getQuickActions(user: User): NavigationItem[] {
   if (isStudent(user)) {
     return [
       {
-        label: "Enviar Documento",
-        href: "/documents/upload",
-        icon: "upload",
-        description: "Envie uma nova versão do documento",
+        label: "Verificar Documento",
+        href: "/verify",
+        icon: "shield",
+        description: "Verifique a autenticidade de um documento",
       },
       {
         label: "Ver Status",
@@ -172,10 +172,10 @@ export function getQuickActions(user: User): NavigationItem[] {
   if (isAdvisor(user)) {
     return [
       {
-        label: "Documentos Pendentes",
-        href: "/documents/pending",
-        icon: "clock",
-        description: "Documentos aguardando aprovação",
+        label: "Verificar Documento",
+        href: "/verify",
+        icon: "shield",
+        description: "Verificar autenticidade de documentos",
       },
       {
         label: "Próximas Defesas",
