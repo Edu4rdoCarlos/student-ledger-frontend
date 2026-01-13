@@ -22,6 +22,7 @@ import {
 } from "@/components/shared/dropdown-menu"
 import { RescheduleDefenseModal } from "@/components/layout/defenses/reschedule-defense-modal"
 import { FinalizeDefenseDialog } from "@/components/layout/defenses/finalize-defense-dialog"
+import { CancelDefenseDialog } from "@/components/layout/defenses/cancel-defense-dialog"
 
 export default function DefenseDetailsPage() {
   const params = useParams()
@@ -31,6 +32,7 @@ export default function DefenseDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
   const [finalizeModalOpen, setFinalizeModalOpen] = useState(false)
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
 
   const userRelationship = useMemo(() => {
     if (!user || !defense) {
@@ -202,7 +204,7 @@ export default function DefenseDetailsPage() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => toast.info("Funcionalidade em desenvolvimento")}
+                      onClick={() => setCancelModalOpen(true)}
                       className="text-red-600 focus:text-red-600 cursor-pointer"
                     >
                       <X className="mr-2 h-4 w-4" />
@@ -519,6 +521,16 @@ export default function DefenseDetailsPage() {
       <FinalizeDefenseDialog
         open={finalizeModalOpen}
         onOpenChange={setFinalizeModalOpen}
+        defenseId={defense.id}
+        onSuccess={async () => {
+          const updatedDefense = await defenseService.getDefenseById(defense.id)
+          setDefense(updatedDefense)
+        }}
+      />
+
+      <CancelDefenseDialog
+        open={cancelModalOpen}
+        onOpenChange={setCancelModalOpen}
         defenseId={defense.id}
         onSuccess={async () => {
           const updatedDefense = await defenseService.getDefenseById(defense.id)

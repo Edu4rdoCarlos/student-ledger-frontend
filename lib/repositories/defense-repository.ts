@@ -27,6 +27,10 @@ export interface RescheduleDefensePayload {
   rescheduleReason: string
 }
 
+export interface CancelDefensePayload {
+  cancellationReason: string
+}
+
 export interface SubmitDefenseResultParams {
   defenseId: string
   finalGrade: number
@@ -38,6 +42,7 @@ export interface DefenseRepository {
   getById(id: string): Promise<DefenseDetailResponse>
   create(payload: CreateDefensePayload): Promise<DefenseDetailResponse>
   reschedule(id: string, payload: RescheduleDefensePayload): Promise<DefenseDetailResponse>
+  cancel(id: string, payload: CancelDefensePayload): Promise<DefenseDetailResponse>
   submitResult(params: SubmitDefenseResultParams): Promise<DefenseDetailResponse>
 }
 
@@ -59,6 +64,10 @@ export const defenseRepository: DefenseRepository = {
 
   async reschedule(id: string, payload: RescheduleDefensePayload) {
     return apiClient.post<DefenseDetailResponse>(`/defenses/${id}/reschedule`, payload)
+  },
+
+  async cancel(id: string, payload: CancelDefensePayload) {
+    return apiClient.patch<DefenseDetailResponse>(`/defenses/${id}/cancel`, payload)
   },
 
   async submitResult({ defenseId, finalGrade, document }: SubmitDefenseResultParams) {

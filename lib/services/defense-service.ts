@@ -1,4 +1,4 @@
-import { defenseRepository, type CreateDefensePayload, type RescheduleDefensePayload } from "@/lib/repositories/defense-repository"
+import { defenseRepository, type CreateDefensePayload, type RescheduleDefensePayload, type CancelDefensePayload } from "@/lib/repositories/defense-repository"
 
 export const defenseService = {
   async getAllDefenses(page = 1, perPage = 10, order: "asc" | "desc" = "desc", search = "") {
@@ -17,6 +17,11 @@ export const defenseService = {
 
   async rescheduleDefense(id: string, payload: RescheduleDefensePayload) {
     const response = await defenseRepository.reschedule(id, payload)
+    return response.data
+  },
+
+  async cancelDefense(id: string, payload: CancelDefensePayload) {
+    const response = await defenseRepository.cancel(id, payload)
     return response.data
   },
 
