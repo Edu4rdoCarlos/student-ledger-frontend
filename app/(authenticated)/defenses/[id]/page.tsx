@@ -157,7 +157,7 @@ export default function DefenseDetailsPage() {
           <div className="flex justify-end">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 cursor-pointer">
                   <MoreVertical className="h-4 w-4" />
                   Ações
                 </Button>
@@ -165,18 +165,18 @@ export default function DefenseDetailsPage() {
               <DropdownMenuContent align="end" className="w-56">
                 {defense.status === "SCHEDULED" && (
                   <>
-                    <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                    <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")} className="cursor-pointer">
                       <FileText className="mr-2 h-4 w-4" />
                       Finalizar Defesa
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                    <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")} className="cursor-pointer">
                       <CalendarClock className="mr-2 h-4 w-4" />
                       Reagendar
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => toast.info("Funcionalidade em desenvolvimento")}
-                      className="text-red-600 focus:text-red-600"
+                      className="text-red-600 focus:text-red-600 cursor-pointer"
                     >
                       <X className="mr-2 h-4 w-4" />
                       Cancelar Defesa
@@ -203,13 +203,13 @@ export default function DefenseDetailsPage() {
                             <p className="text-xs text-muted-foreground">Versão {doc.version}</p>
                           </div>
                           {allApproved && (
-                            <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                            <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")} className="cursor-pointer">
                               <Upload className="mr-2 h-4 w-4" />
                               Nova Versão
                             </DropdownMenuItem>
                           )}
                           {hasPendingApprovals && (
-                            <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                            <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")} className="cursor-pointer">
                               <Upload className="mr-2 h-4 w-4" />
                               Substituir Documento
                             </DropdownMenuItem>
