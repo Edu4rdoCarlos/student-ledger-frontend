@@ -105,7 +105,7 @@ export default function DefensesPage() {
   const renderDefenseCard = (defense: Defense) => (
     <Card
       key={defense.id}
-      className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+      className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col h-full"
       onClick={() => handleViewDetails(defense)}
     >
       <CardHeader className="pb-3">
@@ -161,33 +161,35 @@ export default function DefensesPage() {
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center gap-2 text-sm">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">
-            {new Date(defense.defenseDate).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </span>
+      <CardContent className="flex flex-col justify-end h-full space-y-3">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">
+              {new Date(defense.defenseDate).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
+          </div>
+
+          {defense.course && (
+            <div className="flex items-center gap-2 text-sm">
+              <Book className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground truncate">{defense.course.name}</span>
+            </div>
+          )}
+
+          {defense.location && (
+            <div className="flex items-center gap-2 text-sm">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground truncate">{defense.location}</span>
+            </div>
+          )}
         </div>
-
-        {defense.course && (
-          <div className="flex items-center gap-2 text-sm">
-            <Book className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground truncate">{defense.course.name}</span>
-          </div>
-        )}
-
-        {defense.location && (
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground truncate">{defense.location}</span>
-          </div>
-        )}
 
         <Button
           variant="default"

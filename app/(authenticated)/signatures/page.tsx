@@ -152,7 +152,7 @@ export default function SignaturesPage() {
             className="flex items-start justify-between gap-3"
             onClick={() => status !== "REJECTED" && handleApprovalClick(approval)}
           >
-            <div className="flex-1 space-y-1.5">
+            <div className="flex-1 space-y-1.5 min-w-0">
               <div className="flex items-start gap-2">
                 <FileText className={`h-4 w-4 ${config.text} mt-0.5 flex-shrink-0`} />
                 <div className="flex-1 min-w-0">

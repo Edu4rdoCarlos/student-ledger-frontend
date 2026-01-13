@@ -22,10 +22,16 @@ export interface CreateDefensePayload {
   }[]
 }
 
+export interface RescheduleDefensePayload {
+  defenseDate: string
+  rescheduleReason: string
+}
+
 export interface DefenseRepository {
   getAll(page?: number, perPage?: number, order?: "asc" | "desc", search?: string): Promise<PaginatedDefensesResponse>
   getById(id: string): Promise<DefenseDetailResponse>
   create(payload: CreateDefensePayload): Promise<DefenseDetailResponse>
+  reschedule(id: string, payload: RescheduleDefensePayload): Promise<DefenseDetailResponse>
 }
 
 export const defenseRepository: DefenseRepository = {
@@ -42,5 +48,9 @@ export const defenseRepository: DefenseRepository = {
 
   async create(payload: CreateDefensePayload) {
     return apiClient.post<DefenseDetailResponse>("/defenses", payload)
+  },
+
+  async reschedule(id: string, payload: RescheduleDefensePayload) {
+    return apiClient.patch<DefenseDetailResponse>(`/defenses/${id}/reschedule`, payload)
   },
 }

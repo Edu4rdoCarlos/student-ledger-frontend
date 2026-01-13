@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/shared/dropdown-menu"
+import { RescheduleDefenseModal } from "@/components/layout/defenses/reschedule-defense-modal"
 
 export default function DefenseDetailsPage() {
   const params = useParams()
@@ -27,54 +28,51 @@ export default function DefenseDetailsPage() {
   const { user } = useUser()
   const [defense, setDefense] = useState<Defense | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
 
-  const canDownload = useMemo(() => {
-    if (!user || !defense) return false
-
-    if (user.role === "ADMIN" || user.role === "COORDINATOR") return true
-
-    const isStudent = defense.students?.some(student => student.email === user.email)
-    if (isStudent) return true
-
-    const isAdvisor = defense.advisor?.email === user.email
-    if (isAdvisor) return true
-
-    const isExamBoardMember = defense.examBoard?.some(member => member.email === user.email)
-    if (isExamBoardMember) return true
-
-    return false
-  }, [user, defense])
-
-  const canViewDocuments = useMemo(() => {
-    if (!user || !defense) return false
-
-    if (user.role === "ADMIN" || user.role === "COORDINATOR") return true
-
-    const isStudent = defense.students?.some(student => student.email === user.email)
-    if (isStudent) return true
-
-    const isAdvisor = defense.advisor?.email === user.email
-    if (isAdvisor) return true
-
-    const isExamBoardMember = defense.examBoard?.some(member => member.email === user.email)
-    if (isExamBoardMember) return true
-
-    return false
-  }, [user, defense])
-
-  const canManageDefense = useMemo(() => {
-    if (!user || !defense) return false
-
-    if (user.role === "ADMIN") return true
-
-    if (user.role === "COORDINATOR") {
-      const coordinatorCourseId = user.metadata?.coordinator?.course?.id
-      const defenseCourseId = defense.course?.id
-      return coordinatorCourseId === defenseCourseId
+  const userRelationship = useMemo(() => {
+    if (!user || !defense) {
+      return {
+        isAdmin: false,
+        isCoordinator: false,
+        isStudent: false,
+        isAdvisor: false,
+        isExamBoardMember: false,
+        isCoordinatorOfCourse: false,
+      }
     }
 
-    return false
+    const isStudent = defense.students?.some(student => student.email === user.email) ?? false
+    const isAdvisor = defense.advisor?.email === user.email
+    const isExamBoardMember = defense.examBoard?.some(member => member.email === user.email) ?? false
+    const coordinatorCourseId = user.metadata?.coordinator?.course?.id
+    const defenseCourseId = defense.course?.id
+    const isCoordinatorOfCourse = user.role === "COORDINATOR" && coordinatorCourseId === defenseCourseId
+
+    return {
+      isAdmin: user.role === "ADMIN",
+      isCoordinator: user.role === "COORDINATOR",
+      isStudent,
+      isAdvisor,
+      isExamBoardMember,
+      isCoordinatorOfCourse,
+    }
   }, [user, defense])
+
+  const canDownload = useMemo(() => {
+    const { isAdmin, isCoordinator, isStudent, isAdvisor, isExamBoardMember } = userRelationship
+    return isAdmin || isCoordinator || isStudent || isAdvisor || isExamBoardMember
+  }, [userRelationship])
+
+  const canViewDocuments = useMemo(() => {
+    const { isAdmin, isCoordinator, isStudent, isAdvisor, isExamBoardMember } = userRelationship
+    return isAdmin || isCoordinator || isStudent || isAdvisor || isExamBoardMember
+  }, [userRelationship])
+
+  const canManageDefense = useMemo(() => {
+    const { isAdmin, isCoordinatorOfCourse } = userRelationship
+    return isAdmin || isCoordinatorOfCourse
+  }, [userRelationship])
 
   useEffect(() => {
     const fetchDefense = async () => {
@@ -95,6 +93,15 @@ export default function DefenseDetailsPage() {
       fetchDefense()
     }
   }, [params.id, router])
+
+  const handleRescheduleSuccess = async () => {
+    try {
+      const data = await defenseService.getDefenseById(params.id as string)
+      setDefense(data)
+    } catch (error) {
+      console.error("Erro ao atualizar defesa:", error)
+    }
+  }
 
   if (loading) {
     return (
@@ -187,7 +194,7 @@ export default function DefenseDetailsPage() {
                       <FileText className="mr-2 h-4 w-4" />
                       Finalizar Defesa
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                    <DropdownMenuItem onClick={() => setIsRescheduleModalOpen(true)}>
                       <CalendarClock className="mr-2 h-4 w-4" />
                       Reagendar
                     </DropdownMenuItem>
@@ -499,6 +506,13 @@ export default function DefenseDetailsPage() {
           </div>
         )}
       </div>
+
+      <RescheduleDefenseModal
+        open={isRescheduleModalOpen}
+        onOpenChange={setIsRescheduleModalOpen}
+        onSuccess={handleRescheduleSuccess}
+        defense={defense}
+      />
     </DashboardLayout>
   )
 }
