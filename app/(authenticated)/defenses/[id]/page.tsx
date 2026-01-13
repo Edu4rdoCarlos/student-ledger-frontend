@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/primitives/button"
 import { Badge } from "@/components/primitives/badge"
 import { Separator } from "@/components/primitives/separator"
-import { Calendar, MapPin, Users, FileText, CheckCircle2, Clock, XCircle, Shield, Download, Hash, ChevronRight, Upload, X, CalendarClock, MoreVertical, ArrowLeft, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Calendar, Users, FileText, CheckCircle2, Clock, XCircle, Shield, Download, Hash, ChevronRight, Upload, X, CalendarClock, MoreVertical, ArrowLeft, ThumbsUp, ThumbsDown } from "lucide-react"
 import Link from "next/link"
 import type { Defense } from "@/lib/types/defense"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from "@/components/shared/dialog"
 import { Textarea } from "@/components/primitives/textarea"
+import { FinalizeDefenseDialog } from "@/components/layout/defenses/finalize-defense-dialog"
 
 export default function DefenseDetailsPage() {
   const params = useParams()
@@ -40,6 +41,7 @@ export default function DefenseDetailsPage() {
   const [selectedSignature, setSelectedSignature] = useState<{ docId: string; signature: any } | null>(null)
   const [justification, setJustification] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const [finalizeModalOpen, setFinalizeModalOpen] = useState(false)
 
   const canDownload = useMemo(() => {
     if (!user || !defense) return false
@@ -165,7 +167,7 @@ export default function DefenseDetailsPage() {
               <DropdownMenuContent align="end" className="w-56">
                 {defense.status === "SCHEDULED" && (
                   <>
-                    <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")} className="cursor-pointer">
+                    <DropdownMenuItem onClick={() => setFinalizeModalOpen(true)} className="cursor-pointer">
                       <FileText className="mr-2 h-4 w-4" />
                       Finalizar Defesa
                     </DropdownMenuItem>
@@ -572,6 +574,16 @@ export default function DefenseDetailsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <FinalizeDefenseDialog
+        open={finalizeModalOpen}
+        onOpenChange={setFinalizeModalOpen}
+        defenseId={defense.id}
+        onSuccess={async () => {
+          const updatedDefense = await defenseService.getDefenseById(defense.id)
+          setDefense(updatedDefense)
+        }}
+      />
     </DashboardLayout>
   )
 }

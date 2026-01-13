@@ -9,4 +9,9 @@ export const defenseService = {
     const response = await defenseRepository.getById(id)
     return response.data
   },
+
+  async submitResult(defenseId: string, finalGrade: number, document: File) {
+    const response = await defenseRepository.submitResult({ defenseId, finalGrade, document })
+    return response.data
+  },
 }
