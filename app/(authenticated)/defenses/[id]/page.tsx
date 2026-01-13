@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/shared/dropdown-menu"
 import { RescheduleDefenseModal } from "@/components/layout/defenses/reschedule-defense-modal"
+import { FinalizeDefenseDialog } from "@/components/layout/defenses/finalize-defense-dialog"
 
 export default function DefenseDetailsPage() {
   const params = useParams()
@@ -29,6 +30,7 @@ export default function DefenseDetailsPage() {
   const [defense, setDefense] = useState<Defense | null>(null)
   const [loading, setLoading] = useState(true)
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
+  const [finalizeModalOpen, setFinalizeModalOpen] = useState(false)
 
   const userRelationship = useMemo(() => {
     if (!user || !defense) {
@@ -182,7 +184,7 @@ export default function DefenseDetailsPage() {
           <div className="flex justify-end">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 cursor-pointer">
                   <MoreVertical className="h-4 w-4" />
                   Ações
                 </Button>
@@ -190,7 +192,7 @@ export default function DefenseDetailsPage() {
               <DropdownMenuContent align="end" className="w-56">
                 {defense.status === "SCHEDULED" && (
                   <>
-                    <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                    <DropdownMenuItem onClick={() => setFinalizeModalOpen(true)} className="cursor-pointer">
                       <FileText className="mr-2 h-4 w-4" />
                       Finalizar Defesa
                     </DropdownMenuItem>
@@ -201,7 +203,7 @@ export default function DefenseDetailsPage() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => toast.info("Funcionalidade em desenvolvimento")}
-                      className="text-red-600 focus:text-red-600"
+                      className="text-red-600 focus:text-red-600 cursor-pointer"
                     >
                       <X className="mr-2 h-4 w-4" />
                       Cancelar Defesa
@@ -512,6 +514,16 @@ export default function DefenseDetailsPage() {
         onOpenChange={setIsRescheduleModalOpen}
         onSuccess={handleRescheduleSuccess}
         defense={defense}
+      />
+
+      <FinalizeDefenseDialog
+        open={finalizeModalOpen}
+        onOpenChange={setFinalizeModalOpen}
+        defenseId={defense.id}
+        onSuccess={async () => {
+          const updatedDefense = await defenseService.getDefenseById(defense.id)
+          setDefense(updatedDefense)
+        }}
       />
     </DashboardLayout>
   )

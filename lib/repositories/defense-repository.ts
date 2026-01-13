@@ -27,11 +27,18 @@ export interface RescheduleDefensePayload {
   rescheduleReason: string
 }
 
+export interface SubmitDefenseResultParams {
+  defenseId: string
+  finalGrade: number
+  document: File
+}
+
 export interface DefenseRepository {
   getAll(page?: number, perPage?: number, order?: "asc" | "desc", search?: string): Promise<PaginatedDefensesResponse>
   getById(id: string): Promise<DefenseDetailResponse>
   create(payload: CreateDefensePayload): Promise<DefenseDetailResponse>
   reschedule(id: string, payload: RescheduleDefensePayload): Promise<DefenseDetailResponse>
+  submitResult(params: SubmitDefenseResultParams): Promise<DefenseDetailResponse>
 }
 
 export const defenseRepository: DefenseRepository = {
@@ -51,6 +58,13 @@ export const defenseRepository: DefenseRepository = {
   },
 
   async reschedule(id: string, payload: RescheduleDefensePayload) {
-    return apiClient.patch<DefenseDetailResponse>(`/defenses/${id}/reschedule`, payload)
+    return apiClient.post<DefenseDetailResponse>(`/defenses/${id}/reschedule`, payload)
+  },
+
+  async submitResult({ defenseId, finalGrade, document }: SubmitDefenseResultParams) {
+    const formData = new FormData()
+    formData.append("finalGrade", finalGrade.toString())
+    formData.append("document", document)
+    return apiClient.uploadFormData<DefenseDetailResponse>(`/defenses/${defenseId}/result`, formData)
   },
 }
