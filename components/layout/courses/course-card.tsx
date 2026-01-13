@@ -15,7 +15,7 @@ interface CourseCardProps {
 
 export function CourseCard({ course, onViewDetails, onEdit, canEdit = false }: CourseCardProps) {
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-3">

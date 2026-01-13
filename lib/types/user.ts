@@ -1,6 +1,5 @@
 import type { Course } from "./course"
 import type { Department } from "./department"
-import type { Defense } from "./defense"
 
 export type UserRole = "ADMIN" | "COORDINATOR" | "ADVISOR" | "STUDENT"
 
@@ -15,7 +14,7 @@ export interface StudentMetadata {
   userId: string
   registration: string
   course: Course
-  defenses: Defense[]
+  defenseIds: string[]
 }
 
 export interface AdvisorMetadata {
@@ -23,7 +22,7 @@ export interface AdvisorMetadata {
   specialization: string
   department: Department
   course: Course
-  defenses: Defense[]
+  defenseIds: string[]
 }
 
 export interface CoordinatorMetadata {

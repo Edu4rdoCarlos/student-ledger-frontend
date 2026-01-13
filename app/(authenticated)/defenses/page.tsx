@@ -1,46 +1,50 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/primitives/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/shared/card"
-import { Badge } from "@/components/primitives/badge"
-import { Calendar, MapPin, Users, FileText, Download, CheckCircle2, Clock, XCircle, Shield, AlertCircle, Eye } from "lucide-react"
-import type { Defense, DefenseStatus, DefenseResult, DocumentStatus, DefenseDocument } from "@/lib/types/defense"
+import { Input } from "@/components/primitives/input"
+import { Calendar, MapPin, CheckCircle2, Clock, XCircle, Eye, Search, Plus } from "lucide-react"
+import type { Defense } from "@/lib/types/defense"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { defenseService } from "@/lib/services/defense-service"
 import { DefenseDetailsModal } from "@/components/layout/defenses/defense-details-modal"
-
-const statusConfig: Record<DefenseStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  SCHEDULED: { label: "Agendada", variant: "default" },
-  COMPLETED: { label: "Concluída", variant: "secondary" },
-  CANCELED: { label: "Cancelada", variant: "destructive" },
-}
-
-const resultConfig: Record<DefenseResult, { label: string; icon: any; color: string }> = {
-  PENDING: { label: "Pendente", icon: Clock, color: "text-yellow-600" },
-  APPROVED: { label: "Aprovado", icon: CheckCircle2, color: "text-green-600" },
-  FAILED: { label: "Reprovado", icon: XCircle, color: "text-red-600" },
-}
-
-const documentStatusConfig: Record<DocumentStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; color: string }> = {
-  PENDING: { label: "Aguardando Aprovação", variant: "default", color: "text-yellow-600" },
-  APPROVED: { label: "Aprovado", variant: "secondary", color: "text-green-600" },
-  INACTIVE: { label: "Inativo", variant: "destructive", color: "text-gray-600" },
-}
+import { useUser } from "@/lib/hooks/use-user-role"
 
 export default function DefensesPage() {
+  const { user } = useUser()
   const [defenses, setDefenses] = useState<Defense[]>([])
   const [loading, setLoading] = useState(true)
-  const [validatingDoc, setValidatingDoc] = useState<string | null>(null)
   const [selectedDefense, setSelectedDefense] = useState<Defense | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loadingDetails, setLoadingDetails] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const userDefenseIds = useMemo(() => {
+    if (!user?.metadata) return []
+
+    if (user.metadata.student?.defenseIds) {
+      return user.metadata.student.defenseIds
+    }
+
+    if (user.metadata.advisor?.defenseIds) {
+      return user.metadata.advisor.defenseIds
+    }
+
+    return []
+  }, [user])
+
+  const { myDefenses, otherDefenses } = useMemo(() => {
+    const my = defenses.filter(d => userDefenseIds.includes(d.id))
+    const other = defenses.filter(d => !userDefenseIds.includes(d.id))
+    return { myDefenses: my, otherDefenses: other }
+  }, [defenses, userDefenseIds])
 
   useEffect(() => {
     const fetchDefenses = async () => {
       try {
         setLoading(true)
-        const response = await defenseService.getAllDefenses(1, 100, "desc")
+        const response = await defenseService.getAllDefenses(1, 100, "desc", searchQuery)
         setDefenses(response.data)
       } catch (error) {
         console.error("Error fetching defenses:", error)
@@ -50,8 +54,12 @@ export default function DefensesPage() {
       }
     }
 
-    fetchDefenses()
-  }, [])
+    const debounceTimer = setTimeout(() => {
+      fetchDefenses()
+    }, 300)
+
+    return () => clearTimeout(debounceTimer)
+  }, [searchQuery])
 
   const handleViewDetails = async (defense: Defense) => {
     try {
@@ -68,44 +76,95 @@ export default function DefensesPage() {
     }
   }
 
-  const handleApproveDocument = async (doc: DefenseDocument) => {
-    try {
-      setValidatingDoc(doc.id)
+  const renderDefenseCard = (defense: Defense) => (
+    <Card key={defense.id} className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg line-clamp-2">{defense.title}</CardTitle>
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {defense.status === "SCHEDULED" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
+              <Clock className="h-3 w-3" />
+              Agendada
+            </span>
+          )}
+          {defense.status === "COMPLETED" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+              <CheckCircle2 className="h-3 w-3" />
+              Concluída
+            </span>
+          )}
+          {defense.status === "CANCELED" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
+              <XCircle className="h-3 w-3" />
+              Cancelada
+            </span>
+          )}
+          {defense.result === "APPROVED" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+              <CheckCircle2 className="h-3 w-3" />
+              Aprovado
+            </span>
+          )}
+          {defense.result === "FAILED" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
+              <XCircle className="h-3 w-3" />
+              Reprovado
+            </span>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center gap-2 text-sm">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">
+            {new Date(defense.defenseDate).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </span>
+        </div>
 
-      console.log("Aprovando documento:", doc.id)
-      await new Promise(resolve => setTimeout(resolve, 1500))
+        {defense.location && (
+          <div className="flex items-center gap-2 text-sm">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground truncate">{defense.location}</span>
+          </div>
+        )}
 
-      setDefenses(prev => prev.map(defense => ({
-        ...defense,
-        documents: defense?.documents?.map(d =>
-          d.id === doc.id
-            ? {
-                ...d,
-                approvals: d.approvals?.map(approval =>
-                  approval.role === "STUDENT"
-                    ? { ...approval, status: "APPROVED" as const, approvedAt: new Date().toISOString() }
-                    : approval
-                )
-              }
-            : d
-        )
-      })))
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => handleViewDetails(defense)}
+          className="w-full gap-2 bg-primary hover:bg-primary/90"
+        >
+          <Eye className="h-4 w-4" />
+          Ver Detalhes
+        </Button>
+      </CardContent>
+    </Card>
+  )
 
-    } catch (error) {
-      console.error("Erro ao aprovar documento:", error)
-    } finally {
-      setValidatingDoc(null)
-    }
-  }
+  const canCreateDefense = user?.role === "COORDINATOR" || user?.role === "ADMIN"
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Defesas de TCC</h1>
-          <p className="text-muted-foreground">
-            Acompanhe as defesas de TCC e visualize os documentos relacionados
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Defesas de TCC</h1>
+            <p className="text-muted-foreground">
+              Acompanhe as defesas de TCC e visualize os documentos relacionados
+            </p>
+          </div>
+          {canCreateDefense && (
+            <Button className="cursor-pointer">
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Defesa
+            </Button>
+          )}
         </div>
 
       {loading ? (
@@ -126,220 +185,65 @@ export default function DefensesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6">
-          {defenses.map((defense) => {
-            const ResultIcon = resultConfig[defense.result].icon
-            return (
-              <Card key={defense.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-xl mb-2">{defense.title}</CardTitle>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant={statusConfig[defense.status].variant}>
-                          {statusConfig[defense.status].label}
-                        </Badge>
-                        <Badge variant="outline" className={resultConfig[defense.result].color}>
-                          <ResultIcon className="h-3 w-3 mr-1" />
-                          {resultConfig[defense.result].label}
-                        </Badge>
-                        {defense.finalGrade && defense.finalGrade > 0 && (
-                          <Badge variant="secondary">
-                            Nota: {defense.finalGrade.toFixed(1)}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleViewDetails(defense)}
-                      className="gap-2 bg-primary hover:bg-primary/90 shadow-sm cursor-pointer"
-                    >
-                      <Eye className="h-4 w-4" />
-                      Ver Detalhes
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="flex items-start gap-3">
-                      <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium">Data da Defesa</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(defense.defenseDate).toLocaleDateString('pt-BR', {
-                            day: '2-digit',
-                            month: 'long',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
-                      </div>
-                    </div>
-
-                    {defense.location && (
-                      <div className="flex items-start gap-3">
-                        <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">Local</p>
-                          <p className="text-sm text-muted-foreground">{defense.location}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {defense.advisor && (
-                      <div className="flex items-start gap-3">
-                        <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">Orientador</p>
-                          <p className="text-sm text-muted-foreground">{defense.advisor.name}</p>
-                          <p className="text-xs text-muted-foreground">{defense.advisor.specialization}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {defense.examBoard && defense.examBoard.length > 0 && (
-                      <div className="flex items-start gap-3">
-                        <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">Banca Examinadora</p>
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            {defense.examBoard.map((member) => (
-                              <p key={member.id}>{member.name}</p>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {defense.documents && defense.documents.length > 0 && (
-                    <div className="border-t pt-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
-                        <h4 className="font-medium">Documentos</h4>
-                      </div>
-                      <div className="grid gap-3">
-                        {defense.documents.map((doc) => {
-                          const studentApproval = doc.approvals?.find(a => a.role === "STUDENT")
-                          const needsStudentApproval = studentApproval?.status === "PENDING"
-                          const isApproving = validatingDoc === doc.id
-                          const statusInfo = documentStatusConfig[doc.status]
-                          const isRegisteredOnBlockchain = !!doc.blockchainTxId
-
-                          return (
-                            <div
-                              key={doc.id}
-                              className={`p-4 rounded-lg border ${
-                                needsStudentApproval
-                                  ? "bg-yellow-50 border-yellow-200 dark:bg-yellow-950/20 dark:border-yellow-800"
-                                  : "bg-muted/50"
-                              }`}
-                            >
-                              <div className="flex items-start justify-between gap-4 mb-3">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <p className="text-sm font-medium">
-                                      {doc.type} - Versão {doc.version}
-                                    </p>
-                                    <Badge variant={statusInfo.variant as "default" | "secondary" | "destructive" | "outline" | undefined}>
-                                      {statusInfo.label}
-                                    </Badge>
-                                    {isRegisteredOnBlockchain && (
-                                      <Badge variant="secondary" className="text-xs">
-                                        Registrado no Ledger
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  {doc.blockchainRegisteredAt && (
-                                    <p className="text-xs text-muted-foreground mb-1">
-                                      Registrado em {new Date(doc.blockchainRegisteredAt).toLocaleDateString('pt-BR')}
-                                    </p>
-                                  )}
-                                  {doc.documentHash && (
-                                    <p className="text-xs text-muted-foreground font-mono">
-                                      Hash: {doc.documentHash.substring(0, 16)}...
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              {doc.approvals && doc.approvals.length > 0 && (
-                                <div className="mb-3 space-y-2">
-                                  <p className="text-xs font-medium text-muted-foreground">Aprovações:</p>
-                                  <div className="grid grid-cols-3 gap-2">
-                                    {doc.approvals.map((approval) => (
-                                      <div key={approval.id} className="flex items-center gap-1.5">
-                                        {approval.status === "APPROVED" ? (
-                                          <CheckCircle2 className="h-3 w-3 text-green-600" />
-                                        ) : approval.status === "REJECTED" ? (
-                                          <XCircle className="h-3 w-3 text-red-600" />
-                                        ) : (
-                                          <Clock className="h-3 w-3 text-yellow-600" />
-                                        )}
-                                        <span className="text-xs">
-                                          {approval.role === "COORDINATOR" ? "Coord." :
-                                           approval.role === "ADVISOR" ? "Orient." : "Aluno"}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {needsStudentApproval && (
-                                <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 mb-3">
-                                  <AlertCircle className="h-4 w-4 text-yellow-700 dark:text-yellow-500 mt-0.5 shrink-0" />
-                                  <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                                    Este documento precisa da sua aprovação antes de ser registrado no ledger.
-                                  </p>
-                                </div>
-                              )}
-
-                              <div className="flex flex-wrap gap-2">
-                                {doc.downloadUrl && (
-                                  <Button variant="outline" size="sm" asChild>
-                                    <a href={doc.downloadUrl} download>
-                                      <Download className="h-4 w-4 mr-2" />
-                                      Download
-                                    </a>
-                                  </Button>
-                                )}
-
-                                {needsStudentApproval && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleApproveDocument(doc)}
-                                    disabled={isApproving}
-                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                  >
-                                    {isApproving ? (
-                                      <>
-                                        <Clock className="h-4 w-4 mr-2 animate-spin" />
-                                        Aprovando...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Shield className="h-4 w-4 mr-2" />
-                                        Aprovar Documento
-                                      </>
-                                    )}
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
+        <>
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">Minhas Defesas</h2>
+              <p className="text-sm text-muted-foreground">
+                Defesas em que você está envolvido
+              </p>
+            </div>
+            {myDefenses.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {myDefenses.map(renderDefenseCard)}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-8">
+                  <Calendar className="h-8 w-8 text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground text-center">
+                    Você ainda não está participando de nenhuma defesa.
+                  </p>
                 </CardContent>
               </Card>
-            )
-          })}
-        </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold">Outras Defesas</h2>
+                <p className="text-sm text-muted-foreground">
+                  Defesas públicas do sistema
+                </p>
+              </div>
+              <div className="relative w-full max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Buscar defesas..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 bg-white dark:bg-gray-800"
+                />
+              </div>
+            </div>
+            {otherDefenses.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {otherDefenses.map(renderDefenseCard)}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-8">
+                  <Calendar className="h-8 w-8 text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground text-center">
+                    Não há outras defesas públicas cadastradas no momento.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </>
       )}
       </div>
 

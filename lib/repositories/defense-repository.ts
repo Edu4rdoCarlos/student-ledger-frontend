@@ -11,14 +11,15 @@ export interface DefenseDetailResponse {
 }
 
 export interface DefenseRepository {
-  getAll(page?: number, perPage?: number, order?: "asc" | "desc"): Promise<PaginatedDefensesResponse>
+  getAll(page?: number, perPage?: number, order?: "asc" | "desc", search?: string): Promise<PaginatedDefensesResponse>
   getById(id: string): Promise<DefenseDetailResponse>
 }
 
 export const defenseRepository: DefenseRepository = {
-  async getAll(page = 1, perPage = 10, order = "desc") {
+  async getAll(page = 1, perPage = 10, order = "desc", search = "") {
+    const searchParam = search ? `&search=${encodeURIComponent(search)}` : ""
     return apiClient.get<PaginatedDefensesResponse>(
-      `/defenses?page=${page}&perPage=${perPage}&order=${order}`
+      `/defenses?page=${page}&perPage=${perPage}&order=${order}${searchParam}`
     )
   },
 

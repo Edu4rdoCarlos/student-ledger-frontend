@@ -4,20 +4,12 @@ import { Badge } from "@/components/primitives/badge"
 import { Button } from "@/components/primitives/button"
 import { Separator } from "@/components/primitives/separator"
 import { Calendar, MapPin, Users, FileText, CheckCircle2, Clock, XCircle, Shield, Download, Hash } from "lucide-react"
-import type { Defense, DefenseStatus, DefenseResult } from "@/lib/types/defense"
+import type { Defense } from "@/lib/types/defense"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/shared/dialog"
-
-const statusConfig: Record<DefenseStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  SCHEDULED: { label: "Agendada", variant: "default" },
-  COMPLETED: { label: "Concluída", variant: "secondary" },
-  CANCELED: { label: "Cancelada", variant: "destructive" },
-}
-
-const resultConfig: Record<DefenseResult, { label: string; icon: any; color: string }> = {
-  PENDING: { label: "Pendente", icon: Clock, color: "text-yellow-600" },
-  APPROVED: { label: "Aprovado", icon: CheckCircle2, color: "text-green-600" },
-  FAILED: { label: "Reprovado", icon: XCircle, color: "text-red-600" },
-}
+import { documentService } from "@/lib/services/document-service"
+import { toast } from "sonner"
+import { useUser } from "@/lib/hooks/use-user-role"
+import { useMemo } from "react"
 
 interface DefenseDetailsModalProps {
   defense: Defense | null
@@ -27,15 +19,32 @@ interface DefenseDetailsModalProps {
 }
 
 export function DefenseDetailsModal({ defense, open, onOpenChange, loading }: DefenseDetailsModalProps) {
+  const { user } = useUser()
+
+  const canDownload = useMemo(() => {
+    if (!user || !defense) return false
+
+    if (user.role === "ADMIN" || user.role === "COORDINATOR") return true
+
+    const isStudent = defense.students?.some(student => student.email === user.email)
+    if (isStudent) return true
+
+    const isAdvisor = defense.advisor?.email === user.email
+    if (isAdvisor) return true
+
+    const isExamBoardMember = defense.examBoard?.some(member => member.email === user.email)
+    if (isExamBoardMember) return true
+
+    return false
+  }, [user, defense])
+
   if (!defense && !loading) {
     return null
   }
 
-  const ResultIcon = defense ? resultConfig[defense.result].icon : Clock
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="!max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">Detalhes da Defesa</DialogTitle>
         </DialogHeader>
@@ -49,21 +58,43 @@ export function DefenseDetailsModal({ defense, open, onOpenChange, loading }: De
           </div>
         ) : defense ? (
           <div className="space-y-6">
-            {/* Title and Status */}
             <div>
               <h3 className="text-xl font-semibold mb-3">{defense.title}</h3>
               <div className="flex flex-wrap gap-2">
-                <Badge variant={statusConfig[defense.status].variant}>
-                  {statusConfig[defense.status].label}
-                </Badge>
-                <Badge variant="outline" className={resultConfig[defense.result].color}>
-                  <ResultIcon className="h-3 w-3 mr-1" />
-                  {resultConfig[defense.result].label}
-                </Badge>
+                {defense.status === "SCHEDULED" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
+                    <Clock className="h-3 w-3" />
+                    Agendada
+                  </span>
+                )}
+                {defense.status === "COMPLETED" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Concluída
+                  </span>
+                )}
+                {defense.status === "CANCELED" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
+                    <XCircle className="h-3 w-3" />
+                    Cancelada
+                  </span>
+                )}
+                {defense.result === "APPROVED" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Aprovado
+                  </span>
+                )}
+                {defense.result === "FAILED" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
+                    <XCircle className="h-3 w-3" />
+                    Reprovado
+                  </span>
+                )}
                 {defense.finalGrade && defense.finalGrade > 0 && (
-                  <Badge variant="secondary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">
                     Nota Final: {defense.finalGrade.toFixed(1)}
-                  </Badge>
+                  </span>
                 )}
               </div>
             </div>
@@ -202,68 +233,93 @@ export function DefenseDetailsModal({ defense, open, onOpenChange, loading }: De
                 </div>
                 <div className="space-y-4">
                   {defense.documents.map((doc) => (
-                    <div key={doc.id} className="p-4 rounded-lg border bg-muted/50">
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <p className="text-sm font-medium">
-                              Versão {doc.version}
-                            </p>
-                            <Badge variant={doc.status === "APPROVED" ? "secondary" : "default"}>
-                              {doc.status === "APPROVED" ? "Aprovado" : doc.status === "PENDING" ? "Pendente" : "Inativo"}
-                            </Badge>
+                    <div key={doc.id} className="p-6 rounded-lg border bg-muted/50 space-y-4">
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <div>
+                            <p className="font-semibold">Versão {doc.version}</p>
+                            {doc.createdAt && (
+                              <p className="text-xs text-muted-foreground">
+                                Criado em {new Date(doc.createdAt).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })}
+                              </p>
+                            )}
                           </div>
+                        </div>
+                        <Badge variant={doc.status === "APPROVED" ? "secondary" : "default"}>
+                          {doc.status === "APPROVED" ? "Aprovado" : doc.status === "PENDING" ? "Pendente" : "Inativo"}
+                        </Badge>
+                      </div>
+
+                      {/* Additional Info */}
+                      {(doc.changeReason || doc.documentCid || doc.blockchainRegisteredAt) && (
+                        <div className="space-y-2 pt-2 border-t">
                           {doc.changeReason && (
-                            <p className="text-xs text-muted-foreground mb-2">
-                              Motivo da mudança: {doc.changeReason}
-                            </p>
+                            <div className="flex items-start gap-2">
+                              <p className="text-xs font-medium text-muted-foreground min-w-fit">Motivo da mudança:</p>
+                              <p className="text-xs text-muted-foreground">{doc.changeReason}</p>
+                            </div>
                           )}
                           {doc.documentCid && (
-                            <div className="flex items-start gap-2 mb-2">
-                              <Hash className="h-3 w-3 text-muted-foreground mt-0.5" />
-                              <p className="text-xs text-muted-foreground font-mono break-all">
-                                CID: {doc.documentCid}
-                              </p>
+                            <div className="flex items-start gap-2">
+                              <Hash className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
+                              <div className="flex-1">
+                                <p className="text-xs font-medium text-muted-foreground">CID</p>
+                                <p className="text-xs text-muted-foreground font-mono break-all">{doc.documentCid}</p>
+                              </div>
                             </div>
                           )}
                           {doc.blockchainRegisteredAt && (
-                            <p className="text-xs text-muted-foreground">
-                              Registrado no Ledger em {new Date(doc.blockchainRegisteredAt).toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
+                            <div className="flex items-start gap-2">
+                              <Shield className="h-3.5 w-3.5 text-green-600 mt-0.5" />
+                              <div>
+                                <p className="text-xs font-medium text-muted-foreground">Registrado no Ledger</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {new Date(doc.blockchainRegisteredAt).toLocaleDateString('pt-BR', {
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </p>
+                              </div>
+                            </div>
                           )}
                         </div>
-                      </div>
+                      )}
 
                       {/* Signatures */}
                       {doc.signatures && doc.signatures.length > 0 && (
-                        <div className="mt-4">
-                          <p className="text-xs font-medium text-muted-foreground mb-2">Assinaturas:</p>
-                          <div className="space-y-2">
+                        <div className="pt-2 border-t">
+                          <p className="text-sm font-semibold mb-3">Assinaturas:</p>
+                          <div className="grid gap-3">
                             {doc.signatures.map((signature, index) => (
-                              <div key={index} className="flex items-start gap-2 p-2 rounded bg-background/50">
+                              <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-background border">
                                 {signature.status === "APPROVED" ? (
-                                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
                                 ) : signature.status === "REJECTED" ? (
-                                  <XCircle className="h-4 w-4 text-red-600 mt-0.5" />
+                                  <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
                                 ) : (
-                                  <Clock className="h-4 w-4 text-yellow-600 mt-0.5" />
+                                  <Clock className="h-5 w-5 text-yellow-600 mt-0.5 shrink-0" />
                                 )}
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-xs font-medium">{signature.role}</p>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                                    <p className="text-sm font-medium">{signature.role}</p>
                                     <Badge variant={signature.status === "APPROVED" ? "secondary" : signature.status === "REJECTED" ? "destructive" : "default"} className="text-xs">
                                       {signature.status === "APPROVED" ? "Aprovado" : signature.status === "REJECTED" ? "Rejeitado" : "Pendente"}
                                     </Badge>
                                   </div>
-                                  <p className="text-xs text-muted-foreground">{signature.email}</p>
+                                  {signature.email && (
+                                    <p className="text-xs text-muted-foreground">{signature.email}</p>
+                                  )}
                                   {signature.timestamp && (
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-xs text-muted-foreground mt-1">
                                       {new Date(signature.timestamp).toLocaleDateString('pt-BR', {
                                         day: '2-digit',
                                         month: 'short',
@@ -273,7 +329,7 @@ export function DefenseDetailsModal({ defense, open, onOpenChange, loading }: De
                                     </p>
                                   )}
                                   {signature.justification && (
-                                    <p className="text-xs text-muted-foreground italic mt-1">
+                                    <p className="text-xs text-muted-foreground italic mt-2 pl-3 border-l-2">
                                       "{signature.justification}"
                                     </p>
                                   )}
@@ -284,13 +340,36 @@ export function DefenseDetailsModal({ defense, open, onOpenChange, loading }: De
                         </div>
                       )}
 
-                      {doc.downloadUrl && (
-                        <Button variant="outline" size="sm" className="mt-3" asChild>
-                          <a href={doc.downloadUrl} download>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </a>
-                        </Button>
+                      {canDownload && (
+                        <div className="pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full gap-2 cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                            onClick={async () => {
+                              try {
+                                const blob = await documentService.downloadDocument(doc.id)
+                                const url = window.URL.createObjectURL(blob)
+                                const a = document.createElement('a')
+                                a.href = url
+                                a.download = `${defense.title}-v${doc.version}.pdf`
+                                document.body.appendChild(a)
+                                a.click()
+                                window.URL.revokeObjectURL(url)
+                                document.body.removeChild(a)
+                                toast.success('Download realizado com sucesso!')
+                              } catch (error) {
+                                console.error('Erro ao baixar documento:', error)
+                                toast.error('Erro ao baixar documento', {
+                                  description: 'Não foi possível baixar o documento. Verifique se você tem permissão para acessá-lo.',
+                                })
+                              }
+                            }}
+                          >
+                            <Download className="h-4 w-4" />
+                            Baixar Documento
+                          </Button>
+                        </div>
                       )}
                     </div>
                   ))}

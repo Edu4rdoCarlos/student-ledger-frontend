@@ -14,6 +14,7 @@ import { editAdvisorSchema, type EditAdvisorFormData } from "@/lib/validations/a
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import { useCourses } from "@/hooks/use-courses"
+import { useAdvisorWithDefenses } from "@/hooks/use-advisor-with-defenses"
 
 interface AdvisorDetailsModalProps {
   advisor: Advisor | null
@@ -26,6 +27,7 @@ interface AdvisorDetailsModalProps {
 export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvisor, loading = false }: AdvisorDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false)
   const { myCourses, loading: loadingCourses } = useCourses()
+  const { defenses, loading: loadingDefenses } = useAdvisorWithDefenses(advisor, open)
 
   const {
     register,
@@ -354,14 +356,21 @@ export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvis
 
               {/* Tab: Orientações */}
               <TabsContent value="advisorships" className="space-y-4 mt-6 flex-1 overflow-y-auto">
-                {!advisor.defenses || advisor.defenses.length === 0 ? (
+                {loadingDefenses ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                      <p className="text-sm text-muted-foreground">Carregando defesas...</p>
+                    </div>
+                  </div>
+                ) : defenses.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Trophy className="h-12 w-12 text-muted-foreground/50 mb-4" />
                     <p className="text-muted-foreground">Nenhuma defesa registrada</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {advisor.defenses.map((defense) => (
+                    {defenses.map((defense) => (
                       <div
                         key={defense.id}
                         className="border border-border rounded-lg p-4 space-y-3 hover:bg-muted/30 transition-colors"
@@ -374,7 +383,7 @@ export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvis
                                 <Calendar className="h-3.5 w-3.5" />
                                 {formatDate(defense.defenseDate)}
                               </div>
-                              {defense.result !== "PENDING" && (
+                              {defense.result !== "PENDING" && defense.finalGrade && (
                                 <div className="flex items-center gap-1.5">
                                   <Trophy className="h-3.5 w-3.5" />
                                   Nota: {defense.finalGrade}

@@ -52,7 +52,7 @@ export function RoleBasedInfo() {
                   </p>
                   <p>
                     <span className="text-muted-foreground">Defesas:</span>{" "}
-                    <span className="font-medium">{userInfo.defenses.length}</span>
+                    <span className="font-medium">{userInfo.defenseIds.length}</span>
                   </p>
                 </div>
               </div>
@@ -76,7 +76,7 @@ export function RoleBasedInfo() {
                   </p>
                   <p>
                     <span className="text-muted-foreground">Orientações Ativas:</span>{" "}
-                    <span className="font-medium">{userInfo.defenses.length}</span>
+                    <span className="font-medium">{userInfo.defenseIds.length}</span>
                   </p>
                 </div>
               </div>

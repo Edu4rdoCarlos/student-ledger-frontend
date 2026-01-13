@@ -62,7 +62,6 @@ export interface DefenseDocument {
   previousVersionId?: string | null
   createdAt: string
   updatedAt?: string
-  downloadUrl?: string
   approvals?: DocumentApproval[]
   signatures?: DocumentSignature[]
   changeReason?: string
@@ -128,7 +127,6 @@ export interface StudentDefense {
     blockchainTxId?: string
     blockchainRegisteredAt?: string
     createdAt: string
-    downloadUrl?: string
     changeReason?: string
   }>
 }

@@ -72,7 +72,7 @@ export function getUserInfo(user: User) {
       type: "student" as const,
       registration: user.metadata.student?.registration,
       course: user.metadata.student?.course,
-      defenses: user.metadata.student?.defenses || [],
+      defenseIds: user.metadata.student?.defenseIds || [],
     }
   }
 
@@ -82,7 +82,7 @@ export function getUserInfo(user: User) {
       specialization: user.metadata.advisor?.specialization,
       department: user.metadata.advisor?.department,
       course: user.metadata.advisor?.course,
-      defenses: user.metadata.advisor?.defenses || [],
+      defenseIds: user.metadata.advisor?.defenseIds || [],
     }
   }
 
@@ -108,7 +108,7 @@ export function canAccessDefense(user: User, defenseId: string): boolean {
   const userInfo = getUserInfo(user)
 
   if (userInfo.type === "student" || userInfo.type === "advisor") {
-    return userInfo.defenses?.some((d) => d.id === defenseId) || false
+    return userInfo.defenseIds?.includes(defenseId) || false
   }
 
   return true

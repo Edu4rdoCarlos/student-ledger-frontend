@@ -20,7 +20,7 @@ interface AddStudentDialogProps {
 }
 
 export function AddStudentDialog({ open, onOpenChange, onSuccess }: AddStudentDialogProps) {
-  const { courses, loading: loadingCourses } = useCourses()
+  const { myCourses, loading: loadingCourses } = useCourses()
 
   const {
     register,
@@ -155,7 +155,7 @@ export function AddStudentDialog({ open, onOpenChange, onSuccess }: AddStudentDi
                     <SelectValue placeholder={loadingCourses ? "Carregando cursos..." : "Selecione o curso"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {courses.map((course) => (
+                    {myCourses.map((course) => (
                       <SelectItem key={course.id} value={course.id}>
                         {course.name} ({course.code})
                       </SelectItem>
