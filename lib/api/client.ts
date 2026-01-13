@@ -139,6 +139,71 @@ class ApiClient {
   delete<T>(endpoint: string, options?: RequestOptions) {
     return this.request<T>(endpoint, { ...options, method: "DELETE" })
   }
+
+  async uploadFormData<T>(endpoint: string, formData: FormData, options: Omit<RequestOptions, 'body'> = {}): Promise<T> {
+    const { skipAuth = false, skipToast = false, ...fetchOptions } = options
+
+    const headers: HeadersInit = {
+      ...fetchOptions.headers,
+    }
+
+    if (!skipAuth && this.accessToken) {
+      ;(headers as Record<string, string>)["Authorization"] = `Bearer ${this.accessToken}`
+    }
+
+    try {
+      let response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...fetchOptions,
+        method: "POST",
+        headers,
+        body: formData,
+        credentials: "include",
+      })
+
+      if (response.status === 401 && !skipAuth) {
+        const newToken = await this.refreshToken()
+
+        if (newToken) {
+          ;(headers as Record<string, string>)["Authorization"] = `Bearer ${newToken}`
+          response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...fetchOptions,
+            method: "POST",
+            headers,
+            body: formData,
+            credentials: "include",
+          })
+        } else {
+          window.dispatchEvent(new CustomEvent("auth:logout"))
+          throw new Error("Sessão expirada")
+        }
+      }
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: "Erro na requisição" }))
+        throw new Error(error.message || `HTTP ${response.status}`)
+      }
+
+      return response.json()
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        this.showErrorToast("Serviço indisponível", skipToast)
+        throw new Error("Não foi possível conectar ao servidor. Verifique sua conexão.")
+      }
+
+      if (error instanceof Error &&
+          (error.message.toLowerCase().includes("network") ||
+           error.message.toLowerCase().includes("failed to fetch"))) {
+        this.showErrorToast("Serviço indisponível", skipToast)
+        throw new Error("Não foi possível conectar ao servidor. Verifique sua conexão.")
+      }
+
+      if (error instanceof Error) {
+        throw error
+      }
+
+      throw new Error("Erro desconhecido")
+    }
+  }
 }
 
 export const apiClient = new ApiClient()
