@@ -180,7 +180,7 @@ export default function StudentsPage() {
     },
     {
       key: "status",
-      label: "Status do TCC",
+      label: "Progresso do TCC",
       render: (student: Student) => getDefenseStatusBadge(student),
     },
     {

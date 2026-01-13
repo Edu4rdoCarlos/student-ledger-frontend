@@ -1,4 +1,4 @@
-import type { Course, PaginationMetadata } from "@/lib/types"
+import type { Course, PaginationMetadata, Student, Advisor } from "@/lib/types"
 import { apiClient } from "@/lib/api/client"
 
 export interface CreateCourseData {
@@ -23,9 +23,19 @@ export interface PaginatedCoursesResponse {
   metadata: PaginationMetadata
 }
 
+export interface CourseStudentsResponse {
+  data: Student[]
+}
+
+export interface CourseAdvisorsResponse {
+  data: Advisor[]
+}
+
 export interface CourseRepository {
   getAll(page?: number, perPage?: number): Promise<PaginatedCoursesResponse>
   getCourseById(id: string): Promise<CourseResponse>
+  getStudentsByCourse(courseId: string): Promise<CourseStudentsResponse>
+  getAdvisorsByCourse(courseId: string): Promise<CourseAdvisorsResponse>
   createCourse(data: CreateCourseData): Promise<CourseResponse>
   updateCourse(id: string, data: UpdateCourseData): Promise<CourseResponse>
 }
@@ -39,6 +49,14 @@ export const courseRepository: CourseRepository = {
 
   async getCourseById(id: string) {
     return apiClient.get<CourseResponse>(`/courses/${id}`)
+  },
+
+  async getStudentsByCourse(courseId: string) {
+    return apiClient.get<CourseStudentsResponse>(`/courses/${courseId}/students`)
+  },
+
+  async getAdvisorsByCourse(courseId: string) {
+    return apiClient.get<CourseAdvisorsResponse>(`/courses/${courseId}/advisors`)
   },
 
   async createCourse(data: CreateCourseData) {

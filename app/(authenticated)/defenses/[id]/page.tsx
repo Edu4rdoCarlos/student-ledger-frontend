@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/primitives/button"
 import { Badge } from "@/components/primitives/badge"
 import { Separator } from "@/components/primitives/separator"
-import { Calendar, MapPin, Users, FileText, CheckCircle2, Clock, XCircle, Shield, Download, Hash, ChevronRight, Upload, X, CalendarClock, MoreVertical, ArrowLeft, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Calendar, Users, FileText, CheckCircle2, Clock, XCircle, Shield, Download, Hash, ChevronRight, Upload, X, CalendarClock, MoreVertical, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import type { Defense } from "@/lib/types/defense"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
@@ -20,15 +20,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/shared/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/shared/dialog"
-import { Textarea } from "@/components/primitives/textarea"
 
 export default function DefenseDetailsPage() {
   const params = useParams()
@@ -36,10 +27,6 @@ export default function DefenseDetailsPage() {
   const { user } = useUser()
   const [defense, setDefense] = useState<Defense | null>(null)
   const [loading, setLoading] = useState(true)
-  const [approvalModalOpen, setApprovalModalOpen] = useState(false)
-  const [selectedSignature, setSelectedSignature] = useState<{ docId: string; signature: any } | null>(null)
-  const [justification, setJustification] = useState("")
-  const [submitting, setSubmitting] = useState(false)
 
   const canDownload = useMemo(() => {
     if (!user || !defense) return false
@@ -54,6 +41,37 @@ export default function DefenseDetailsPage() {
 
     const isExamBoardMember = defense.examBoard?.some(member => member.email === user.email)
     if (isExamBoardMember) return true
+
+    return false
+  }, [user, defense])
+
+  const canViewDocuments = useMemo(() => {
+    if (!user || !defense) return false
+
+    if (user.role === "ADMIN" || user.role === "COORDINATOR") return true
+
+    const isStudent = defense.students?.some(student => student.email === user.email)
+    if (isStudent) return true
+
+    const isAdvisor = defense.advisor?.email === user.email
+    if (isAdvisor) return true
+
+    const isExamBoardMember = defense.examBoard?.some(member => member.email === user.email)
+    if (isExamBoardMember) return true
+
+    return false
+  }, [user, defense])
+
+  const canManageDefense = useMemo(() => {
+    if (!user || !defense) return false
+
+    if (user.role === "ADMIN") return true
+
+    if (user.role === "COORDINATOR") {
+      const coordinatorCourseId = user.metadata?.coordinator?.course?.id
+      const defenseCourseId = defense.course?.id
+      return coordinatorCourseId === defenseCourseId
+    }
 
     return false
   }, [user, defense])
@@ -153,7 +171,7 @@ export default function DefenseDetailsPage() {
           </div>
         </div>
 
-        {(user?.role === "COORDINATOR" || user?.role === "ADMIN") && defense.status !== "CANCELED" && (
+        {canManageDefense && defense.status !== "CANCELED" && (
           <div className="flex justify-end">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -192,31 +210,33 @@ export default function DefenseDetailsPage() {
                         Documentos
                       </p>
                     </div>
-                    {defense.documents.map((doc, index) => {
-                      const allApproved = doc.signatures?.every(sig => sig.status === "APPROVED")
-                      const hasPendingApprovals = doc.signatures?.some(sig => sig.status === "PENDING")
+                    {defense.documents
+                      .filter(doc => doc.status !== "INACTIVE")
+                      .map((doc, index) => {
+                        const allApproved = doc.signatures?.every(sig => sig.status === "APPROVED")
+                        const hasPendingApprovals = doc.signatures?.some(sig => sig.status === "PENDING")
 
-                      return (
-                        <div key={doc.id}>
-                          {index > 0 && <DropdownMenuSeparator />}
-                          <div className="px-2 py-1">
-                            <p className="text-xs text-muted-foreground">Versão {doc.version}</p>
+                        return (
+                          <div key={doc.id}>
+                            {index > 0 && <DropdownMenuSeparator />}
+                            <div className="px-2 py-1">
+                              <p className="text-xs text-muted-foreground">Versão {doc.version}</p>
+                            </div>
+                            {allApproved && (
+                              <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Nova Versão
+                              </DropdownMenuItem>
+                            )}
+                            {hasPendingApprovals && (
+                              <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Substituir Documento
+                              </DropdownMenuItem>
+                            )}
                           </div>
-                          {allApproved && (
-                            <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
-                              <Upload className="mr-2 h-4 w-4" />
-                              Nova Versão
-                            </DropdownMenuItem>
-                          )}
-                          {hasPendingApprovals && (
-                            <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
-                              <Upload className="mr-2 h-4 w-4" />
-                              Substituir Documento
-                            </DropdownMenuItem>
-                          )}
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
                   </>
                 )}
               </DropdownMenuContent>
@@ -234,6 +254,12 @@ export default function DefenseDetailsPage() {
                 <h3 className="font-semibold">Informações da Defesa</h3>
               </div>
               <div className="space-y-2 text-sm">
+                {defense.course && (
+                  <div>
+                    <p className="text-muted-foreground">Curso</p>
+                    <p className="font-medium text-primary">{defense.course.name}</p>
+                  </div>
+                )}
                 <div>
                   <p className="text-muted-foreground">Data e Hora</p>
                   <p className="font-medium">
@@ -267,9 +293,9 @@ export default function DefenseDetailsPage() {
                   <Users className="h-5 w-5 text-muted-foreground" />
                   <h3 className="font-semibold">Orientador</h3>
                 </div>
-                <div className="text-sm space-y-1">
+                <div className="text-sm p-3 rounded-lg border bg-muted/50">
                   <p className="font-medium">{defense.advisor.name}</p>
-                  <p className="text-muted-foreground">{defense.advisor.email}</p>
+                  <p className="text-muted-foreground text-xs">{defense.advisor.email}</p>
                   {defense.advisor.specialization && (
                     <p className="text-muted-foreground text-xs">{defense.advisor.specialization}</p>
                   )}
@@ -316,7 +342,7 @@ export default function DefenseDetailsPage() {
           </div>
         </div>
 
-        {defense.documents && defense.documents.length > 0 && (
+        {canViewDocuments && defense.documents && defense.documents.length > 0 && (
           <div>
             <Separator className="mb-6" />
             <div className="flex items-center gap-2 mb-4">
@@ -390,7 +416,6 @@ export default function DefenseDetailsPage() {
                       <div className="grid gap-3">
                         {doc.signatures.map((signature, index) => {
                           const isCurrentUser = signature.email === user?.email
-                          const canApprove = isCurrentUser && signature.status === "PENDING"
 
                           return (
                             <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-background border">
@@ -428,19 +453,6 @@ export default function DefenseDetailsPage() {
                                   <p className="text-xs text-muted-foreground italic mt-2 pl-3 border-l-2">
                                     "{signature.justification}"
                                   </p>
-                                )}
-                                {canApprove && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="mt-2 w-full cursor-pointer"
-                                    onClick={() => {
-                                      setSelectedSignature({ docId: doc.id, signature })
-                                      setApprovalModalOpen(true)
-                                    }}
-                                  >
-                                    Avaliar Documento
-                                  </Button>
                                 )}
                               </div>
                             </div>
@@ -487,91 +499,6 @@ export default function DefenseDetailsPage() {
           </div>
         )}
       </div>
-
-      <Dialog open={approvalModalOpen} onOpenChange={setApprovalModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Avaliar Documento</DialogTitle>
-            <DialogDescription>
-              Escolha se deseja aprovar ou reprovar o documento. Em caso de reprovação, informe o motivo.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Justificativa (opcional para aprovação, obrigatória para reprovação)</label>
-              <Textarea
-                placeholder="Digite sua justificativa aqui..."
-                value={justification}
-                onChange={(e) => setJustification(e.target.value)}
-                rows={4}
-                className="resize-none"
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setApprovalModalOpen(false)
-                setJustification("")
-                setSelectedSignature(null)
-              }}
-              disabled={submitting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={async () => {
-                if (!justification.trim()) {
-                  toast.error("Justificativa obrigatória para reprovação")
-                  return
-                }
-                setSubmitting(true)
-                try {
-                  // TODO: Implementar chamada à API para reprovar
-                  toast.info("Funcionalidade em desenvolvimento")
-                  setApprovalModalOpen(false)
-                  setJustification("")
-                  setSelectedSignature(null)
-                } catch (error) {
-                  toast.error("Erro ao reprovar documento")
-                } finally {
-                  setSubmitting(false)
-                }
-              }}
-              disabled={submitting}
-              className="gap-2"
-            >
-              <ThumbsDown className="h-4 w-4" />
-              Reprovar
-            </Button>
-            <Button
-              onClick={async () => {
-                setSubmitting(true)
-                try {
-                  // TODO: Implementar chamada à API para aprovar
-                  toast.info("Funcionalidade em desenvolvimento")
-                  setApprovalModalOpen(false)
-                  setJustification("")
-                  setSelectedSignature(null)
-                } catch (error) {
-                  toast.error("Erro ao aprovar documento")
-                } finally {
-                  setSubmitting(false)
-                }
-              }}
-              disabled={submitting}
-              className="gap-2"
-            >
-              <ThumbsUp className="h-4 w-4" />
-              Aprovar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   )
 }

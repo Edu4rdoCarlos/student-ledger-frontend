@@ -9,6 +9,14 @@ export const courseService = {
     return courseRepository.getCourseById(id)
   },
 
+  async getStudentsByCourse(courseId: string) {
+    return courseRepository.getStudentsByCourse(courseId)
+  },
+
+  async getAdvisorsByCourse(courseId: string) {
+    return courseRepository.getAdvisorsByCourse(courseId)
+  },
+
   async createCourse(data: CreateCourseData) {
     return courseRepository.createCourse(data)
   },

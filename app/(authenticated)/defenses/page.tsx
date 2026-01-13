@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/primitives/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/shared/card"
 import { Input } from "@/components/primitives/input"
-import { Calendar, MapPin, CheckCircle2, Clock, XCircle, Eye, Search, Plus } from "lucide-react"
-import type { Defense } from "@/lib/types/defense"
+import { Calendar, MapPin, CheckCircle2, Clock, XCircle, Eye, Search, Plus, Book } from "lucide-react"
+import type { Defense, Advisor, Student } from "@/lib/types"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { defenseService } from "@/lib/services/defense-service"
+import { advisorService } from "@/lib/services/advisor-service"
+import { courseService } from "@/lib/services/course-service"
 import { useUser } from "@/lib/hooks/use-user-role"
+import { DefenseFormDialog } from "@/components/layout/defenses/defense-form-dialog"
 
 export default function DefensesPage() {
   const { user } = useUser()
@@ -17,16 +20,23 @@ export default function DefensesPage() {
   const [defenses, setDefenses] = useState<Defense[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false)
+  const [advisors, setAdvisors] = useState<Advisor[]>([])
+  const [students, setStudents] = useState<Student[]>([])
 
   const userDefenseIds = useMemo(() => {
     if (!user?.metadata) return []
 
-    if (user.metadata.student?.defenseIds) {
-      return user.metadata.student.defenseIds
+    if (user.metadata.student?.defenses) {
+      return user.metadata.student.defenses.map(d => d.id)
     }
 
-    if (user.metadata.advisor?.defenseIds) {
-      return user.metadata.advisor.defenseIds
+    if (user.metadata.advisor?.defenses) {
+      return user.metadata.advisor.defenses.map(d => d.id)
+    }
+
+    if (user.metadata.coordinator?.defenses) {
+      return user.metadata.coordinator.defenses.map(d => d.id)
     }
 
     return []
@@ -37,6 +47,8 @@ export default function DefensesPage() {
     const other = defenses.filter(d => !userDefenseIds.includes(d.id))
     return { myDefenses: my, otherDefenses: other }
   }, [defenses, userDefenseIds])
+
+  const canCreateDefense = user?.role === "COORDINATOR" || user?.role === "ADMIN"
 
   useEffect(() => {
     const fetchDefenses = async () => {
@@ -59,6 +71,33 @@ export default function DefensesPage() {
     return () => clearTimeout(debounceTimer)
   }, [searchQuery])
 
+  useEffect(() => {
+    const fetchAdvisorsAndStudents = async () => {
+      try {
+        const courseId = user?.metadata?.coordinator?.course?.id
+
+        if (!courseId) {
+          console.error("Course ID not found for coordinator")
+          console.error("Full user object:", user)
+          return
+        }
+
+        const [advisorsResponse, studentsResponse] = await Promise.all([
+          courseService.getAdvisorsByCourse(courseId),
+          courseService.getStudentsByCourse(courseId),
+        ])
+        setAdvisors(advisorsResponse.data)
+        setStudents(studentsResponse.data.filter(student => student.defensesCount === 0))
+      } catch (error) {
+        console.error("Error fetching advisors and students:", error)
+      }
+    }
+
+    if (canCreateDefense && isFormDialogOpen) {
+      fetchAdvisorsAndStudents()
+    }
+  }, [canCreateDefense, isFormDialogOpen, user])
+
   const handleViewDetails = (defense: Defense) => {
     router.push(`/defenses/${defense.id}`)
   }
@@ -71,36 +110,54 @@ export default function DefensesPage() {
     >
       <CardHeader className="pb-3">
         <CardTitle className="text-lg line-clamp-2">{defense.title}</CardTitle>
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {defense.status === "SCHEDULED" && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
-              <Clock className="h-3 w-3" />
-              Agendada
-            </span>
+        <div className="flex flex-wrap items-center gap-3 mt-2">
+          {(defense.status === "SCHEDULED" || defense.status === "COMPLETED" || defense.status === "CANCELED") && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                Progresso:
+              </span>
+              {defense.status === "SCHEDULED" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
+                  <Clock className="h-3 w-3" />
+                  Agendada
+                </span>
+              )}
+              {defense.status === "COMPLETED" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Concluída
+                </span>
+              )}
+              {defense.status === "CANCELED" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
+                  <XCircle className="h-3 w-3" />
+                  Cancelada
+                </span>
+              )}
+            </div>
           )}
-          {defense.status === "COMPLETED" && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-              <CheckCircle2 className="h-3 w-3" />
-              Concluída
-            </span>
+          {(defense.status === "SCHEDULED" || defense.status === "COMPLETED" || defense.status === "CANCELED") &&
+           (defense.result === "APPROVED" || defense.result === "FAILED") && (
+            <span className="text-muted-foreground/30">|</span>
           )}
-          {defense.status === "CANCELED" && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
-              <XCircle className="h-3 w-3" />
-              Cancelada
-            </span>
-          )}
-          {defense.result === "APPROVED" && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-              <CheckCircle2 className="h-3 w-3" />
-              Aprovado
-            </span>
-          )}
-          {defense.result === "FAILED" && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
-              <XCircle className="h-3 w-3" />
-              Reprovado
-            </span>
+          {(defense.result === "APPROVED" || defense.result === "FAILED") && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                Resultado:
+              </span>
+              {defense.result === "APPROVED" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Aprovado
+                </span>
+              )}
+              {defense.result === "FAILED" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
+                  <XCircle className="h-3 w-3" />
+                  Reprovado
+                </span>
+              )}
+            </div>
           )}
         </div>
       </CardHeader>
@@ -117,6 +174,13 @@ export default function DefensesPage() {
             })}
           </span>
         </div>
+
+        {defense.course && (
+          <div className="flex items-center gap-2 text-sm">
+            <Book className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground truncate">{defense.course.name}</span>
+          </div>
+        )}
 
         {defense.location && (
           <div className="flex items-center gap-2 text-sm">
@@ -137,7 +201,33 @@ export default function DefensesPage() {
     </Card>
   )
 
-  const canCreateDefense = user?.role === "COORDINATOR" || user?.role === "ADMIN"
+  const handleFormSuccess = async () => {
+    const response = await defenseService.getAllDefenses(1, 100, "desc", searchQuery)
+    setDefenses(response.data)
+  }
+
+  const handleOpenDialog = async () => {
+    setIsFormDialogOpen(true)
+    if (advisors.length === 0 || students.length === 0) {
+      try {
+        const courseId = user?.metadata?.coordinator?.course?.id
+        if (!courseId) {
+          console.error("Course ID not found for coordinator")
+          console.error("Full user object:", user)
+          return
+        }
+
+        const [advisorsResponse, studentsResponse] = await Promise.all([
+          advisorService.getAllAdvisors(1, 100),
+          courseService.getStudentsByCourse(courseId),
+        ])
+        setAdvisors(advisorsResponse.data)
+        setStudents(studentsResponse.data)
+      } catch (error) {
+        console.error("Error fetching advisors and students:", error)
+      }
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -150,7 +240,7 @@ export default function DefensesPage() {
             </p>
           </div>
           {canCreateDefense && (
-            <Button className="cursor-pointer">
+            <Button className="cursor-pointer" onClick={handleOpenDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Nova Defesa
             </Button>
@@ -236,6 +326,14 @@ export default function DefensesPage() {
         </>
       )}
       </div>
+
+      <DefenseFormDialog
+        open={isFormDialogOpen}
+        onOpenChange={setIsFormDialogOpen}
+        onSuccess={handleFormSuccess}
+        advisors={advisors}
+        students={students}
+      />
     </DashboardLayout>
   )
 }

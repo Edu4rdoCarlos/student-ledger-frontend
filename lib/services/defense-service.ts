@@ -1,4 +1,4 @@
-import { defenseRepository } from "@/lib/repositories/defense-repository"
+import { defenseRepository, type CreateDefensePayload } from "@/lib/repositories/defense-repository"
 
 export const defenseService = {
   async getAllDefenses(page = 1, perPage = 10, order: "asc" | "desc" = "desc", search = "") {
@@ -7,6 +7,11 @@ export const defenseService = {
 
   async getDefenseById(id: string) {
     const response = await defenseRepository.getById(id)
+    return response.data
+  },
+
+  async createDefense(payload: CreateDefensePayload) {
+    const response = await defenseRepository.create(payload)
     return response.data
   },
 }

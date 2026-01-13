@@ -219,9 +219,10 @@ export default function DashboardPage() {
               ) : (
                 <div className="space-y-3">
                   {approvals.slice(0, 5).map((approval) => {
-                    const approvedCount = approval.signatures.filter((s) => s.status === "APPROVED").length
-                    const totalSignatures = approval.signatures.length
-                    const pendingRoles = approval.signatures
+                    const signatures = approval.signatures || approval.approvals || []
+                    const approvedCount = signatures.filter((s) => s.status === "APPROVED").length
+                    const totalSignatures = signatures.length
+                    const pendingRoles = signatures
                       .filter((s) => s.status === "PENDING")
                       .map((s) => s.role)
                       .join(", ")
@@ -283,7 +284,7 @@ export default function DashboardPage() {
                     )
                   })}
                   {approvals.length > 5 && (
-                    <Link href="/verify">
+                    <Link href="/signatures">
                       <Button
                         variant="ghost"
                         size="sm"

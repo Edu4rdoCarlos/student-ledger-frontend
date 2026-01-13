@@ -10,11 +10,19 @@ export interface BaseUser {
   role: UserRole
 }
 
+export interface DefenseSummary {
+  id: string
+  title: string
+  defenseDate: string
+  result: string
+  status: string
+}
+
 export interface StudentMetadata {
   userId: string
   registration: string
   course: Course
-  defenseIds: string[]
+  defenses: DefenseSummary[]
 }
 
 export interface AdvisorMetadata {
@@ -22,15 +30,15 @@ export interface AdvisorMetadata {
   specialization: string
   department: Department
   course: Course
-  defenseIds: string[]
+  defenses: DefenseSummary[]
 }
 
 export interface CoordinatorMetadata {
   userId: string
   isActive: boolean
   course: Course
-  courses?: Array<{ code: string; name: string; active: boolean }>
   department: Department
+  defenses: DefenseSummary[]
 }
 
 export interface UserMetadata {

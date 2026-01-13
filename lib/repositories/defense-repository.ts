@@ -10,9 +10,22 @@ export interface DefenseDetailResponse {
   data: Defense
 }
 
+export interface CreateDefensePayload {
+  title: string
+  defenseDate: string
+  location: string
+  advisorId: string
+  studentIds: string[]
+  examBoard: {
+    name: string
+    email: string
+  }[]
+}
+
 export interface DefenseRepository {
   getAll(page?: number, perPage?: number, order?: "asc" | "desc", search?: string): Promise<PaginatedDefensesResponse>
   getById(id: string): Promise<DefenseDetailResponse>
+  create(payload: CreateDefensePayload): Promise<DefenseDetailResponse>
 }
 
 export const defenseRepository: DefenseRepository = {
@@ -25,5 +38,9 @@ export const defenseRepository: DefenseRepository = {
 
   async getById(id: string) {
     return apiClient.get<DefenseDetailResponse>(`/defenses/${id}`)
+  },
+
+  async create(payload: CreateDefensePayload) {
+    return apiClient.post<DefenseDetailResponse>("/defenses", payload)
   },
 }

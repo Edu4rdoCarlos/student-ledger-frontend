@@ -87,8 +87,9 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
     }
   }
 
-  const approvedCount = approval.signatures.filter((s) => s.status === "APPROVED").length
-  const totalSignatures = approval.signatures.length
+  const signatures = approval.signatures || approval.approvals || []
+  const approvedCount = signatures.filter((s) => s.status === "APPROVED").length
+  const totalSignatures = signatures.length
   const progressPercentage = (approvedCount / totalSignatures) * 100
 
   return (
@@ -148,6 +149,9 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
                     <div className="flex-1">
                       <p className="font-medium">{student.name}</p>
                       <p className="text-sm text-muted-foreground">Matrícula: {student.registration}</p>
+                      {student.email && (
+                        <p className="text-sm text-muted-foreground">{student.email}</p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -178,7 +182,7 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Assinaturas</h3>
             <div className="space-y-3">
-              {approval.signatures.map((signature, index) => (
+              {signatures.map((signature, index) => (
                 <div
                   key={index}
                   className={`flex items-start justify-between p-4 rounded-lg border transition-colors ${

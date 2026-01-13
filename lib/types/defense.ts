@@ -82,6 +82,11 @@ export interface Defense {
   examBoard?: DefenseExamBoardMember[]
   documents?: DefenseDocument[]
   signatures?: DocumentSignature[]
+  course?: {
+    id: string
+    code: string
+    name: string
+  }
   createdAt?: string
   updatedAt?: string
 }

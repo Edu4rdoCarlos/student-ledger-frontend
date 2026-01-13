@@ -44,6 +44,12 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Defesas que você participa",
       },
       {
+        label: "Assinaturas",
+        href: "/signatures",
+        icon: "file",
+        description: "Gerenciar assinaturas de documentos",
+      },
+      {
         label: "Verificar Documentos",
         href: "/verify",
         icon: "shield",
@@ -72,6 +78,12 @@ export function getNavigationItems(user: User): NavigationItem[] {
         href: "/defenses",
         icon: "presentation",
         description: "Gerenciar defesas do curso",
+      },
+      {
+        label: "Assinaturas",
+        href: "/signatures",
+        icon: "file",
+        description: "Gerenciar assinaturas de documentos",
       },
       {
         label: "Estudantes",
@@ -108,6 +120,12 @@ export function getNavigationItems(user: User): NavigationItem[] {
         href: "/defenses",
         icon: "presentation",
         description: "Todas as defesas",
+      },
+      {
+        label: "Assinaturas",
+        href: "/signatures",
+        icon: "file",
+        description: "Gerenciar assinaturas de documentos",
       },
       {
         label: "Cursos",

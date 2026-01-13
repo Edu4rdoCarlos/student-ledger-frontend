@@ -1,47 +1,73 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { apiClient } from "@/lib/api/client"
 
-export interface PendingApproval {
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED"
+
+export interface ApprovalItem {
   id: string
-  role: "ADVISOR" | "COORDINATOR" | "ADMIN" | "STUDENT"
-  status: "PENDING" | "APPROVED" | "REJECTED"
-  justification?: string
+  role: string
+  status: ApprovalStatus
+  approverName: string
   approvedAt?: string
-  createdAt: string
-  updatedAt?: string
+  approverId?: string
+  justification?: string
+}
+
+export interface DocumentApprovalSummary {
+  total: number
+  approved: number
+  pending: number
+  rejected: number
+}
+
+export interface DocumentWithApprovals {
   documentId: string
-  approverId: string
   documentTitle: string
   students: Array<{
     name: string
+    email: string
     registration: string
   }>
   courseName: string
-  signatures: Array<{
-    role: "ADVISOR" | "COORDINATOR" | "ADMIN" | "STUDENT"
-    status: "PENDING" | "APPROVED" | "REJECTED"
-    approverName: string
-    approvedAt?: string
-    justification?: string
-  }>
+  createdAt: string
+  approvals: ApprovalItem[]
+  summary: DocumentApprovalSummary
 }
 
-export function useApprovals() {
+// Mantém compatibilidade com código existente
+export interface PendingApproval extends DocumentWithApprovals {
+  // Campos adicionais para compatibilidade
+  id: string
+  role: "ADVISOR" | "COORDINATOR" | "ADMIN" | "STUDENT"
+  status: ApprovalStatus
+  approverId?: string
+  signatures: ApprovalItem[]
+}
+
+export function useApprovals(statusFilter: ApprovalStatus = "PENDING") {
   const [approvals, setApprovals] = useState<PendingApproval[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadApprovals()
-  }, [])
-
-  const loadApprovals = async () => {
+  const loadApprovals = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await apiClient.get<{ data: PendingApproval[] }>("/approvals")
-      setApprovals(response.data)
+      const response = await apiClient.get<{ data: DocumentWithApprovals[] }>(
+        `/approvals?status=${statusFilter}`
+      )
+
+      // Transforma os documentos em aprovações compatíveis com o formato antigo
+      const transformedData: PendingApproval[] = response.data.map((doc) => ({
+        ...doc,
+        id: doc.documentId,
+        role: "PENDING" as any, // Será determinado pela primeira aprovação pendente
+        status: statusFilter,
+        signatures: doc.approvals,
+      }))
+
+      setApprovals(transformedData)
       setError(null)
     } catch (err) {
       setError("Erro ao carregar aprovações")
@@ -49,7 +75,11 @@ export function useApprovals() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter])
+
+  useEffect(() => {
+    loadApprovals()
+  }, [loadApprovals])
 
   return {
     approvals,

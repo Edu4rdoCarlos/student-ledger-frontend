@@ -13,6 +13,7 @@ export interface DocumentRepository {
   verifyHash(hash: string): Promise<Document | null>
   validateDocument(file: File): Promise<Document | null>
   download(id: string): Promise<Blob>
+  uploadNewVersion(id: string, file: File, reason: string): Promise<Document>
 }
 
 export const documentRepository: DocumentRepository = {
@@ -240,5 +241,22 @@ export const documentRepository: DocumentRepository = {
     }
 
     return response.blob()
+  },
+
+  async uploadNewVersion(id: string, file: File, reason: string) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('reason', reason)
+
+    const response = await fetch(`/api/documents/${id}/versions`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error('Erro ao enviar nova versão do documento')
+    }
+
+    return response.json()
   },
 }
