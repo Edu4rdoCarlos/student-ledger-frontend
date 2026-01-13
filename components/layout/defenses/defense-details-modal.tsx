@@ -58,6 +58,29 @@ export function DefenseDetailsModal({ defense, open, onOpenChange, loading }: De
           </div>
         ) : defense ? (
           <div className="space-y-6">
+            {defense.status === "SCHEDULED" && (user?.role === "COORDINATOR" || user?.role === "ADMIN") && (
+              <div className="p-4 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm mb-1">Defesa Agendada</p>
+                    <p className="text-xs text-muted-foreground">
+                      Clique no botão ao lado para registrar o resultado e finalizar a defesa
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="gap-2 bg-primary hover:bg-primary/90 cursor-pointer shrink-0"
+                    onClick={() => {
+                      toast.info("Funcionalidade em desenvolvimento")
+                    }}
+                  >
+                    <FileText className="h-4 w-4" />
+                    Finalizar Defesa
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div>
               <h3 className="text-xl font-semibold mb-3">{defense.title}</h3>
               <div className="flex flex-wrap gap-2">

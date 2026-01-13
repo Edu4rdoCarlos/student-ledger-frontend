@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/primitives/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/shared/card"
 import { Input } from "@/components/primitives/input"
@@ -8,16 +9,13 @@ import { Calendar, MapPin, CheckCircle2, Clock, XCircle, Eye, Search, Plus } fro
 import type { Defense } from "@/lib/types/defense"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { defenseService } from "@/lib/services/defense-service"
-import { DefenseDetailsModal } from "@/components/layout/defenses/defense-details-modal"
 import { useUser } from "@/lib/hooks/use-user-role"
 
 export default function DefensesPage() {
   const { user } = useUser()
+  const router = useRouter()
   const [defenses, setDefenses] = useState<Defense[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedDefense, setSelectedDefense] = useState<Defense | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [loadingDetails, setLoadingDetails] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
   const userDefenseIds = useMemo(() => {
@@ -61,23 +59,16 @@ export default function DefensesPage() {
     return () => clearTimeout(debounceTimer)
   }, [searchQuery])
 
-  const handleViewDetails = async (defense: Defense) => {
-    try {
-      setLoadingDetails(true)
-      setIsModalOpen(true)
-
-      const fullDefenseData = await defenseService.getDefenseById(defense.id)
-      setSelectedDefense(fullDefenseData)
-    } catch (error) {
-      console.error("Erro ao buscar detalhes da defesa:", error)
-      setSelectedDefense(defense)
-    } finally {
-      setLoadingDetails(false)
-    }
+  const handleViewDetails = (defense: Defense) => {
+    router.push(`/defenses/${defense.id}`)
   }
 
   const renderDefenseCard = (defense: Defense) => (
-    <Card key={defense.id} className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+    <Card
+      key={defense.id}
+      className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+      onClick={() => handleViewDetails(defense)}
+    >
       <CardHeader className="pb-3">
         <CardTitle className="text-lg line-clamp-2">{defense.title}</CardTitle>
         <div className="flex flex-wrap gap-1.5 mt-2">
@@ -137,7 +128,6 @@ export default function DefensesPage() {
         <Button
           variant="default"
           size="sm"
-          onClick={() => handleViewDetails(defense)}
           className="w-full gap-2 bg-primary hover:bg-primary/90"
         >
           <Eye className="h-4 w-4" />
@@ -246,13 +236,6 @@ export default function DefensesPage() {
         </>
       )}
       </div>
-
-      <DefenseDetailsModal
-        defense={selectedDefense}
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        loading={loadingDetails}
-      />
     </DashboardLayout>
   )
 }
