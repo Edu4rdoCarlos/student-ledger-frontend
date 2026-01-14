@@ -78,6 +78,13 @@ export default function DefenseDetailsPage() {
     return isAdmin || isCoordinatorOfCourse
   }, [userRelationship])
 
+  const canFinalizeDefense = useMemo(() => {
+    if (!defense) return false
+    const defenseDate = new Date(defense.defenseDate)
+    const now = new Date()
+    return defenseDate <= now
+  }, [defense])
+
   useEffect(() => {
     const fetchDefense = async () => {
       try {
@@ -194,7 +201,11 @@ export default function DefenseDetailsPage() {
               <DropdownMenuContent align="end" className="w-56">
                 {defense.status === "SCHEDULED" && (
                   <>
-                    <DropdownMenuItem onClick={() => setFinalizeModalOpen(true)} className="cursor-pointer">
+                    <DropdownMenuItem
+                      onClick={() => setFinalizeModalOpen(true)}
+                      className="cursor-pointer"
+                      disabled={!canFinalizeDefense}
+                    >
                       <FileText className="mr-2 h-4 w-4" />
                       Finalizar Defesa
                     </DropdownMenuItem>

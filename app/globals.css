@@ -199,3 +199,16 @@
     @apply cursor-pointer;
   }
 }
+
+@keyframes pulse-shadow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px color-mix(in oklch, var(--primary) 30%, transparent);
+  }
+}
+
+.animate-pulse-shadow {
+  animation: pulse-shadow 2s ease-in-out infinite;
+}

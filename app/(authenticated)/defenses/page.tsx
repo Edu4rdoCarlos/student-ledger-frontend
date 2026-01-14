@@ -102,12 +102,16 @@ export default function DefensesPage() {
     router.push(`/defenses/${defense.id}`)
   }
 
-  const renderDefenseCard = (defense: Defense) => (
-    <Card
-      key={defense.id}
-      className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col h-full"
-      onClick={() => handleViewDetails(defense)}
-    >
+  const renderDefenseCard = (defense: Defense) => {
+    const canFinalize = defense.status === "SCHEDULED" && new Date(defense.defenseDate) <= new Date()
+    const showPulse = canFinalize && canCreateDefense
+
+    return (
+      <Card
+        key={defense.id}
+        className={`hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col h-full ${showPulse ? "animate-pulse-shadow" : ""}`}
+        onClick={() => handleViewDetails(defense)}
+      >
       <CardHeader className="pb-3">
         <CardTitle className="text-lg line-clamp-2">{defense.title}</CardTitle>
         <div className="flex flex-wrap items-center gap-3 mt-2">
@@ -201,7 +205,8 @@ export default function DefensesPage() {
         </Button>
       </CardContent>
     </Card>
-  )
+    )
+  }
 
   const handleFormSuccess = async () => {
     const response = await defenseService.getAllDefenses(1, 100, "desc", searchQuery)
