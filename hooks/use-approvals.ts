@@ -58,11 +58,10 @@ export function useApprovals(statusFilter: ApprovalStatus = "PENDING") {
         `/approvals?status=${statusFilter}`
       )
 
-      // Transforma os documentos em aprovações compatíveis com o formato antigo
       const transformedData: PendingApproval[] = response.data.map((doc) => ({
         ...doc,
         id: doc.documentId,
-        role: "PENDING" as any, // Será determinado pela primeira aprovação pendente
+        role: "PENDING" as any,
         status: statusFilter,
         signatures: doc.approvals,
       }))

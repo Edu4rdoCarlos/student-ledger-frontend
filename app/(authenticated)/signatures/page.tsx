@@ -145,18 +145,18 @@ export default function SignaturesPage() {
     return (
       <div
         key={approval.id}
-        className={`group rounded-xl border border-border/50 bg-gradient-to-br ${config.bg} p-4 transition-all hover:shadow-lg hover:${config.border} ${status !== "REJECTED" ? "hover:scale-[1.02] cursor-pointer" : ""}`}
+        className={`group rounded-xl border border-border/50 bg-gradient-to-br ${config.bg} p-4 transition-all hover:shadow-lg hover:${config.border} hover:scale-[1.02] cursor-pointer`}
       >
         <div className="space-y-3">
           <div
             className="flex items-start justify-between gap-3"
-            onClick={() => status !== "REJECTED" && handleApprovalClick(approval)}
+            onClick={() => handleApprovalClick(approval)}
           >
             <div className="flex-1 space-y-1.5 min-w-0">
               <div className="flex items-start gap-2">
                 <FileText className={`h-4 w-4 ${config.text} mt-0.5 flex-shrink-0`} />
                 <div className="flex-1 min-w-0">
-                  <h4 className={`text-sm font-semibold text-foreground ${status !== "REJECTED" ? `group-hover:${config.text}` : ""} transition-colors line-clamp-2`}>
+                  <h4 className={`text-sm font-semibold text-foreground group-hover:${config.text} transition-colors line-clamp-2`}>
                     {approval.documentTitle}
                   </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">

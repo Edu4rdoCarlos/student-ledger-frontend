@@ -15,7 +15,6 @@ export function Header() {
   const handleLogout = async () => {
     setIsLoggingOut(true)
     await logout()
-    // Aguarda o tema ser limpo antes de redirecionar
     await new Promise((resolve) => setTimeout(resolve, 100))
     router.push("/login")
   }
