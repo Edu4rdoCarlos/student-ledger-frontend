@@ -36,9 +36,7 @@ export interface DocumentWithApprovals {
   summary: DocumentApprovalSummary
 }
 
-// Mantém compatibilidade com código existente
 export interface PendingApproval extends DocumentWithApprovals {
-  // Campos adicionais para compatibilidade
   id: string
   role: "ADVISOR" | "COORDINATOR" | "ADMIN" | "STUDENT"
   status: ApprovalStatus

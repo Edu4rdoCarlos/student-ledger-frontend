@@ -100,6 +100,13 @@ export function AddStudentDialog({ open, onOpenChange, onSuccess }: AddStudentDi
               {...register("registration")}
               placeholder="20231001"
               disabled={isSubmitting}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              onKeyDown={(e) => {
+                if (!/[0-9]/.test(e.key) && !["Backspace", "Delete", "Tab", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+                  e.preventDefault()
+                }
+              }}
             />
             {errors.registration && (
               <p className="text-sm text-red-600">{errors.registration.message}</p>

@@ -6,7 +6,8 @@ import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { defenseService } from "@/lib/services/defense-service"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Calendar, MapPin, Users, Plus, Trash2 } from "lucide-react"
+import { Calendar, MapPin, Users, Plus, Trash2, UserPlus } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useForm, useFieldArray } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -39,6 +40,7 @@ interface DefenseFormDialogProps {
 }
 
 export function DefenseFormDialog({ open, onOpenChange, onSuccess, advisors = [], students = [] }: DefenseFormDialogProps) {
+  const router = useRouter()
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
 
   useEffect(() => {
@@ -171,6 +173,7 @@ export function DefenseFormDialog({ open, onOpenChange, onSuccess, advisors = []
             <Input
               {...form.register("defenseDate")}
               type="datetime-local"
+              min={new Date().toISOString().slice(0, 16)}
               disabled={form.formState.isSubmitting}
             />
             {form.formState.errors.defenseDate && (
@@ -227,7 +230,22 @@ export function DefenseFormDialog({ open, onOpenChange, onSuccess, advisors = []
             </div>
             <div className="border rounded-md p-3 space-y-2 max-h-[200px] overflow-y-auto">
               {students.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum estudante disponível</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">Nenhum estudante disponível</p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      onOpenChange(false)
+                      router.push("/students")
+                    }}
+                    className="cursor-pointer gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10 h-auto py-1 px-2"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Adicionar
+                  </Button>
+                </div>
               ) : (
                 students.map((student) => {
                   const isSelected = selectedStudents.includes(student.userId)
