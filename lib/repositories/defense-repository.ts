@@ -63,7 +63,7 @@ export const defenseRepository: DefenseRepository = {
   },
 
   async reschedule(id: string, payload: RescheduleDefensePayload) {
-    return apiClient.post<DefenseDetailResponse>(`/defenses/${id}/reschedule`, payload)
+    return apiClient.patch<DefenseDetailResponse>(`/defenses/${id}/reschedule`, payload)
   },
 
   async cancel(id: string, payload: CancelDefensePayload) {
