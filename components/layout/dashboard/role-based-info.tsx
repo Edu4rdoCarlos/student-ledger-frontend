@@ -75,7 +75,7 @@ export function RoleBasedInfo() {
                     <span className="font-medium">{userInfo.course?.name}</span>
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Orientações Ativas:</span>{" "}
+                    <span className="text-muted-foreground">Orientações:</span>{" "}
                     <span className="font-medium">{userInfo.defenseIds.length}</span>
                   </p>
                 </div>

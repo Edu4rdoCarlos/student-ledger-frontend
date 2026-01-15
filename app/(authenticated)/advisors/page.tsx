@@ -9,6 +9,8 @@ import { useAdvisors } from "@/hooks/use-advisors"
 import { Card } from "@/components/shared/card"
 import type { Advisor } from "@/lib/types"
 import { useState } from "react"
+import { useAuthStore } from "@/lib/store/auth-store"
+import { Badge } from "@/components/primitives/badge"
 import { AdvisorDetailsModal } from "@/components/layout/advisors/advisor-details-modal"
 import { AddAdvisorDialog } from "@/components/layout/advisors/add-advisor-dialog"
 import { advisorService } from "@/lib/services/advisor-service"
@@ -21,6 +23,7 @@ export default function AdvisorsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
   const { advisors, metadata, loading, refetch } = useAdvisors(currentPage, 10)
+  const { user } = useAuthStore()
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -59,13 +62,19 @@ export default function AdvisorsPage() {
       label: "Nome",
       render: (advisor: Advisor) => {
         const isActive = advisor.isActive ?? true
+        const isCurrentUser = user?.id === advisor.userId
         return (
           <div className={`flex items-center gap-3 ${!isActive ? "opacity-50" : ""}`}>
             <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? "bg-primary/10 dark:bg-primary/20" : "bg-muted"}`}>
               <User className={`h-5 w-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
             </div>
-            <div>
+            <div className="flex items-center gap-2">
               <p className={`font-semibold ${!isActive ? "text-muted-foreground" : ""}`}>{advisor.name}</p>
+              {isCurrentUser && (
+                <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
+                  Você
+                </Badge>
+              )}
             </div>
           </div>
         )
@@ -101,7 +110,7 @@ export default function AdvisorsPage() {
     },
     {
       key: "activeAdvisorships",
-      label: "Orientações Ativas",
+      label: "Orientações",
       render: (advisor: Advisor) => {
         const isActive = advisor.isActive ?? true
         const count = advisor.activeAdvisorshipsCount

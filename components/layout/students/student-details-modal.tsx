@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/shared/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shared/tabs"
-import { User, Trophy, FileText, History, Mail, GraduationCap, Calendar, CheckCircle2, XCircle, Clock, Edit2, Save, X, Download, MapPin, Users, Briefcase } from "lucide-react"
+import { User, Trophy, FileText, Mail, GraduationCap, Calendar, CheckCircle2, XCircle, Clock, Edit2, Save, X, Download, MapPin, Users, Briefcase } from "lucide-react"
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select"
@@ -160,7 +160,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
             </DialogHeader>
 
             <Tabs defaultValue="profile" className="mt-6 flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-4 shrink-0">
+          <TabsList className="grid w-full grid-cols-3 shrink-0">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" />
               Perfil
@@ -177,10 +177,6 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
             <TabsTrigger value="documents" className="gap-2">
               <FileText className="h-4 w-4" />
               Documentos
-            </TabsTrigger>
-            <TabsTrigger value="history" className="gap-2">
-              <History className="h-4 w-4" />
-              Histórico
             </TabsTrigger>
           </TabsList>
 
@@ -590,68 +586,6 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
             )}
           </TabsContent>
 
-          {/* Tab: Histórico */}
-          <TabsContent value="history" className="space-y-4 mt-6 flex-1 overflow-y-auto">
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <h4 className="font-semibold">Timeline Acadêmica</h4>
-                <div className="relative space-y-4 pl-6 border-l-2 border-border">
-                  <div className="relative">
-                    <div className="absolute -left-[1.6rem] mt-1.5 h-3 w-3 rounded-full border-2 border-primary bg-background"></div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Cadastro no Sistema</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(student.createdAt)}</p>
-                    </div>
-                  </div>
-
-                  {defenses.length > 0 && (
-                    <>
-                      {defenses.map((defense, idx) => (
-                        <div key={defense.id || `history-defense-${idx}`} className="relative">
-                          <div className="absolute -left-[1.6rem] mt-1.5 h-3 w-3 rounded-full border-2 border-primary bg-background"></div>
-                          <div className="space-y-1">
-                            <p className="text-sm font-medium">Defesa: {defense.title}</p>
-                            <p className="text-xs text-muted-foreground">{formatDate(defense.defenseDate)}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Resultado: {defense.result === "APPROVED" ? "Aprovado" : defense.result === "FAILED" ? "Reprovado" : "Pendente"}
-                              {defense.result !== "PENDING" && ` - Nota: ${defense.finalGrade}`}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </>
-                  )}
-
-                  <div className="relative">
-                    <div className="absolute -left-[1.6rem] mt-1.5 h-3 w-3 rounded-full border-2 border-muted-foreground bg-background"></div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Última Atualização</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(student.updatedAt)}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">Total de Defesas</p>
-                  <p className="text-2xl font-bold">{defenses.length}</p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">Aprovadas</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {defenses.filter(d => d.result === "APPROVED").length}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">Reprovadas</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {defenses.filter(d => d.result === "FAILED").length}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
         </Tabs>
           </>
         )}

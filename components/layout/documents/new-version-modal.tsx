@@ -5,6 +5,7 @@ import { Upload, FileText } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/shared/dialog"
 import { Button } from "@/components/primitives/button"
 import { Textarea } from "@/components/primitives/textarea"
+import { Input } from "@/components/primitives/input"
 import { toast } from "sonner"
 import { documentRepository } from "@/lib/repositories/document-repository"
 
@@ -13,8 +14,8 @@ interface NewVersionModalProps {
   onOpenChange: (open: boolean) => void
   documentTitle: string
   approvalId: string
-  rejectionReason: string
-  approverName: string
+  rejectionReason?: string
+  approverName?: string
   onSuccess?: () => void
 }
 
@@ -29,6 +30,7 @@ export function NewVersionModal({
 }: NewVersionModalProps) {
   const [document, setDocument] = useState<File | null>(null)
   const [reason, setReason] = useState("")
+  const [finalGrade, setFinalGrade] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -98,9 +100,20 @@ export function NewVersionModal({
       return
     }
 
+    let grade: number | undefined
+    if (finalGrade) {
+      grade = parseFloat(finalGrade)
+      if (isNaN(grade) || grade < 0 || grade > 10) {
+        toast.error("Nota inválida", {
+          description: "Por favor, informe uma nota válida entre 0 e 10.",
+        })
+        return
+      }
+    }
+
     setSubmitting(true)
     try {
-      await documentRepository.uploadNewVersion(approvalId, document, reason)
+      await documentRepository.uploadNewVersion(approvalId, document, reason, grade)
 
       toast.success("Nova versão enviada!", {
         description: "O documento foi enviado e será reavaliado.",
@@ -121,6 +134,7 @@ export function NewVersionModal({
   const handleClose = () => {
     setDocument(null)
     setReason("")
+    setFinalGrade("")
     onOpenChange(false)
   }
 
@@ -140,17 +154,21 @@ export function NewVersionModal({
             <p className="text-sm text-muted-foreground">{documentTitle}</p>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Rejeitado por</label>
-            <p className="text-sm font-medium">{approverName}</p>
-          </div>
+          {rejectionReason && approverName && (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Rejeitado por</label>
+                <p className="text-sm font-medium">{approverName}</p>
+              </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Motivo da rejeição</label>
-            <p className="text-sm text-muted-foreground italic border-l-2 border-red-400 pl-3 py-2 bg-red-50 dark:bg-red-950/20 rounded">
-              "{rejectionReason}"
-            </p>
-          </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Motivo da rejeição</label>
+                <p className="text-sm text-muted-foreground italic border-l-2 border-red-400 pl-3 py-2 bg-red-50 dark:bg-red-950/20 rounded">
+                  "{rejectionReason}"
+                </p>
+              </div>
+            </>
+          )}
 
           <div className="space-y-2">
             <label className="text-sm font-medium">
@@ -190,7 +208,7 @@ export function NewVersionModal({
               <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-border">
                 <FileText className="h-8 w-8 text-primary flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{document.name}</p>
+                  <p className="text-sm font-medium truncate whitespace-pre-wrap">{document.name}</p>
                   <p className="text-xs text-muted-foreground">
                     {(document.size / 1024 / 1024).toFixed(2)} MB
                   </p>
@@ -223,6 +241,24 @@ export function NewVersionModal({
             />
             <p className="text-xs text-muted-foreground">
               Descreva as alterações feitas para atender às solicitações do avaliador.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Nota Final <span className="text-muted-foreground font-normal">(opcional)</span>
+            </label>
+            <Input
+              type="number"
+              placeholder="Digite a nota (0 a 10)"
+              value={finalGrade}
+              onChange={(e) => setFinalGrade(e.target.value)}
+              min={0}
+              max={10}
+              step={0.1}
+            />
+            <p className="text-xs text-muted-foreground">
+              Informe a nota final do trabalho (0 a 10).
             </p>
           </div>
         </div>

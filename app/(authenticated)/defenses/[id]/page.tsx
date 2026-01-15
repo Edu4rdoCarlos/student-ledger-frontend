@@ -23,6 +23,7 @@ import {
 import { RescheduleDefenseModal } from "@/components/layout/defenses/reschedule-defense-modal"
 import { FinalizeDefenseDialog } from "@/components/layout/defenses/finalize-defense-dialog"
 import { CancelDefenseDialog } from "@/components/layout/defenses/cancel-defense-dialog"
+import { NewVersionModal } from "@/components/layout/documents/new-version-modal"
 
 export default function DefenseDetailsPage() {
   const params = useParams()
@@ -33,6 +34,11 @@ export default function DefenseDetailsPage() {
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
   const [finalizeModalOpen, setFinalizeModalOpen] = useState(false)
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [newVersionModalOpen, setNewVersionModalOpen] = useState(false)
+  const [selectedDocForNewVersion, setSelectedDocForNewVersion] = useState<{
+    approvalId: string
+    documentTitle: string
+  } | null>(null)
 
   const userRelationship = useMemo(() => {
     if (!user || !defense) {
@@ -245,13 +251,25 @@ export default function DefenseDetailsPage() {
                               <p className="text-xs text-muted-foreground">Versão {doc.version}</p>
                             </div>
                             {allApproved && (
-                              <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                              <DropdownMenuItem onClick={() => {
+                                setSelectedDocForNewVersion({
+                                  approvalId: doc.id,
+                                  documentTitle: `${defense.title} - Versão ${doc.version}`,
+                                })
+                                setNewVersionModalOpen(true)
+                              }}>
                                 <Upload className="mr-2 h-4 w-4" />
                                 Nova Versão
                               </DropdownMenuItem>
                             )}
                             {hasPendingApprovals && (
-                              <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                              <DropdownMenuItem onClick={() => {
+                                setSelectedDocForNewVersion({
+                                  approvalId: doc.id,
+                                  documentTitle: `${defense.title} - Versão ${doc.version}`,
+                                })
+                                setNewVersionModalOpen(true)
+                              }}>
                                 <Upload className="mr-2 h-4 w-4" />
                                 Substituir Documento
                               </DropdownMenuItem>
@@ -548,6 +566,19 @@ export default function DefenseDetailsPage() {
           setDefense(updatedDefense)
         }}
       />
+
+      {selectedDocForNewVersion && (
+        <NewVersionModal
+          open={newVersionModalOpen}
+          onOpenChange={setNewVersionModalOpen}
+          documentTitle={selectedDocForNewVersion.documentTitle}
+          approvalId={selectedDocForNewVersion.approvalId}
+          onSuccess={async () => {
+            const updatedDefense = await defenseService.getDefenseById(defense.id)
+            setDefense(updatedDefense)
+          }}
+        />
+      )}
     </DashboardLayout>
   )
 }

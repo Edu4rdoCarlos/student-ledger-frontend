@@ -14,7 +14,7 @@ export interface DocumentRepository {
   verifyHash(hash: string): Promise<DocumentValidationResponse | null>
   validateDocument(file: File): Promise<DocumentValidationResponse | null>
   download(id: string): Promise<Blob>
-  uploadNewVersion(id: string, file: File, reason: string): Promise<Document>
+  uploadNewVersion(id: string, file: File, reason: string, finalGrade?: number): Promise<Document>
 }
 
 export const documentRepository: DocumentRepository = {
@@ -77,10 +77,13 @@ export const documentRepository: DocumentRepository = {
     return apiClient.downloadBlob(`/documents/${id}/download`)
   },
 
-  async uploadNewVersion(id: string, file: File, reason: string) {
+  async uploadNewVersion(id: string, file: File, reason: string, finalGrade?: number) {
     const formData = new FormData()
-    formData.append('file', file)
-    formData.append('reason', reason)
+    formData.append('document', file)
+    formData.append('changeReason', reason)
+    if (finalGrade !== undefined) {
+      formData.append('finalGrade', finalGrade.toString())
+    }
 
     return apiClient.uploadFormData<Document>(`/documents/${id}/versions`, formData)
   },

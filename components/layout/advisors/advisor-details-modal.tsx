@@ -5,7 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shared/ta
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select"
-import { User, Trophy, Mail, GraduationCap, Calendar, CheckCircle2, XCircle, Clock, MapPin, Users, Briefcase, Edit2, Save, X } from "lucide-react"
+import { User, Trophy, Mail, GraduationCap, Calendar, CheckCircle2, XCircle, Clock, MapPin, Users, Briefcase, Edit2, Save, X, Power } from "lucide-react"
+import { Switch } from "@/components/primitives/switch"
 import type { Advisor } from "@/lib/types"
 import { Badge } from "@/components/primitives/badge"
 import { useState, useEffect } from "react"
@@ -15,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import { useCourses } from "@/hooks/use-courses"
 import { useAdvisorWithDefenses } from "@/hooks/use-advisor-with-defenses"
+import { useAuthStore } from "@/lib/store/auth-store"
 
 interface AdvisorDetailsModalProps {
   advisor: Advisor | null
@@ -27,6 +29,9 @@ interface AdvisorDetailsModalProps {
 export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvisor, loading = false }: AdvisorDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false)
   const { myCourses, loading: loadingCourses } = useCourses()
+  const { user } = useAuthStore()
+
+  const isSelectedAdvisorCoordinator = advisor?.userId === user?.id && user?.role === "COORDINATOR"
   const { defenses, loading: loadingDefenses } = useAdvisorWithDefenses(advisor, open)
 
   const {
@@ -170,39 +175,41 @@ export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvis
               <TabsContent value="profile" className="space-y-6 mt-6 flex-1 overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold">Informações do Orientador</h3>
-                  {!isEditing ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleEdit}
-                      className="gap-2"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                      Editar
-                    </Button>
-                  ) : (
-                    <div className="flex gap-2">
+                  {!isSelectedAdvisorCoordinator && (
+                    !isEditing ? (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleCancel}
-                        disabled={isSubmitting}
+                        onClick={handleEdit}
                         className="gap-2"
                       >
-                        <X className="h-4 w-4" />
-                        Cancelar
+                        <Edit2 className="h-4 w-4" />
+                        Editar
                       </Button>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={handleSubmit(onSubmit)}
-                        disabled={isSubmitting}
-                        className="gap-2 bg-primary hover:bg-primary/90"
-                      >
-                        <Save className="h-4 w-4" />
-                        {isSubmitting ? "Salvando..." : "Salvar"}
-                      </Button>
-                    </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCancel}
+                          disabled={isSubmitting}
+                          className="gap-2"
+                        >
+                          <X className="h-4 w-4" />
+                          Cancelar
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={handleSubmit(onSubmit)}
+                          disabled={isSubmitting}
+                          className="gap-2 bg-primary hover:bg-primary/90"
+                        >
+                          <Save className="h-4 w-4" />
+                          {isSubmitting ? "Salvando..." : "Salvar"}
+                        </Button>
+                      </div>
+                    )
                   )}
                 </div>
 
@@ -348,6 +355,45 @@ export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvis
                           </span>
                         )}
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Ativo</label>
+                      {isEditing ? (
+                        <Controller
+                          name="isActive"
+                          control={control}
+                          render={({ field }) => (
+                            <div className="flex items-center gap-3">
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                disabled={isSubmitting}
+                              />
+                              <span className={`text-sm font-medium ${field.value ? "text-green-600" : "text-muted-foreground"}`}>
+                                {field.value ? "Ativo" : "Inativo"}
+                              </span>
+                            </div>
+                          )}
+                        />
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Power className="h-4 w-4 text-muted-foreground" />
+                          {advisor.isActive ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-400">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Ativo
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-400">
+                              <XCircle className="h-3 w-3" />
+                              Inativo
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
