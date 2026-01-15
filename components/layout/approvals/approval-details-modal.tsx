@@ -6,6 +6,7 @@ import { Badge } from "@/components/primitives/badge"
 import { Button } from "@/components/primitives/button"
 import { useUserRole } from "@/lib/hooks/use-user-role"
 import { toast } from "sonner"
+import { approvalService } from "@/lib/services/approval-service"
 import type { PendingApproval } from "@/hooks/use-approvals"
 import { useState } from "react"
 
@@ -24,10 +25,12 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
   const handleSendEmail = async (signature: any) => {
     setSendingEmail(true)
     try {
+      await approvalService.notifyApprover(signature.id)
       toast.success("E-mail enviado com sucesso!", {
         description: `Notificação enviada para ${signature.approverName}`,
       })
     } catch (error) {
+      console.error("Erro ao notificar aprovador:", error)
       toast.error("Erro ao enviar e-mail", {
         description: "Não foi possível enviar a notificação. Tente novamente.",
       })

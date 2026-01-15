@@ -1,24 +1,19 @@
-import { api } from "@/lib/api"
+import { approvalRepository } from "@/lib/repositories/approval-repository"
 
 export const approvalService = {
   async overrideRejection(approvalId: string, reason: string) {
-    const response = await api.post(`/approvals/${approvalId}/override-rejection`, {
-      reason,
-    })
-    return response.data
+    return approvalRepository.overrideRejection(approvalId, reason)
   },
 
   async approveDocument(approvalId: string, justification?: string) {
-    const response = await api.post(`/approvals/${approvalId}/approve`, {
-      justification,
-    })
-    return response.data
+    return approvalRepository.approveDocument(approvalId, justification)
   },
 
   async rejectDocument(approvalId: string, justification: string) {
-    const response = await api.post(`/approvals/${approvalId}/reject`, {
-      justification,
-    })
-    return response.data
+    return approvalRepository.rejectDocument(approvalId, justification)
+  },
+
+  async notifyApprover(approvalId: string) {
+    return approvalRepository.notifyApprover(approvalId)
   },
 }

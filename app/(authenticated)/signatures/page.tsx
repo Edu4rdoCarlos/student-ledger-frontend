@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { FileText, AlertCircle, User, Clock, CheckCircle, XCircle, Search, RefreshCcw, Upload } from "lucide-react"
+import { FileText, AlertCircle, User, Clock, CheckCircle, XCircle, Search, RefreshCcw, Upload, Mail } from "lucide-react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent } from "@/components/shared/card"
 import { useApprovals, type PendingApproval } from "@/hooks/use-approvals"
@@ -52,6 +52,20 @@ export default function SignaturesPage() {
   const handleEvaluate = (approval: PendingApproval) => {
     setSelectedForEvaluation(approval)
     setEvaluateModalOpen(true)
+  }
+
+  const handleNotifyApprover = async (approvalId: string) => {
+    try {
+      await approvalService.notifyApprover(approvalId)
+      toast.success("Notificação enviada!", {
+        description: "O aprovador foi notificado por e-mail.",
+      })
+    } catch (error) {
+      console.error("Erro ao notificar aprovador:", error)
+      toast.error("Erro ao enviar notificação", {
+        description: "Não foi possível enviar a notificação. Tente novamente.",
+      })
+    }
   }
 
   const handleSubmitReconsideration = async () => {
@@ -105,15 +119,12 @@ export default function SignaturesPage() {
       .map((s) => s.role)
       .join(", ")
 
-    // Find rejected signature details
     const rejectedSignature = signatures.find((s) => s.status === "REJECTED")
 
-    // Check if current user has a pending approval
     const myPendingApproval = signatures.find(
       (s) => s.status === "PENDING" && s.approverId === user?.id
     )
 
-    // Block evaluation for coordinator if there's a rejection
     const hasRejection = !!rejectedSignature
     const isCoordinator = user?.role === "COORDINATOR"
     const canEvaluate = myPendingApproval && !(isCoordinator && hasRejection)
@@ -147,9 +158,9 @@ export default function SignaturesPage() {
         key={approval.id}
         className={`group rounded-xl border border-border/50 bg-gradient-to-br ${config.bg} p-4 transition-all hover:shadow-lg hover:${config.border} hover:scale-[1.02] cursor-pointer`}
       >
-        <div className="space-y-3">
+        <div className="space-y-3 flex flex-col justify-between h-full">
           <div
-            className="flex items-start justify-between gap-3"
+            className="flex flex-col-reverse  items-start justify-between gap-3"
             onClick={() => handleApprovalClick(approval)}
           >
             <div className="flex-1 space-y-1.5 min-w-0">
@@ -175,7 +186,7 @@ export default function SignaturesPage() {
               )}
             </div>
 
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col m-0 ml-auto items-end gap-2">
               <div className={`flex items-center gap-1 px-2 py-1 rounded-md bg-${status === "PENDING" ? "amber" : status === "APPROVED" ? "emerald" : "red"}-100 dark:bg-${status === "PENDING" ? "amber" : status === "APPROVED" ? "emerald" : "red"}-900/30`}>
                 <StatusIcon className={`h-3 w-3 ${config.text}`} />
                 <span className={`text-xs font-medium ${config.text}`}>
@@ -198,29 +209,26 @@ export default function SignaturesPage() {
                   {approvedCount}/{totalSignatures}
                 </span>
               </div>
-
-              {myPendingApproval && (
-                <div className="pl-6 pt-2 border-t space-y-2">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleEvaluate(approval)
-                    }}
-                    disabled={!canEvaluate}
-                    className="w-full gap-2"
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    Avaliar Documento
-                  </Button>
-                  {isCoordinator && hasRejection && (
-                    <p className="text-xs text-muted-foreground italic">
-                      Aguardando resolução da rejeição antes de avaliar
-                    </p>
-                  )}
-                </div>
-              )}
+              <div className="pl-6 pt-2 border-t space-y-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleEvaluate(approval)
+                  }}
+                  disabled={!canEvaluate || !myPendingApproval}
+                  className="w-full gap-2"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  Avaliar Documento
+                </Button>
+                {isCoordinator && hasRejection && (
+                  <p className="text-xs text-muted-foreground italic">
+                    Aguardando resolução da rejeição antes de avaliar
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -320,7 +328,7 @@ export default function SignaturesPage() {
     }
 
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 ">
         {filteredApprovals.map((approval) => renderApprovalCard(approval, status))}
       </div>
     )
