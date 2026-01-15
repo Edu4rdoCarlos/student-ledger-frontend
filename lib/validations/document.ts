@@ -18,7 +18,9 @@ export const approvalSchema = z.object({
 })
 
 export const verifyHashSchema = z.object({
-  hash: z.string().min(64, "Hash SHA-256 inválido").max(64, "Hash SHA-256 inválido"),
+  hash: z.string().transform(val => val.trim()).pipe(
+    z.string().min(64, "Hash SHA-256 inválido (deve ter 64 caracteres)").max(64, "Hash SHA-256 inválido (deve ter 64 caracteres)")
+  ),
 })
 
 export type DocumentFormData = z.infer<typeof documentSchema>

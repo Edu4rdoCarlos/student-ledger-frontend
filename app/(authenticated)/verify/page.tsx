@@ -3,19 +3,21 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Shield, CheckCircle, XCircle, Sparkles, Lock, User, GraduationCap, Upload, FileText, RotateCcw } from "lucide-react"
+import { Shield, CheckCircle, XCircle, Sparkles, Lock, User, GraduationCap, Upload, FileText, RotateCcw, Clock } from "lucide-react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared/card"
 import { verifyHashSchema, type VerifyHashFormData } from "@/lib/validations/document"
 import { documentService } from "@/lib/services/document-service"
-import type { Document } from "@/lib/types"
+import type { DocumentValidationResponse } from "@/lib/types"
 import { toast } from "sonner"
+
+type ValidationResult = DocumentValidationResponse | "not-found" | null
 
 export default function VerifyPage() {
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<Document | null | "not-found">(null)
+  const [result, setResult] = useState<ValidationResult>(null)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [calculatingHash, setCalculatingHash] = useState(false)
 
@@ -26,6 +28,7 @@ export default function VerifyPage() {
     formState: { errors },
   } = useForm<VerifyHashFormData>({
     resolver: zodResolver(verifyHashSchema),
+    mode: "onChange",
   })
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,14 +40,24 @@ export default function VerifyPage() {
       setUploadedFile(file)
       toast.info("Validando documento...")
 
-      const doc = await documentService.validateDocument(file)
-      setResult(doc || "not-found")
+      const response = await documentService.validateDocument(file)
 
-      if (doc) {
-        setValue("hash", doc.hash)
-        toast.success("Documento validado com sucesso!")
+      if (!response) {
+        setResult("not-found")
+        toast.error("Documento não encontrado")
+        return
+      }
+
+      setResult(response)
+
+      if (response.document) {
+        setValue("hash", response.document.documentHash)
+      }
+
+      if (response.isValid) {
+        toast.success("Documento autêntico!")
       } else {
-        toast.error("Documento não encontrado na blockchain")
+        toast.warning(response.message || "Documento encontrado mas ainda não foi aprovado")
       }
     } catch (error) {
       toast.error("Erro ao validar documento")
@@ -58,9 +71,24 @@ export default function VerifyPage() {
   const onSubmit = async (data: VerifyHashFormData) => {
     try {
       setLoading(true)
-      const doc = await documentService.verifyDocumentHash(data.hash)
-      setResult(doc || "not-found")
+      const response = await documentService.verifyDocumentHash(data.hash)
+
+      if (!response) {
+        setResult("not-found")
+        toast.error("Documento não encontrado")
+        return
+      }
+
+      setResult(response)
+
+      if (response.isValid) {
+        toast.success("Documento autêntico!")
+      } else {
+        toast.warning(response.message || "Documento encontrado mas ainda não foi aprovado")
+      }
     } catch (error) {
+      toast.error("Erro ao verificar documento")
+      console.error(error)
       setResult("not-found")
     } finally {
       setLoading(false)
@@ -215,13 +243,81 @@ export default function VerifyPage() {
                   <div>
                     <h3 className="text-2xl font-bold mb-2">Documento Não Encontrado</h3>
                     <p className="text-sm text-muted-foreground max-w-md">
-                      O hash informado não corresponde a nenhum documento registrado no blockchain
+                      O documento não foi encontrado no sistema
                     </p>
                   </div>
                   <Button
                     onClick={resetVerification}
                     variant="outline"
                     className="mt-4"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Nova Verificação
+                  </Button>
+                </div>
+              ) : !result.isValid ? (
+                <div className="space-y-6">
+                  <div className="flex flex-col items-center space-y-4 text-center pb-6 border-b border-border/50">
+                    <div className="rounded-2xl bg-gradient-to-br from-amber-100 to-yellow-100 dark:from-amber-950/30 dark:to-yellow-950/30 p-6 shadow-lg">
+                      <Clock className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2 text-amber-700 dark:text-amber-400">
+                        {result.document?.status === "INACTIVE" ? "Documento Inativo" : "Documento Pendente"}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {result.message}
+                      </p>
+                    </div>
+                  </div>
+
+                  {result.document && (
+                    <div className="space-y-4">
+                      {result.document.defenseInfo?.students && result.document.defenseInfo.students.length > 0 && (
+                        <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
+                          <div className="flex items-center gap-2 mb-2">
+                            <User className="h-4 w-4 text-primary" />
+                            <p className="text-xs font-medium text-muted-foreground">Aluno(s)</p>
+                          </div>
+                          <p className="font-semibold">{result.document.defenseInfo.students.join(", ") || "Não informado"}</p>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {result.document.defenseInfo?.advisor && (
+                          <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <GraduationCap className="h-4 w-4 text-primary" />
+                              <p className="text-xs font-medium text-muted-foreground">Orientador</p>
+                            </div>
+                            <p className="font-semibold">{result.document.defenseInfo.advisor || "Não informado"}</p>
+                          </div>
+                        )}
+
+                        {result.document.defenseInfo?.course && (
+                          <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Curso</p>
+                            <p className="font-semibold">{result.document.defenseInfo.course || "Não informado"}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border border-amber-200/50 dark:border-amber-800/30">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          <p className="text-xs font-medium text-amber-900 dark:text-amber-100">Hash SHA-256</p>
+                        </div>
+                        <p className="break-all font-mono text-xs text-amber-800 dark:text-amber-200 bg-amber-100/50 dark:bg-amber-950/30 p-2 rounded">
+                          {result.document.documentHash}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={resetVerification}
+                    variant="outline"
+                    className="w-full"
                   >
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Nova Verificação
@@ -236,50 +332,53 @@ export default function VerifyPage() {
                     <div>
                       <h3 className="text-2xl font-bold mb-2 text-emerald-700 dark:text-emerald-400">Documento Autêntico</h3>
                       <p className="text-sm text-muted-foreground">
-                        O documento foi verificado e está registrado no blockchain
+                        O documento foi verificado e está registrado na blockchain
                       </p>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Título do Documento</p>
-                      <p className="font-semibold text-lg">{result.title}</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
-                        <div className="flex items-center gap-2 mb-2">
-                          <User className="h-4 w-4 text-primary" />
-                          <p className="text-xs font-medium text-muted-foreground">Aluno</p>
+                  {result.document && (
+                    <div className="space-y-4">
+                      {result.document.defenseInfo?.students && result.document.defenseInfo.students.length > 0 && (
+                        <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
+                          <div className="flex items-center gap-2 mb-2">
+                            <User className="h-4 w-4 text-primary" />
+                            <p className="text-xs font-medium text-muted-foreground">Aluno(s)</p>
+                          </div>
+                          <p className="font-semibold">{result.document.defenseInfo.students.join(", ")}</p>
                         </div>
-                        <p className="font-semibold">{result.studentName}</p>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {result.document.defenseInfo?.advisor && (
+                          <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <GraduationCap className="h-4 w-4 text-primary" />
+                              <p className="text-xs font-medium text-muted-foreground">Orientador</p>
+                            </div>
+                            <p className="font-semibold">{result.document.defenseInfo.advisor}</p>
+                          </div>
+                        )}
+
+                        {result.document.defenseInfo?.course && (
+                          <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Curso</p>
+                            <p className="font-semibold">{result.document.defenseInfo.course}</p>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border border-emerald-200/50 dark:border-emerald-800/30">
                         <div className="flex items-center gap-2 mb-2">
-                          <GraduationCap className="h-4 w-4 text-primary" />
-                          <p className="text-xs font-medium text-muted-foreground">Orientador</p>
+                          <Lock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                          <p className="text-xs font-medium text-emerald-900 dark:text-emerald-100">Hash SHA-256</p>
                         </div>
-                        <p className="font-semibold">{result.orientadorName}</p>
+                        <p className="break-all font-mono text-xs text-emerald-800 dark:text-emerald-200 bg-emerald-100/50 dark:bg-emerald-950/30 p-2 rounded">
+                          {result.document.documentHash}
+                        </p>
                       </div>
                     </div>
-
-                    <div className="p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-border/50">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Curso</p>
-                      <p className="font-semibold">{result.course}</p>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border border-emerald-200/50 dark:border-emerald-800/30">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Lock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                        <p className="text-xs font-medium text-emerald-900 dark:text-emerald-100">Hash SHA-256</p>
-                      </div>
-                      <p className="break-all font-mono text-xs text-emerald-800 dark:text-emerald-200 bg-emerald-100/50 dark:bg-emerald-950/30 p-2 rounded">
-                        {result.hash}
-                      </p>
-                    </div>
-                  </div>
+                  )}
 
                   <Button
                     onClick={resetVerification}

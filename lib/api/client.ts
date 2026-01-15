@@ -140,6 +140,48 @@ class ApiClient {
     return this.request<T>(endpoint, { ...options, method: "DELETE" })
   }
 
+  async downloadBlob(endpoint: string, options: RequestOptions = {}): Promise<Blob> {
+    const { skipAuth = false, ...fetchOptions } = options
+
+    const headers: HeadersInit = {
+      ...fetchOptions.headers,
+    }
+
+    if (!skipAuth && this.accessToken) {
+      ;(headers as Record<string, string>)["Authorization"] = `Bearer ${this.accessToken}`
+    }
+
+    let response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...fetchOptions,
+      method: "GET",
+      headers,
+      credentials: "include",
+    })
+
+    if (response.status === 401 && !skipAuth) {
+      const newToken = await this.refreshToken()
+
+      if (newToken) {
+        ;(headers as Record<string, string>)["Authorization"] = `Bearer ${newToken}`
+        response = await fetch(`${API_BASE_URL}${endpoint}`, {
+          ...fetchOptions,
+          method: "GET",
+          headers,
+          credentials: "include",
+        })
+      } else {
+        window.dispatchEvent(new CustomEvent("auth:logout"))
+        throw new Error("Sessão expirada")
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(`Erro ao baixar arquivo: HTTP ${response.status}`)
+    }
+
+    return response.blob()
+  }
+
   async uploadFormData<T>(endpoint: string, formData: FormData, options: Omit<RequestOptions, 'body'> = {}): Promise<T> {
     const { skipAuth = false, skipToast = false, ...fetchOptions } = options
 

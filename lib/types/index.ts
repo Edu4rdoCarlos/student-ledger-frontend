@@ -110,3 +110,19 @@ export interface DashboardSummary {
   approvedDocuments: number
   totalStudents: number
 }
+
+export interface DocumentValidationResponse {
+  isValid: boolean
+  document: {
+    id: string
+    documentHash: string
+    documentCid: string
+    status: "PENDING" | "APPROVED" | "INACTIVE"
+    defenseInfo?: {
+      students: string[]
+      advisor: string
+      course: string
+    }
+  } | null
+  message: string
+}
