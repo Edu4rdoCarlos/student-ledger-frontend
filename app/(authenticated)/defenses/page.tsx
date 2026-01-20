@@ -18,37 +18,36 @@ export default function DefensesPage() {
   const { user } = useUser()
   const router = useRouter()
   const [defenses, setDefenses] = useState<Defense[]>([])
+  const [myDefenses, setMyDefenses] = useState<Defense[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false)
   const [advisors, setAdvisors] = useState<Advisor[]>([])
   const [students, setStudents] = useState<Student[]>([])
 
-  const userDefenseIds = useMemo(() => {
-    if (!user?.metadata) return []
+  const myDefenseIds = useMemo(() => {
+    return myDefenses.map(d => d.id)
+  }, [myDefenses])
 
-    if (user.metadata.student?.defenses) {
-      return user.metadata.student.defenses.map(d => d.id)
-    }
-
-    if (user.metadata.advisor?.defenses) {
-      return user.metadata.advisor.defenses.map(d => d.id)
-    }
-
-    if (user.metadata.coordinator?.defenses) {
-      return user.metadata.coordinator.defenses.map(d => d.id)
-    }
-
-    return []
-  }, [user])
-
-  const { myDefenses, otherDefenses } = useMemo(() => {
-    const my = defenses.filter(d => userDefenseIds.includes(d.id))
-    const other = defenses.filter(d => !userDefenseIds.includes(d.id))
-    return { myDefenses: my, otherDefenses: other }
-  }, [defenses, userDefenseIds])
+  const otherDefenses = useMemo(() => {
+    return defenses.filter(d => !myDefenseIds.includes(d.id))
+  }, [defenses, myDefenseIds])
 
   const canCreateDefense = user?.role === "COORDINATOR" || user?.role === "ADMIN"
+
+  useEffect(() => {
+    const fetchMyDefenses = async () => {
+      try {
+        const data = await defenseService.getMyDefenses()
+        setMyDefenses(Array.isArray(data) ? data : [])
+      } catch (error) {
+        console.error("Error fetching my defenses:", error)
+        setMyDefenses([])
+      }
+    }
+
+    fetchMyDefenses()
+  }, [])
 
   useEffect(() => {
     const fetchDefenses = async () => {
@@ -209,8 +208,12 @@ export default function DefensesPage() {
   }
 
   const handleFormSuccess = async () => {
-    const response = await defenseService.getAllDefenses(1, 100, "desc", searchQuery)
-    setDefenses(response.data)
+    const [allDefensesResponse, myDefensesData] = await Promise.all([
+      defenseService.getAllDefenses(1, 100, "desc", searchQuery),
+      defenseService.getMyDefenses(),
+    ])
+    setDefenses(allDefensesResponse.data)
+    setMyDefenses(Array.isArray(myDefensesData) ? myDefensesData : [])
   }
 
   const handleOpenDialog = async () => {

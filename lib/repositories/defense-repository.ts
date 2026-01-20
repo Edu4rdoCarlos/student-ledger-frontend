@@ -39,6 +39,7 @@ export interface SubmitDefenseResultParams {
 
 export interface DefenseRepository {
   getAll(page?: number, perPage?: number, order?: "asc" | "desc", search?: string): Promise<PaginatedDefensesResponse>
+  getMyDefenses(): Promise<Defense[]>
   getById(id: string): Promise<DefenseDetailResponse>
   create(payload: CreateDefensePayload): Promise<DefenseDetailResponse>
   reschedule(id: string, payload: RescheduleDefensePayload): Promise<DefenseDetailResponse>
@@ -52,6 +53,11 @@ export const defenseRepository: DefenseRepository = {
     return apiClient.get<PaginatedDefensesResponse>(
       `/defenses?page=${page}&perPage=${perPage}&order=${order}${searchParam}`
     )
+  },
+
+  async getMyDefenses() {
+    const response = await apiClient.get<{ data: Defense[] }>("/user/me/defenses")
+    return response.data
   },
 
   async getById(id: string) {

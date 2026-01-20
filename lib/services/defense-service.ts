@@ -5,6 +5,10 @@ export const defenseService = {
     return defenseRepository.getAll(page, perPage, order, search)
   },
 
+  async getMyDefenses() {
+    return defenseRepository.getMyDefenses()
+  },
+
   async getDefenseById(id: string) {
     const response = await defenseRepository.getById(id)
     return response.data
