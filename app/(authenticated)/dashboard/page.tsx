@@ -217,7 +217,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">Nenhuma aprovação pendente</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="max-h-[400px] overflow-y-auto pr-1 space-y-3">
                   {approvals.slice(0, 5).map((approval) => {
                     const signatures = approval.signatures || approval.approvals || []
                     const approvedCount = signatures.filter((s) => s.status === "APPROVED").length

@@ -73,11 +73,9 @@ export default function DefensesPage() {
   useEffect(() => {
     const fetchAdvisorsAndStudents = async () => {
       try {
-        const courseId = user?.metadata?.coordinator?.course?.id
+        const courseId = user?.courseId
 
         if (!courseId) {
-          console.error("Course ID not found for coordinator")
-          console.error("Full user object:", user)
           return
         }
 
@@ -95,7 +93,7 @@ export default function DefensesPage() {
     if (canCreateDefense && isFormDialogOpen) {
       fetchAdvisorsAndStudents()
     }
-  }, [canCreateDefense, isFormDialogOpen, user])
+  }, [canCreateDefense, isFormDialogOpen, user?.courseId])
 
   const handleViewDetails = (defense: Defense) => {
     router.push(`/defenses/${defense.id}`)
@@ -220,10 +218,8 @@ export default function DefensesPage() {
     setIsFormDialogOpen(true)
     if (advisors.length === 0 || students.length === 0) {
       try {
-        const courseId = user?.metadata?.coordinator?.course?.id
+        const courseId = user?.courseId
         if (!courseId) {
-          console.error("Course ID not found for coordinator")
-          console.error("Full user object:", user)
           return
         }
 
@@ -284,8 +280,10 @@ export default function DefensesPage() {
               </p>
             </div>
             {myDefenses.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {myDefenses.map(renderDefenseCard)}
+              <div className="max-h-[500px] overflow-y-auto pr-2">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {myDefenses.map(renderDefenseCard)}
+                </div>
               </div>
             ) : (
               <Card>
@@ -319,8 +317,10 @@ export default function DefensesPage() {
               </div>
             </div>
             {otherDefenses.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {otherDefenses.map(renderDefenseCard)}
+              <div className="max-h-[500px] overflow-y-auto pr-2">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {otherDefenses.map(renderDefenseCard)}
+                </div>
               </div>
             ) : (
               <Card>

@@ -1,66 +1,24 @@
-import type { Course } from "./course"
-import type { Department } from "./department"
-
 export type UserRole = "ADMIN" | "COORDINATOR" | "ADVISOR" | "STUDENT"
 
-export interface BaseUser {
+export interface User {
   id: string
   email: string
   name: string
   role: UserRole
+  isFirstAccess: boolean
+  courseId?: string
 }
 
-export interface DefenseSummary {
-  id: string
-  title: string
-  defenseDate: string
-  result: string
-  status: string
+export function isStudent(user: User): boolean {
+  return user.role === "STUDENT"
 }
 
-export interface StudentMetadata {
-  userId: string
-  registration: string
-  course: Course
-  defenses: DefenseSummary[]
+export function isAdvisor(user: User): boolean {
+  return user.role === "ADVISOR"
 }
 
-export interface AdvisorMetadata {
-  userId: string
-  specialization: string
-  department: Department
-  course: Course
-  defenses: DefenseSummary[]
-}
-
-export interface CoordinatorMetadata {
-  userId: string
-  isActive: boolean
-  course: Course
-  department: Department
-  defenses: DefenseSummary[]
-}
-
-export interface UserMetadata {
-  student?: StudentMetadata
-  advisor?: AdvisorMetadata
-  coordinator?: CoordinatorMetadata
-}
-
-export interface User extends BaseUser {
-  metadata: UserMetadata
-}
-
-export function isStudent(user: User): user is User & { metadata: { student: StudentMetadata } } {
-  return user.role === "STUDENT" && !!user.metadata.student
-}
-
-export function isAdvisor(user: User): user is User & { metadata: { advisor: AdvisorMetadata } } {
-  return user.role === "ADVISOR" && !!user.metadata.advisor
-}
-
-export function isCoordinator(user: User): user is User & { metadata: { coordinator: CoordinatorMetadata } } {
-  return user.role === "COORDINATOR" && !!user.metadata.coordinator
+export function isCoordinator(user: User): boolean {
+  return user.role === "COORDINATOR"
 }
 
 export function isAdmin(user: User): boolean {

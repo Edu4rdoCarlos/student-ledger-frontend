@@ -1,4 +1,4 @@
-import type { BaseUser } from "./user"
+import type { User } from "./user"
 
 export interface CourseBasic {
   code: string
@@ -10,7 +10,7 @@ export interface Course {
   id: string
   code: string
   name: string
-  coordinator?: BaseUser & { course: CourseBasic | null }
+  coordinator?: User & { course: CourseBasic | null }
   createdAt: string
   updatedAt: string
 }

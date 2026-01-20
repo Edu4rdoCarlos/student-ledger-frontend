@@ -68,50 +68,22 @@ export function getUserCapabilities(user: User) {
 
 export function getUserInfo(user: User) {
   if (isStudent(user)) {
-    return {
-      type: "student" as const,
-      registration: user.metadata.student?.registration,
-      course: user.metadata.student?.course,
-      defenseIds: user.metadata.student?.defenseIds || [],
-    }
+    return { type: "student" as const }
   }
 
   if (isAdvisor(user)) {
-    return {
-      type: "advisor" as const,
-      specialization: user.metadata.advisor?.specialization,
-      department: user.metadata.advisor?.department,
-      course: user.metadata.advisor?.course,
-      defenseIds: user.metadata.advisor?.defenseIds || [],
-    }
+    return { type: "advisor" as const }
   }
 
   if (isCoordinator(user)) {
-    return {
-      type: "coordinator" as const,
-      isActive: user.metadata.coordinator?.isActive,
-      course: user.metadata.coordinator?.course,
-      department: user.metadata.coordinator?.department,
-    }
+    return { type: "coordinator" as const }
   }
 
-  return {
-    type: "admin" as const,
-  }
+  return { type: "admin" as const }
 }
 
-export function canAccessDefense(user: User, defenseId: string): boolean {
-  if (isAdmin(user)) {
-    return true
-  }
-
-  const userInfo = getUserInfo(user)
-
-  if (userInfo.type === "student" || userInfo.type === "advisor") {
-    return userInfo.defenseIds?.includes(defenseId) || false
-  }
-
-  return true
+export function canAccessDefense(user: User, _defenseId: string): boolean {
+  return isAdmin(user) || isCoordinator(user) || isAdvisor(user) || isStudent(user)
 }
 
 export function canManageUser(user: User, targetUserId: string): boolean {

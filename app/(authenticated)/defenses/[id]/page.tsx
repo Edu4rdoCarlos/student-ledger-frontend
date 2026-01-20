@@ -55,9 +55,8 @@ export default function DefenseDetailsPage() {
     const isStudent = defense.students?.some(student => student.email === user.email) ?? false
     const isAdvisor = defense.advisor?.email === user.email
     const isExamBoardMember = defense.examBoard?.some(member => member.email === user.email) ?? false
-    const coordinatorCourseId = user.metadata?.coordinator?.course?.id
     const defenseCourseId = defense.course?.id
-    const isCoordinatorOfCourse = user.role === "COORDINATOR" && coordinatorCourseId === defenseCourseId
+    const isCoordinatorOfCourse = user.role === "COORDINATOR" && user.courseId === defenseCourseId
 
     return {
       isAdmin: user.role === "ADMIN",
