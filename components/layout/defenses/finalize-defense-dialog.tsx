@@ -5,9 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/primitives/button"
 import { Input } from "@/components/primitives/input"
 import { Label } from "@/components/primitives/label"
-import { CheckCircle2, FileText } from "lucide-react"
+import { CheckCircle2, FileText, X, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { defenseService } from "@/lib/services/defense-service"
+import { PDFDocument } from "pdf-lib"
 
 interface FinalizeDefenseDialogProps {
   open: boolean
@@ -18,15 +19,51 @@ interface FinalizeDefenseDialogProps {
 
 export function FinalizeDefenseDialog({ open, onOpenChange, defenseId, onSuccess }: FinalizeDefenseDialogProps) {
   const [finalGrade, setFinalGrade] = useState("")
-  const [documentFile, setDocumentFile] = useState<File | null>(null)
+  const [documentFiles, setDocumentFiles] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
 
   const handleClose = () => {
     if (!submitting) {
       setFinalGrade("")
-      setDocumentFile(null)
+      setDocumentFiles([])
       onOpenChange(false)
     }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+
+    const newFiles = Array.from(files).filter(file => {
+      if (file.type !== "application/pdf") {
+        toast.error("Formato inválido", {
+          description: `O arquivo "${file.name}" não é um PDF.`,
+        })
+        return false
+      }
+      return true
+    })
+
+    setDocumentFiles(prev => [...prev, ...newFiles])
+    e.target.value = ""
+  }
+
+  const handleRemoveFile = (index: number) => {
+    setDocumentFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const mergePDFs = async (files: File[]): Promise<File> => {
+    const mergedPdf = await PDFDocument.create()
+
+    for (const file of files) {
+      const arrayBuffer = await file.arrayBuffer()
+      const pdf = await PDFDocument.load(arrayBuffer)
+      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
+      copiedPages.forEach(page => mergedPdf.addPage(page))
+    }
+
+    const mergedPdfBytes = await mergedPdf.save()
+    return new File([new Uint8Array(mergedPdfBytes).buffer], "documento-final.pdf", { type: "application/pdf" })
   }
 
   const handleSubmit = async () => {
@@ -37,16 +74,23 @@ export function FinalizeDefenseDialog({ open, onOpenChange, defenseId, onSuccess
       })
       return
     }
-    if (!documentFile) {
+    if (documentFiles.length === 0) {
       toast.error("Documento obrigatório", {
-        description: "Selecione o documento final da defesa.",
+        description: "Selecione pelo menos um documento para a defesa.",
       })
       return
     }
 
     setSubmitting(true)
     try {
-      await defenseService.submitResult(defenseId, grade, documentFile)
+      let finalDocument: File
+      if (documentFiles.length === 1) {
+        finalDocument = documentFiles[0]
+      } else {
+        finalDocument = await mergePDFs(documentFiles)
+      }
+
+      await defenseService.submitResult(defenseId, grade, finalDocument)
       toast.success("Defesa finalizada com sucesso!")
       handleClose()
       onSuccess?.()
@@ -95,19 +139,45 @@ export function FinalizeDefenseDialog({ open, onOpenChange, defenseId, onSuccess
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="document">Documento Final</Label>
-            <Input
-              id="document"
-              type="file"
-              accept=".pdf"
-              onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
-              className="cursor-pointer"
-              disabled={submitting}
-            />
-            {documentFile && (
-              <p className="text-xs text-muted-foreground">
-                Arquivo selecionado: {documentFile.name}
-              </p>
+            <Label htmlFor="document">Documentos (PDFs)</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="document"
+                type="file"
+                accept=".pdf"
+                multiple
+                onChange={handleFileChange}
+                className="cursor-pointer"
+                disabled={submitting}
+              />
+            </div>
+            {documentFiles.length > 0 && (
+              <div className="space-y-2 mt-2">
+                <p className="text-xs text-muted-foreground">
+                  {documentFiles.length} arquivo(s) selecionado(s)
+                  {documentFiles.length > 1 && " - serão mesclados em um único PDF"}
+                </p>
+                <div className="space-y-1">
+                  {documentFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between gap-2 p-2 bg-muted rounded-md text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        <span className="truncate">{file.name}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 flex-shrink-0"
+                        onClick={() => handleRemoveFile(index)}
+                        disabled={submitting}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -123,7 +193,7 @@ export function FinalizeDefenseDialog({ open, onOpenChange, defenseId, onSuccess
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={submitting || !finalGrade || !documentFile}
+            disabled={submitting || !finalGrade || documentFiles.length === 0}
             className="gap-2 cursor-pointer"
           >
             {submitting ? (

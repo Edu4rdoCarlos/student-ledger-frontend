@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware"
 import type { User } from "@/lib/types"
 import { apiClient } from "@/lib/api/client"
 import { authRepository } from "@/lib/repositories/auth-repository"
+import { userRepository } from "@/lib/repositories/user-repository"
 
 function setSessionCookie(hasSession: boolean) {
   if (typeof document === "undefined") return
@@ -20,6 +21,8 @@ interface AuthState {
   isLoading: boolean
   setAuth: (user: User, accessToken: string) => void
   setAccessToken: (accessToken: string) => void
+  setUser: (user: User) => void
+  fetchUser: () => Promise<void>
   logout: () => Promise<void>
   initialize: () => void
 }
@@ -41,6 +44,22 @@ export const useAuthStore = create<AuthState>()(
       setAccessToken: (accessToken) => {
         apiClient.setAccessToken(accessToken)
         set({ accessToken })
+      },
+
+      setUser: (user) => {
+        set({ user })
+      },
+
+      fetchUser: async () => {
+        const state = get()
+        if (!state.accessToken) return
+
+        try {
+          const user = await userRepository.getMe()
+          set({ user })
+        } catch (error) {
+          console.error("Failed to fetch user:", error)
+        }
       },
 
       logout: async () => {

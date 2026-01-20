@@ -1,13 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, FileText } from "lucide-react"
+import { Upload, FileText, X } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/shared/dialog"
 import { Button } from "@/components/primitives/button"
 import { Textarea } from "@/components/primitives/textarea"
 import { Input } from "@/components/primitives/input"
 import { toast } from "sonner"
 import { documentRepository } from "@/lib/repositories/document-repository"
+import { PDFDocument } from "pdf-lib"
 
 interface NewVersionModalProps {
   open: boolean
@@ -28,7 +29,7 @@ export function NewVersionModal({
   approverName,
   onSuccess,
 }: NewVersionModalProps) {
-  const [document, setDocument] = useState<File | null>(null)
+  const [documentFiles, setDocumentFiles] = useState<File[]>([])
   const [reason, setReason] = useState("")
   const [finalGrade, setFinalGrade] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -38,7 +39,7 @@ export function NewVersionModal({
     // Validar tipo de arquivo (apenas PDFs)
     if (file.type !== "application/pdf") {
       toast.error("Formato de arquivo inválido", {
-        description: "Apenas arquivos PDF são aceitos.",
+        description: `O arquivo "${file.name}" não é um PDF.`,
       })
       return false
     }
@@ -46,7 +47,7 @@ export function NewVersionModal({
     // Validar tamanho do arquivo (máximo 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast.error("Arquivo muito grande", {
-        description: "O arquivo não pode exceder 10MB.",
+        description: `O arquivo "${file.name}" excede 10MB.`,
       })
       return false
     }
@@ -55,10 +56,12 @@ export function NewVersionModal({
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && validateFile(file)) {
-      setDocument(file)
-    }
+    const files = e.target.files
+    if (!files) return
+
+    const newFiles = Array.from(files).filter(file => validateFile(file))
+    setDocumentFiles(prev => [...prev, ...newFiles])
+    e.target.value = ""
   }
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -75,20 +78,35 @@ export function NewVersionModal({
     e.preventDefault()
     setIsDragging(false)
 
-    const file = e.dataTransfer.files?.[0]
-    if (file && validateFile(file)) {
-      setDocument(file)
-    }
+    const files = e.dataTransfer.files
+    if (!files) return
+
+    const newFiles = Array.from(files).filter(file => validateFile(file))
+    setDocumentFiles(prev => [...prev, ...newFiles])
   }
 
-  const handleRemoveFile = () => {
-    setDocument(null)
+  const handleRemoveFile = (index: number) => {
+    setDocumentFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const mergePDFs = async (files: File[]): Promise<File> => {
+    const mergedPdf = await PDFDocument.create()
+
+    for (const file of files) {
+      const arrayBuffer = await file.arrayBuffer()
+      const pdf = await PDFDocument.load(arrayBuffer)
+      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
+      copiedPages.forEach(page => mergedPdf.addPage(page))
+    }
+
+    const mergedPdfBytes = await mergedPdf.save()
+    return new File([new Uint8Array(mergedPdfBytes).buffer], "documento-nova-versao.pdf", { type: "application/pdf" })
   }
 
   const handleSubmit = async () => {
-    if (!document) {
+    if (documentFiles.length === 0) {
       toast.error("Documento não selecionado", {
-        description: "Por favor, selecione um documento para enviar.",
+        description: "Por favor, selecione pelo menos um documento para enviar.",
       })
       return
     }
@@ -113,7 +131,14 @@ export function NewVersionModal({
 
     setSubmitting(true)
     try {
-      await documentRepository.uploadNewVersion(approvalId, document, reason, grade)
+      let finalDocument: File
+      if (documentFiles.length === 1) {
+        finalDocument = documentFiles[0]
+      } else {
+        finalDocument = await mergePDFs(documentFiles)
+      }
+
+      await documentRepository.uploadNewVersion(approvalId, finalDocument, reason, grade)
 
       toast.success("Nova versão enviada!", {
         description: "O documento foi enviado e será reavaliado.",
@@ -132,7 +157,7 @@ export function NewVersionModal({
   }
 
   const handleClose = () => {
-    setDocument(null)
+    setDocumentFiles([])
     setReason("")
     setFinalGrade("")
     onOpenChange(false)
@@ -174,57 +199,63 @@ export function NewVersionModal({
             <label className="text-sm font-medium">
               Novo Documento <span className="text-red-500">*</span>
             </label>
-            {!document ? (
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                  isDragging
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleFileChange}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                <div className="flex flex-col items-center gap-2">
-                  <Upload className="h-10 w-10 text-muted-foreground" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Clique para fazer upload</p>
-                    <p className="text-xs text-muted-foreground">PDF, DOC, DOCX</p>
-                  </div>
-                  <div className="flex items-center gap-2 w-full max-w-xs">
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-xs text-muted-foreground">OU</span>
-                    <div className="flex-1 h-px bg-border" />
-                  </div>
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                isDragging
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <input
+                type="file"
+                accept="application/pdf"
+                multiple
+                onChange={handleFileChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="flex flex-col items-center gap-2">
+                <Upload className="h-10 w-10 text-muted-foreground" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Clique para fazer upload</p>
+                  <p className="text-xs text-muted-foreground">PDF (múltiplos arquivos permitidos)</p>
                 </div>
               </div>
-            ) : (
-              <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-border">
-                <FileText className="h-8 w-8 text-primary flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate whitespace-pre-wrap">{document.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {(document.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
+            </div>
+            {documentFiles.length > 0 && (
+              <div className="space-y-2 mt-2">
+                <p className="text-xs text-muted-foreground">
+                  {documentFiles.length} arquivo(s) selecionado(s)
+                  {documentFiles.length > 1 && " - serão mesclados em um único PDF"}
+                </p>
+                <div className="space-y-1">
+                  {documentFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between gap-2 p-2 bg-muted rounded-md text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        <span className="truncate">{file.name}</span>
+                        <span className="text-xs text-muted-foreground flex-shrink-0">
+                          ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 flex-shrink-0"
+                        onClick={() => handleRemoveFile(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRemoveFile}
-                  className="flex-shrink-0"
-                >
-                  Remover
-                </Button>
               </div>
             )}
             <p className="text-xs text-muted-foreground">
-              Formato aceito: PDF (máximo 10MB)
+              Formato aceito: PDF (máximo 10MB por arquivo)
             </p>
           </div>
 
@@ -273,7 +304,7 @@ export function NewVersionModal({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={submitting || !document || !reason.trim()}
+            disabled={submitting || documentFiles.length === 0 || !reason.trim()}
             className="gap-2"
           >
             <Upload className="h-4 w-4" />

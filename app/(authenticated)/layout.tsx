@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/lib/store/auth-store"
 
@@ -10,13 +10,21 @@ export default function AuthenticatedLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const { isAuthenticated, isLoading } = useAuthStore()
+  const { isAuthenticated, isLoading, fetchUser } = useAuthStore()
+  const hasFetchedUser = useRef(false)
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/login")
     }
   }, [isAuthenticated, isLoading, router])
+
+  useEffect(() => {
+    if (isAuthenticated && !hasFetchedUser.current) {
+      hasFetchedUser.current = true
+      fetchUser()
+    }
+  }, [isAuthenticated, fetchUser])
 
   // Mostra loading enquanto verifica autenticação
   if (isLoading) {
