@@ -217,7 +217,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">Nenhuma aprovação pendente</p>
                 </div>
               ) : (
-                <div className="max-h-[400px] overflow-y-auto pr-1 space-y-3">
+                <div className="max-h-[400px] overflow-y-auto overflow-x-hidden space-y-3" style={{ scrollbarGutter: "stable" }}>
                   {approvals.slice(0, 5).map((approval) => {
                     const signatures = approval.signatures || approval.approvals || []
                     const approvedCount = signatures.filter((s) => s.status === "APPROVED").length
@@ -231,7 +231,7 @@ export default function DashboardPage() {
                       <div
                         key={approval.id}
                         onClick={() => handleApprovalClick(approval)}
-                        className="group rounded-xl border border-border/50 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 dark:from-amber-950/20 dark:via-slate-900/50 dark:to-orange-950/20 p-4 transition-all hover:shadow-lg hover:border-amber-400 dark:hover:border-amber-600 hover:scale-[1.02] cursor-pointer"
+                        className="group rounded-xl border m-2 border-border/50 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 dark:from-amber-950/20 dark:via-slate-900/50 dark:to-orange-950/20 p-4 transition-all hover:shadow-lg hover:border-amber-400 dark:hover:border-amber-600 hover:scale-[1.02] cursor-pointer"
                       >
                         <div className="space-y-3">
                           <div className="flex items-start justify-between gap-3">
