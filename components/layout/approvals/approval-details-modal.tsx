@@ -75,12 +75,12 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
     }
   }
 
-  const getRoleText = (role: string) => {
+  const getRoleText = (role: string, isCoordinatorAlsoAdvisor?: boolean) => {
     switch (role) {
       case "ADVISOR":
         return "Orientador"
       case "COORDINATOR":
-        return "Coordenador"
+        return isCoordinatorAlsoAdvisor ? "Coordenador e Orientador" : "Coordenador"
       case "ADMIN":
         return "Administrador"
       case "STUDENT":
@@ -91,6 +91,17 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
   }
 
   const signatures = approval.signatures || approval.approvals || []
+
+  const coordinatorSignature = signatures.find((s) => s.role === "COORDINATOR")
+  const advisorSignature = signatures.find((s) => s.role === "ADVISOR")
+  const isCoordinatorAlsoAdvisor =
+    coordinatorSignature?.approverId &&
+    advisorSignature?.approverId &&
+    coordinatorSignature.approverId === advisorSignature.approverId
+
+  const displaySignatures = isCoordinatorAlsoAdvisor
+    ? signatures.filter((s) => s.role !== "ADVISOR")
+    : signatures
   const approvedCount = signatures.filter((s) => s.status === "APPROVED").length
   const totalSignatures = signatures.length
   const progressPercentage = (approvedCount / totalSignatures) * 100
@@ -185,7 +196,7 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Assinaturas</h3>
             <div className="space-y-3">
-              {signatures.map((signature, index) => (
+              {displaySignatures.map((signature, index) => (
                 <div
                   key={index}
                   className={`flex items-start justify-between p-4 rounded-lg border transition-colors ${
@@ -202,7 +213,7 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{signature.approverName}</p>
                         <Badge variant="outline" className="text-xs">
-                          {getRoleText(signature.role)}
+                          {getRoleText(signature.role, !!(isCoordinatorAlsoAdvisor && signature.role === "COORDINATOR"))}
                         </Badge>
                       </div>
                       {signature.approvedAt && (

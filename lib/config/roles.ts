@@ -12,12 +12,14 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, RoleConfig> = {
   STUDENT: {
     title: "Estudante",
     description:
-      "Visualiza suas defesas, faz upload de documentos e acompanha o processo de aprovação do TCC.",
+      "Visualiza suas defesas, aprova documentos e acompanha o processo de aprovação do TCC.",
     permissions: [
       "Visualizar suas próprias defesas",
-      "Fazer upload de versões de documentos",
+      "Aprovar ou rejeitar documentos",
+      "Fazer download de documentos",
+      "Verificar autenticidade de documentos",
       "Acompanhar status de aprovações",
-      "Visualizar cursos e departamentos",
+      "Visualizar informações do curso",
     ],
     color: "#3B82F6",
     icon: "student",
@@ -30,7 +32,9 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, RoleConfig> = {
       "Visualizar defesas que participa",
       "Aprovar ou rejeitar documentos",
       "Fazer download de documentos",
-      "Validar documentos enviados",
+      "Verificar autenticidade de documentos",
+      "Acompanhar status de aprovações",
+      "Visualizar informações do curso",
     ],
     color: "#8B5CF6",
     icon: "advisor",
@@ -55,13 +59,10 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, RoleConfig> = {
 
   ADMIN: {
     title: "Administrador",
-    description: "Acesso completo ao sistema para gerenciar toda a plataforma acadêmica.",
+    description: "Cadastra coordenadores e cursos no sistema.",
     permissions: [
-      "Todas as permissões de Coordenador",
-      "Criar e gerenciar coordenadores",
-      "Gerenciar cursos e departamentos",
-      "Visualizar e gerenciar todos os dados",
-      "Acesso sem restrições de curso",
+      "Cadastrar coordenadores",
+      "Cadastrar cursos",
     ],
     color: "#EF4444",
     icon: "admin",

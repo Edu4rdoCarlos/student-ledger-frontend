@@ -110,13 +110,33 @@ export default function SignaturesPage() {
     )
   }
 
+  const getRoleLabel = (role: string, isCoordinatorAlsoAdvisor: boolean) => {
+    if (role === "COORDINATOR" && isCoordinatorAlsoAdvisor) return "Coordenador e Orientador"
+    if (role === "COORDINATOR") return "Coordenador"
+    if (role === "ADVISOR") return "Orientador"
+    if (role === "STUDENT") return "Aluno"
+    return role
+  }
+
   const renderApprovalCard = (approval: PendingApproval, status: "PENDING" | "APPROVED" | "REJECTED") => {
     const signatures = approval.signatures || approval.approvals || []
+    const coordinatorSig = signatures.find((s) => s.role === "COORDINATOR")
+    const advisorSig = signatures.find((s) => s.role === "ADVISOR")
+    const isCoordinatorAlsoAdvisor = !!(
+      coordinatorSig?.approverId &&
+      advisorSig?.approverId &&
+      coordinatorSig.approverId === advisorSig.approverId
+    )
+
+    const displaySignatures = isCoordinatorAlsoAdvisor
+      ? signatures.filter((s) => s.role !== "ADVISOR")
+      : signatures
+
     const approvedCount = signatures.filter((s) => s.status === "APPROVED").length
-    const totalSignatures = signatures.length
-    const pendingRoles = signatures
+    const totalSignatures = displaySignatures.length
+    const pendingRoles = displaySignatures
       .filter((s) => s.status === "PENDING")
-      .map((s) => s.role)
+      .map((s) => getRoleLabel(s.role, isCoordinatorAlsoAdvisor))
       .join(", ")
 
     const rejectedSignature = signatures.find((s) => s.status === "REJECTED")

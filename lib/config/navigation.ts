@@ -18,6 +18,18 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Acompanhe suas defesas de TCC",
       },
       {
+        label: "Assinaturas",
+        href: "/signatures",
+        icon: "file",
+        description: "Aprovar ou rejeitar documentos",
+      },
+      {
+        label: "Verificar Documentos",
+        href: "/verify",
+        icon: "shield",
+        description: "Verificar autenticidade de documentos",
+      },
+      {
         label: "Meu Curso",
         href: "/course",
         icon: "book",
@@ -56,16 +68,10 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Verificar autenticidade de documentos",
       },
       {
-        label: "Estudantes",
-        href: "/students",
-        icon: "users",
-        description: "Estudantes que você orienta",
-      },
-      {
-        label: "Departamento",
-        href: "/department",
-        icon: "building",
-        description: "Informações do departamento",
+        label: "Meu Curso",
+        href: "/course",
+        icon: "book",
+        description: "Informações do curso",
       },
     ]
   }
@@ -114,54 +120,17 @@ export function getNavigationItems(user: User): NavigationItem[] {
 
   if (isAdmin(user)) {
     return [
-      ...baseItems,
-      {
-        label: "Defesas",
-        href: "/defenses",
-        icon: "presentation",
-        description: "Todas as defesas",
-      },
-      {
-        label: "Assinaturas",
-        href: "/signatures",
-        icon: "file",
-        description: "Gerenciar assinaturas de documentos",
-      },
       {
         label: "Cursos",
         href: "/courses",
         icon: "book",
-        description: "Gerenciar cursos",
-      },
-      {
-        label: "Departamentos",
-        href: "/departments",
-        icon: "building",
-        description: "Gerenciar departamentos",
+        description: "Cadastrar cursos",
       },
       {
         label: "Coordenadores",
         href: "/coordinators",
         icon: "shield",
-        description: "Gerenciar coordenadores",
-      },
-      {
-        label: "Orientadores",
-        href: "/advisors",
-        icon: "user-check",
-        description: "Gerenciar orientadores",
-      },
-      {
-        label: "Estudantes",
-        href: "/students",
-        icon: "users",
-        description: "Gerenciar estudantes",
-      },
-      {
-        label: "Verificar Documentos",
-        href: "/verify",
-        icon: "shield-check",
-        description: "Verificar autenticidade de documentos",
+        description: "Cadastrar coordenadores",
       },
     ]
   }
@@ -180,9 +149,9 @@ export function getQuickActions(user: User): NavigationItem[] {
       },
       {
         label: "Ver Status",
-        href: "/defenses/status",
+        href: "/signatures",
         icon: "info",
-        description: "Acompanhe o status da sua defesa",
+        description: "Acompanhe o status das aprovações",
       },
     ]
   }
@@ -196,10 +165,10 @@ export function getQuickActions(user: User): NavigationItem[] {
         description: "Verificar autenticidade de documentos",
       },
       {
-        label: "Próximas Defesas",
-        href: "/defenses/upcoming",
-        icon: "calendar",
-        description: "Suas próximas bancas",
+        label: "Ver Status",
+        href: "/signatures",
+        icon: "info",
+        description: "Acompanhe o status das aprovações",
       },
     ]
   }
@@ -233,19 +202,13 @@ export function getQuickActions(user: User): NavigationItem[] {
         label: "Novo Curso",
         href: "/courses/new",
         icon: "plus",
-        description: "Criar novo curso",
-      },
-      {
-        label: "Novo Departamento",
-        href: "/departments/new",
-        icon: "building",
-        description: "Criar novo departamento",
+        description: "Cadastrar novo curso",
       },
       {
         label: "Novo Coordenador",
         href: "/coordinators/new",
         icon: "shield",
-        description: "Cadastrar coordenador",
+        description: "Cadastrar novo coordenador",
       },
     ]
   }
