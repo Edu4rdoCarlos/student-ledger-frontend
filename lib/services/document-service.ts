@@ -1,5 +1,6 @@
 import { documentRepository } from "@/lib/repositories/document-repository"
 import type { DocumentFormData, ApprovalFormData } from "@/lib/validations/document"
+import type { ValidatedDocumentType } from "@/lib/types"
 
 export const documentService = {
   async getAllDocuments(filters?: { status?: string; orientador?: string }) {
@@ -31,8 +32,8 @@ export const documentService = {
     return documentRepository.validateDocument(file)
   },
 
-  async downloadDocument(id: string) {
-    return documentRepository.download(id)
+  async downloadDocument(id: string, documentType?: ValidatedDocumentType) {
+    return documentRepository.download(id, documentType)
   },
 
   calculateFileHash(file: File): Promise<string> {

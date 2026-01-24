@@ -111,12 +111,17 @@ export interface DashboardSummary {
   totalStudents: number
 }
 
+export type ValidatedDocumentType = "minutes" | "evaluation"
+
 export interface DocumentValidationResponse {
   isValid: boolean
   document: {
     id: string
-    documentHash: string
-    documentCid: string
+    documentType: ValidatedDocumentType
+    minutesHash?: string
+    minutesCid?: string
+    evaluationHash?: string
+    evaluationCid?: string
     status: "PENDING" | "APPROVED" | "INACTIVE"
     defenseInfo?: {
       students: string[]

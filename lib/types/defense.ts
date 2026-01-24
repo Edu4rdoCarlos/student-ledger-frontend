@@ -49,12 +49,18 @@ export interface DocumentSignature {
   justification?: string
 }
 
+export type DocumentType = "minutes" | "evaluation"
+
 export interface DefenseDocument {
   id: string
   type?: string
   version: number
-  documentHash?: string
-  documentCid?: string
+  // Ata (Minutes)
+  minutesHash?: string
+  minutesCid?: string
+  // Avaliação de Desempenho (Evaluation)
+  evaluationHash?: string
+  evaluationCid?: string
   status: DocumentStatus
   blockchainTxId?: string
   blockchainRegisteredAt?: string

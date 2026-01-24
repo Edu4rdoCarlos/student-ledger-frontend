@@ -8,7 +8,6 @@ import { Label } from "@/components/primitives/label"
 import { CheckCircle2, FileText, X, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { defenseService } from "@/lib/services/defense-service"
-import { PDFDocument } from "pdf-lib"
 
 interface FinalizeDefenseDialogProps {
   open: boolean
@@ -19,51 +18,61 @@ interface FinalizeDefenseDialogProps {
 
 export function FinalizeDefenseDialog({ open, onOpenChange, defenseId, onSuccess }: FinalizeDefenseDialogProps) {
   const [finalGrade, setFinalGrade] = useState("")
-  const [documentFiles, setDocumentFiles] = useState<File[]>([])
+  const [minutesFile, setMinutesFile] = useState<File | null>(null)
+  const [evaluationFile, setEvaluationFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [isDraggingMinutes, setIsDraggingMinutes] = useState(false)
+  const [isDraggingEvaluation, setIsDraggingEvaluation] = useState(false)
 
   const handleClose = () => {
     if (!submitting) {
       setFinalGrade("")
-      setDocumentFiles([])
+      setMinutesFile(null)
+      setEvaluationFile(null)
       onOpenChange(false)
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files) return
+  const validateFile = (file: File): boolean => {
+    if (file.type !== "application/pdf") {
+      toast.error("Formato inválido", {
+        description: `O arquivo "${file.name}" não é um PDF.`,
+      })
+      return false
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Arquivo muito grande", {
+        description: `O arquivo "${file.name}" excede 10MB.`,
+      })
+      return false
+    }
+    return true
+  }
 
-    const newFiles = Array.from(files).filter(file => {
-      if (file.type !== "application/pdf") {
-        toast.error("Formato inválido", {
-          description: `O arquivo "${file.name}" não é um PDF.`,
-        })
-        return false
-      }
-      return true
-    })
-
-    setDocumentFiles(prev => [...prev, ...newFiles])
+  const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && validateFile(file)) {
+      setMinutesFile(file)
+    }
     e.target.value = ""
   }
 
-  const handleRemoveFile = (index: number) => {
-    setDocumentFiles(prev => prev.filter((_, i) => i !== index))
+  const handleEvaluationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && validateFile(file)) {
+      setEvaluationFile(file)
+    }
+    e.target.value = ""
   }
 
-  const mergePDFs = async (files: File[]): Promise<File> => {
-    const mergedPdf = await PDFDocument.create()
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, type: "minutes" | "evaluation") => {
+    e.preventDefault()
+    type === "minutes" ? setIsDraggingMinutes(false) : setIsDraggingEvaluation(false)
 
-    for (const file of files) {
-      const arrayBuffer = await file.arrayBuffer()
-      const pdf = await PDFDocument.load(arrayBuffer)
-      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
-      copiedPages.forEach(page => mergedPdf.addPage(page))
+    const file = e.dataTransfer.files?.[0]
+    if (file && validateFile(file)) {
+      type === "minutes" ? setMinutesFile(file) : setEvaluationFile(file)
     }
-
-    const mergedPdfBytes = await mergedPdf.save()
-    return new File([new Uint8Array(mergedPdfBytes).buffer], "documento-final.pdf", { type: "application/pdf" })
   }
 
   const handleSubmit = async () => {
@@ -74,23 +83,16 @@ export function FinalizeDefenseDialog({ open, onOpenChange, defenseId, onSuccess
       })
       return
     }
-    if (documentFiles.length === 0) {
-      toast.error("Documento obrigatório", {
-        description: "Selecione pelo menos um documento para a defesa.",
+    if (!minutesFile || !evaluationFile) {
+      toast.error("Documentos obrigatórios", {
+        description: "Selecione a Ata e a Avaliação de Desempenho.",
       })
       return
     }
 
     setSubmitting(true)
     try {
-      let finalDocument: File
-      if (documentFiles.length === 1) {
-        finalDocument = documentFiles[0]
-      } else {
-        finalDocument = await mergePDFs(documentFiles)
-      }
-
-      await defenseService.submitResult(defenseId, grade, finalDocument)
+      await defenseService.submitResult(defenseId, grade, minutesFile, evaluationFile)
       toast.success("Defesa finalizada com sucesso!")
       handleClose()
       onSuccess?.()
@@ -115,7 +117,7 @@ export function FinalizeDefenseDialog({ open, onOpenChange, defenseId, onSuccess
             Finalizar Defesa
           </DialogTitle>
           <DialogDescription>
-            Insira a nota final e faça upload do documento unificado da defesa.
+            Insira a nota final e faça upload dos documentos da defesa.
           </DialogDescription>
         </DialogHeader>
 
@@ -139,46 +141,109 @@ export function FinalizeDefenseDialog({ open, onOpenChange, defenseId, onSuccess
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="document">Documentos (PDFs)</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id="document"
-                type="file"
-                accept=".pdf"
-                multiple
-                onChange={handleFileChange}
-                className="cursor-pointer"
-                disabled={submitting}
-              />
-            </div>
-            {documentFiles.length > 0 && (
-              <div className="space-y-2 mt-2">
-                <p className="text-xs text-muted-foreground">
-                  {documentFiles.length} arquivo(s) selecionado(s)
-                  {documentFiles.length > 1 && " - serão mesclados em um único PDF"}
-                </p>
-                <div className="space-y-1">
-                  {documentFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between gap-2 p-2 bg-muted rounded-md text-sm">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                        <span className="truncate">{file.name}</span>
-                      </div>
+            <Label>Documentos Obrigatórios</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Ata */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Ata <span className="text-red-500">*</span></p>
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setIsDraggingMinutes(true) }}
+                  onDragLeave={(e) => { e.preventDefault(); setIsDraggingMinutes(false) }}
+                  onDrop={(e) => handleDrop(e, "minutes")}
+                  className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                    isDraggingMinutes
+                      ? "border-primary bg-primary/5"
+                      : minutesFile
+                      ? "border-green-500 bg-green-50 dark:bg-green-950/20"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleMinutesChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={submitting}
+                  />
+                  {minutesFile ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <FileText className="h-6 w-6 text-green-600" />
+                      <p className="text-xs font-medium truncate max-w-full px-2">{minutesFile.name}</p>
+                      <p className={`text-xs ${minutesFile.size > 8 * 1024 * 1024 ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
+                        ({(minutesFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0 flex-shrink-0"
-                        onClick={() => handleRemoveFile(index)}
+                        className="h-6 text-xs mt-1"
+                        onClick={(e) => { e.stopPropagation(); setMinutesFile(null) }}
                         disabled={submitting}
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-3 w-3 mr-1" /> Remover
                       </Button>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="flex flex-col items-center gap-1">
+                      <Upload className="h-6 w-6 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Clique ou arraste</p>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+
+              {/* Avaliação de Desempenho */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Avaliação de Desempenho <span className="text-red-500">*</span></p>
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setIsDraggingEvaluation(true) }}
+                  onDragLeave={(e) => { e.preventDefault(); setIsDraggingEvaluation(false) }}
+                  onDrop={(e) => handleDrop(e, "evaluation")}
+                  className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                    isDraggingEvaluation
+                      ? "border-primary bg-primary/5"
+                      : evaluationFile
+                      ? "border-green-500 bg-green-50 dark:bg-green-950/20"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleEvaluationChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={submitting}
+                  />
+                  {evaluationFile ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <FileText className="h-6 w-6 text-green-600" />
+                      <p className="text-xs font-medium truncate max-w-full px-2">{evaluationFile.name}</p>
+                      <p className={`text-xs ${evaluationFile.size > 8 * 1024 * 1024 ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
+                        ({(evaluationFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs mt-1"
+                        onClick={(e) => { e.stopPropagation(); setEvaluationFile(null) }}
+                        disabled={submitting}
+                      >
+                        <X className="h-3 w-3 mr-1" /> Remover
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1">
+                      <Upload className="h-6 w-6 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Clique ou arraste</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Formato aceito: PDF (máximo 10MB por arquivo)
+            </p>
           </div>
         </div>
 
@@ -193,7 +258,7 @@ export function FinalizeDefenseDialog({ open, onOpenChange, defenseId, onSuccess
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={submitting || !finalGrade || documentFiles.length === 0}
+            disabled={submitting || !finalGrade || !minutesFile || !evaluationFile}
             className="gap-2 cursor-pointer"
           >
             {submitting ? (

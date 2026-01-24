@@ -29,8 +29,8 @@ export const defenseService = {
     return response.data
   },
 
-  async submitResult(defenseId: string, finalGrade: number, document: File) {
-    const response = await defenseRepository.submitResult({ defenseId, finalGrade, document })
+  async submitResult(defenseId: string, finalGrade: number, minutesFile: File, evaluationFile: File) {
+    const response = await defenseRepository.submitResult({ defenseId, finalGrade, minutesFile, evaluationFile })
     return response.data
   },
 }

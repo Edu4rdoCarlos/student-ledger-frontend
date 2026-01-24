@@ -1,4 +1,4 @@
-import type { Document, DocumentValidationResponse } from "@/lib/types"
+import type { Document, DocumentValidationResponse, ValidatedDocumentType } from "@/lib/types"
 import type { DocumentFormData, ApprovalFormData } from "@/lib/validations/document"
 import { apiClient } from "@/lib/api/client"
 
@@ -13,8 +13,8 @@ export interface DocumentRepository {
   ): Promise<Document>
   verifyHash(hash: string): Promise<DocumentValidationResponse | null>
   validateDocument(file: File): Promise<DocumentValidationResponse | null>
-  download(id: string): Promise<Blob>
-  uploadNewVersion(id: string, file: File, reason: string, finalGrade?: number): Promise<Document>
+  download(id: string, documentType?: ValidatedDocumentType): Promise<Blob>
+  uploadNewVersion(id: string, file: File, documentType: ValidatedDocumentType, reason: string, finalGrade?: number): Promise<Document>
 }
 
 export const documentRepository: DocumentRepository = {
@@ -73,13 +73,15 @@ export const documentRepository: DocumentRepository = {
     }
   },
 
-  async download(id: string) {
-    return apiClient.downloadBlob(`/documents/${id}/download`)
+  async download(id: string, documentType?: ValidatedDocumentType) {
+    const typeParam = documentType ? `?type=${documentType}` : ''
+    return apiClient.downloadBlob(`/documents/${id}/download${typeParam}`)
   },
 
-  async uploadNewVersion(id: string, file: File, reason: string, finalGrade?: number) {
+  async uploadNewVersion(id: string, file: File, documentType: ValidatedDocumentType, reason: string, finalGrade?: number) {
     const formData = new FormData()
     formData.append('document', file)
+    formData.append('documentType', documentType)
     formData.append('changeReason', reason)
     if (finalGrade !== undefined) {
       formData.append('finalGrade', finalGrade.toString())

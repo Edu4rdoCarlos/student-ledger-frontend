@@ -470,7 +470,7 @@ export default function DefenseDetailsPage() {
                     </Badge>
                   </div>
 
-                  {(doc.changeReason || doc.documentCid || doc.blockchainRegisteredAt) && (
+                  {(doc.changeReason || doc.minutesCid || doc.evaluationCid || doc.blockchainRegisteredAt) && (
                     <div className="space-y-2 pt-2 border-t">
                       {doc.changeReason && (
                         <div className="flex items-start gap-2">
@@ -478,12 +478,21 @@ export default function DefenseDetailsPage() {
                           <p className="text-xs text-muted-foreground">{doc.changeReason}</p>
                         </div>
                       )}
-                      {doc.documentCid && (
+                      {doc.minutesCid && (
                         <div className="flex items-start gap-2">
                           <Hash className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
                           <div className="flex-1">
-                            <p className="text-xs font-medium text-muted-foreground">CID</p>
-                            <p className="text-xs text-muted-foreground font-mono break-all">{doc.documentCid}</p>
+                            <p className="text-xs font-medium text-muted-foreground">CID da Ata</p>
+                            <p className="text-xs text-muted-foreground font-mono break-all">{doc.minutesCid}</p>
+                          </div>
+                        </div>
+                      )}
+                      {doc.evaluationCid && (
+                        <div className="flex items-start gap-2">
+                          <Hash className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs font-medium text-muted-foreground">CID da Avaliação</p>
+                            <p className="text-xs text-muted-foreground font-mono break-all">{doc.evaluationCid}</p>
                           </div>
                         </div>
                       )}
@@ -560,34 +569,64 @@ export default function DefenseDetailsPage() {
                   )}
 
                   {canDownload && (
-                    <div className="pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full gap-2 cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                        onClick={async () => {
-                          try {
-                            const blob = await documentService.downloadDocument(doc.id)
-                            const url = window.URL.createObjectURL(blob)
-                            const a = document.createElement('a')
-                            a.href = url
-                            a.download = `${defense.title}-v${doc.version}.pdf`
-                            document.body.appendChild(a)
-                            a.click()
-                            window.URL.revokeObjectURL(url)
-                            document.body.removeChild(a)
-                            toast.success('Download realizado com sucesso!')
-                          } catch (error) {
-                            console.error('Erro ao baixar documento:', error)
-                            toast.error('Erro ao baixar documento', {
-                              description: 'Não foi possível baixar o documento. Verifique se você tem permissão para acessá-lo.',
-                            })
-                          }
-                        }}
-                      >
-                        <Download className="h-4 w-4" />
-                        Baixar Documento
-                      </Button>
+                    <div className="pt-2 space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground">Downloads:</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                          onClick={async () => {
+                            try {
+                              const blob = await documentService.downloadDocument(doc.id, "minutes")
+                              const url = window.URL.createObjectURL(blob)
+                              const a = document.createElement('a')
+                              a.href = url
+                              a.download = `${defense.title}-Ata-v${doc.version}.pdf`
+                              document.body.appendChild(a)
+                              a.click()
+                              window.URL.revokeObjectURL(url)
+                              document.body.removeChild(a)
+                              toast.success('Ata baixada com sucesso!')
+                            } catch (error) {
+                              console.error('Erro ao baixar Ata:', error)
+                              toast.error('Erro ao baixar Ata', {
+                                description: 'Não foi possível baixar o documento.',
+                              })
+                            }
+                          }}
+                        >
+                          <Download className="h-4 w-4" />
+                          Ata
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                          onClick={async () => {
+                            try {
+                              const blob = await documentService.downloadDocument(doc.id, "evaluation")
+                              const url = window.URL.createObjectURL(blob)
+                              const a = document.createElement('a')
+                              a.href = url
+                              a.download = `${defense.title}-Avaliacao-v${doc.version}.pdf`
+                              document.body.appendChild(a)
+                              a.click()
+                              window.URL.revokeObjectURL(url)
+                              document.body.removeChild(a)
+                              toast.success('Avaliação baixada com sucesso!')
+                            } catch (error) {
+                              console.error('Erro ao baixar Avaliação:', error)
+                              toast.error('Erro ao baixar Avaliação', {
+                                description: 'Não foi possível baixar o documento.',
+                              })
+                            }
+                          }}
+                        >
+                          <Download className="h-4 w-4" />
+                          Avaliação
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>

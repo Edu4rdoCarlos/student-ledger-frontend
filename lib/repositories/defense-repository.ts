@@ -34,7 +34,8 @@ export interface CancelDefensePayload {
 export interface SubmitDefenseResultParams {
   defenseId: string
   finalGrade: number
-  document: File
+  minutesFile: File
+  evaluationFile: File
 }
 
 export interface DefenseRepository {
@@ -76,10 +77,11 @@ export const defenseRepository: DefenseRepository = {
     return apiClient.patch<DefenseDetailResponse>(`/defenses/${id}/cancel`, payload)
   },
 
-  async submitResult({ defenseId, finalGrade, document }: SubmitDefenseResultParams) {
+  async submitResult({ defenseId, finalGrade, minutesFile, evaluationFile }: SubmitDefenseResultParams) {
     const formData = new FormData()
     formData.append("finalGrade", finalGrade.toString())
-    formData.append("document", document)
+    formData.append("minutesFile", minutesFile)
+    formData.append("evaluationFile", evaluationFile)
     return apiClient.uploadFormData<DefenseDetailResponse>(`/defenses/${defenseId}/result`, formData)
   },
 }

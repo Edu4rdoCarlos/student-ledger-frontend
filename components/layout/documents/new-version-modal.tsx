@@ -6,9 +6,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/primitives/button"
 import { Textarea } from "@/components/primitives/textarea"
 import { Input } from "@/components/primitives/input"
+import { Label } from "@/components/primitives/label"
 import { toast } from "sonner"
 import { documentRepository } from "@/lib/repositories/document-repository"
-import { PDFDocument } from "pdf-lib"
+import type { ValidatedDocumentType } from "@/lib/types"
 
 interface NewVersionModalProps {
   open: boolean
@@ -29,14 +30,14 @@ export function NewVersionModal({
   approverName,
   onSuccess,
 }: NewVersionModalProps) {
-  const [documentFiles, setDocumentFiles] = useState<File[]>([])
+  const [documentType, setDocumentType] = useState<ValidatedDocumentType>("minutes")
+  const [file, setFile] = useState<File | null>(null)
   const [reason, setReason] = useState("")
   const [finalGrade, setFinalGrade] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
 
-  const validateFile = (file: File) => {
-    // Validar tipo de arquivo (apenas PDFs)
+  const validateFile = (file: File): boolean => {
     if (file.type !== "application/pdf") {
       toast.error("Formato de arquivo inválido", {
         description: `O arquivo "${file.name}" não é um PDF.`,
@@ -44,7 +45,6 @@ export function NewVersionModal({
       return false
     }
 
-    // Validar tamanho do arquivo (máximo 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast.error("Arquivo muito grande", {
         description: `O arquivo "${file.name}" excede 10MB.`,
@@ -56,57 +56,27 @@ export function NewVersionModal({
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files) return
-
-    const newFiles = Array.from(files).filter(file => validateFile(file))
-    setDocumentFiles(prev => [...prev, ...newFiles])
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile && validateFile(selectedFile)) {
+      setFile(selectedFile)
+    }
     e.target.value = ""
-  }
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(false)
   }
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     setIsDragging(false)
 
-    const files = e.dataTransfer.files
-    if (!files) return
-
-    const newFiles = Array.from(files).filter(file => validateFile(file))
-    setDocumentFiles(prev => [...prev, ...newFiles])
-  }
-
-  const handleRemoveFile = (index: number) => {
-    setDocumentFiles(prev => prev.filter((_, i) => i !== index))
-  }
-
-  const mergePDFs = async (files: File[]): Promise<File> => {
-    const mergedPdf = await PDFDocument.create()
-
-    for (const file of files) {
-      const arrayBuffer = await file.arrayBuffer()
-      const pdf = await PDFDocument.load(arrayBuffer)
-      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
-      copiedPages.forEach(page => mergedPdf.addPage(page))
+    const droppedFile = e.dataTransfer.files?.[0]
+    if (droppedFile && validateFile(droppedFile)) {
+      setFile(droppedFile)
     }
-
-    const mergedPdfBytes = await mergedPdf.save()
-    return new File([new Uint8Array(mergedPdfBytes).buffer], "documento-nova-versao.pdf", { type: "application/pdf" })
   }
 
   const handleSubmit = async () => {
-    if (documentFiles.length === 0) {
-      toast.error("Documento não selecionado", {
-        description: "Por favor, selecione pelo menos um documento para enviar.",
+    if (!file) {
+      toast.error("Documento obrigatório", {
+        description: "Por favor, selecione o documento para enviar.",
       })
       return
     }
@@ -131,14 +101,7 @@ export function NewVersionModal({
 
     setSubmitting(true)
     try {
-      let finalDocument: File
-      if (documentFiles.length === 1) {
-        finalDocument = documentFiles[0]
-      } else {
-        finalDocument = await mergePDFs(documentFiles)
-      }
-
-      await documentRepository.uploadNewVersion(approvalId, finalDocument, reason, grade)
+      await documentRepository.uploadNewVersion(approvalId, file, documentType, reason, grade)
 
       toast.success("Nova versão enviada!", {
         description: "O documento foi enviado e será reavaliado.",
@@ -157,7 +120,8 @@ export function NewVersionModal({
   }
 
   const handleClose = () => {
-    setDocumentFiles([])
+    setDocumentType("minutes")
+    setFile(null)
     setReason("")
     setFinalGrade("")
     onOpenChange(false)
@@ -165,7 +129,7 @@ export function NewVersionModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Enviar Nova Versão do Documento</DialogTitle>
           <DialogDescription>
@@ -196,79 +160,99 @@ export function NewVersionModal({
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">
+            <Label>Tipo de Documento <span className="text-red-500">*</span></Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant={documentType === "minutes" ? "default" : "outline"}
+                className="w-full"
+                onClick={() => setDocumentType("minutes")}
+                disabled={submitting}
+              >
+                Ata
+              </Button>
+              <Button
+                type="button"
+                variant={documentType === "evaluation" ? "default" : "outline"}
+                className="w-full"
+                onClick={() => setDocumentType("evaluation")}
+                disabled={submitting}
+              >
+                Avaliação de Desempenho
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Selecione qual documento você deseja substituir.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>
               Novo Documento <span className="text-red-500">*</span>
-            </label>
+            </Label>
             <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+              onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
               onDrop={handleDrop}
-              className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
                 isDragging
                   ? "border-primary bg-primary/5"
+                  : file
+                  ? "border-green-500 bg-green-50 dark:bg-green-950/20"
                   : "border-border hover:border-primary/50"
               }`}
             >
               <input
                 type="file"
                 accept="application/pdf"
-                multiple
                 onChange={handleFileChange}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={submitting}
               />
-              <div className="flex flex-col items-center gap-2">
-                <Upload className="h-10 w-10 text-muted-foreground" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Clique para fazer upload</p>
-                  <p className="text-xs text-muted-foreground">PDF (múltiplos arquivos permitidos)</p>
+              {file ? (
+                <div className="flex flex-col items-center gap-2">
+                  <FileText className="h-8 w-8 text-green-600" />
+                  <p className="text-sm font-medium truncate max-w-full px-2">{file.name}</p>
+                  <p className={`text-xs ${file.size > 8 * 1024 * 1024 ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
+                    ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs mt-1"
+                    onClick={(e) => { e.stopPropagation(); setFile(null) }}
+                    disabled={submitting}
+                  >
+                    <X className="h-3 w-3 mr-1" /> Remover
+                  </Button>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Clique para fazer upload</p>
+                    <p className="text-xs text-muted-foreground">ou arraste o arquivo aqui</p>
+                  </div>
+                </div>
+              )}
             </div>
-            {documentFiles.length > 0 && (
-              <div className="space-y-2 mt-2">
-                <p className="text-xs text-muted-foreground">
-                  {documentFiles.length} arquivo(s) selecionado(s)
-                  {documentFiles.length > 1 && " - serão mesclados em um único PDF"}
-                </p>
-                <div className="space-y-1">
-                  {documentFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between gap-2 p-2 bg-muted rounded-md text-sm">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                        <span className="truncate">{file.name}</span>
-                        <span className="text-xs text-muted-foreground flex-shrink-0">
-                          ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 flex-shrink-0"
-                        onClick={() => handleRemoveFile(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
             <p className="text-xs text-muted-foreground">
-              Formato aceito: PDF (máximo 10MB por arquivo)
+              Formato aceito: PDF (máximo 10MB)
             </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">
+            <Label>
               Motivo da Nova Versão <span className="text-red-500">*</span>
-            </label>
+            </Label>
             <Textarea
               placeholder="Explique as mudanças realizadas nesta nova versão do documento..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              rows={5}
+              rows={4}
               className="resize-none"
+              disabled={submitting}
             />
             <p className="text-xs text-muted-foreground">
               Descreva as alterações feitas para atender às solicitações do avaliador.
@@ -276,9 +260,9 @@ export function NewVersionModal({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">
+            <Label>
               Nota Final <span className="text-muted-foreground font-normal">(opcional)</span>
-            </label>
+            </Label>
             <Input
               type="number"
               placeholder="Digite a nota (0 a 10)"
@@ -287,6 +271,7 @@ export function NewVersionModal({
               min={0}
               max={10}
               step={0.1}
+              disabled={submitting}
             />
             <p className="text-xs text-muted-foreground">
               Informe a nota final do trabalho (0 a 10).
@@ -304,7 +289,7 @@ export function NewVersionModal({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={submitting || documentFiles.length === 0 || !reason.trim()}
+            disabled={submitting || !file || !reason.trim()}
             className="gap-2"
           >
             <Upload className="h-4 w-4" />
