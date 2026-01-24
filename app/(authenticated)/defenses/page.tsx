@@ -317,10 +317,8 @@ export default function DefensesPage() {
               </div>
             </div>
             {otherDefenses.length > 0 ? (
-              <div className="max-h-[500px] overflow-y-auto pr-2">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {otherDefenses.map(renderDefenseCard)}
-                </div>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {otherDefenses.map(renderDefenseCard)}
               </div>
             ) : (
               <Card>

@@ -119,6 +119,64 @@ export default function DefenseDetailsPage() {
     }
   }
 
+  const getRoleLabel = (roles: string[]) => {
+    const hasCoordinator = roles.includes("COORDINATOR")
+    const hasAdvisor = roles.includes("ADVISOR")
+    const hasStudent = roles.includes("STUDENT")
+
+    if (hasCoordinator && hasAdvisor) {
+      return "Coordenador e Orientador"
+    }
+    if (hasCoordinator) {
+      return "Coordenador"
+    }
+    if (hasAdvisor) {
+      return "Orientador"
+    }
+    if (hasStudent) {
+      return "Aluno"
+    }
+    return roles.join(", ")
+  }
+
+  const mergeSignaturesByEmail = (signatures: Array<{ role: string; email: string; timestamp: string; status: "PENDING" | "APPROVED" | "REJECTED"; justification?: string }> | undefined) => {
+    if (!signatures) return []
+
+    const signatureMap = new Map<string, {
+      roles: string[]
+      email: string
+      timestamp: string
+      status: "PENDING" | "APPROVED" | "REJECTED"
+      justification?: string
+    }>()
+
+    for (const sig of signatures) {
+      const existing = signatureMap.get(sig.email)
+      if (existing) {
+        existing.roles.push(sig.role)
+        if (sig.status === "REJECTED") {
+          existing.status = "REJECTED"
+          existing.justification = sig.justification
+        } else if (sig.status === "PENDING" && existing.status !== "REJECTED") {
+          existing.status = "PENDING"
+        }
+        if (sig.timestamp && (!existing.timestamp || new Date(sig.timestamp) > new Date(existing.timestamp))) {
+          existing.timestamp = sig.timestamp
+        }
+      } else {
+        signatureMap.set(sig.email, {
+          roles: [sig.role],
+          email: sig.email,
+          timestamp: sig.timestamp,
+          status: sig.status,
+          justification: sig.justification,
+        })
+      }
+    }
+
+    return Array.from(signatureMap.values())
+  }
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -453,7 +511,7 @@ export default function DefenseDetailsPage() {
                     <div className="pt-2 border-t">
                       <p className="text-sm font-semibold mb-3">Assinaturas:</p>
                       <div className="grid gap-3">
-                        {doc.signatures.map((signature, index) => {
+                        {mergeSignaturesByEmail(doc.signatures).map((signature, index) => {
                           const isCurrentUser = signature.email === user?.email
 
                           return (
@@ -468,7 +526,7 @@ export default function DefenseDetailsPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap mb-1">
                                   <p className="text-sm font-medium">
-                                    {signature.role}
+                                    {getRoleLabel(signature.roles)}
                                     {isCurrentUser && <span className="text-muted-foreground ml-1">(você)</span>}
                                   </p>
                                   <Badge variant={signature.status === "APPROVED" ? "secondary" : signature.status === "REJECTED" ? "destructive" : "default"} className="text-xs">
