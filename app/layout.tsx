@@ -1,8 +1,11 @@
 import type { Metadata } from 'next'
+import { Geist } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ToastProvider } from '@/components/providers/toast-provider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import './globals.css'
+
+const geist = Geist({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Academic Ledger - Sistema de Gestão Acadêmica',
@@ -33,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
+      <body className={`${geist.className} antialiased`}>
         <ThemeProvider>
           {children}
           <ToastProvider />
