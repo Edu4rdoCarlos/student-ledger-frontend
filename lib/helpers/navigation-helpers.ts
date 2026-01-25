@@ -6,8 +6,9 @@ export function getHomeRouteForRole(role: UserRole): string {
     case "ADVISOR":
       return "/defenses"
     case "COORDINATOR":
-    case "ADMIN":
       return "/dashboard"
+    case "ADMIN":
+      return "/course"
     default:
       return "/dashboard"
   }

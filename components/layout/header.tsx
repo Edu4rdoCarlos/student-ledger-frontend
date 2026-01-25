@@ -26,8 +26,11 @@ export function Header() {
     if (user?.isFirstAccess && user.role !== "ADMIN" && user.role !== "COORDINATOR") {
       setShowChangePasswordModal(true)
       setIsFirstAccessModal(true)
+    } else if (!user?.isFirstAccess && isFirstAccessModal) {
+      setShowChangePasswordModal(false)
+      setIsFirstAccessModal(false)
     }
-  }, [user?.isFirstAccess, user?.role])
+  }, [user?.isFirstAccess, user?.role, isFirstAccessModal])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)

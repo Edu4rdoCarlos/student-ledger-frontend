@@ -30,7 +30,7 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Verificar autenticidade de documentos",
       },
       {
-        label: "Meu Curso",
+        label: "Cursos",
         href: "/course",
         icon: "book",
         description: "Informações do seu curso",
@@ -68,7 +68,7 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Verificar autenticidade de documentos",
       },
       {
-        label: "Meu Curso",
+        label: "Cursos",
         href: "/course",
         icon: "book",
         description: "Informações do curso",
@@ -122,7 +122,7 @@ export function getNavigationItems(user: User): NavigationItem[] {
     return [
       {
         label: "Cursos",
-        href: "/courses",
+        href: "/course",
         icon: "book",
         description: "Cadastrar cursos",
       },
@@ -136,82 +136,4 @@ export function getNavigationItems(user: User): NavigationItem[] {
   }
 
   return baseItems
-}
-
-export function getQuickActions(user: User): NavigationItem[] {
-  if (isStudent(user)) {
-    return [
-      {
-        label: "Verificar Documento",
-        href: "/verify",
-        icon: "shield",
-        description: "Verifique a autenticidade de um documento",
-      },
-      {
-        label: "Ver Status",
-        href: "/signatures",
-        icon: "info",
-        description: "Acompanhe o status das aprovações",
-      },
-    ]
-  }
-
-  if (isAdvisor(user)) {
-    return [
-      {
-        label: "Verificar Documento",
-        href: "/verify",
-        icon: "shield",
-        description: "Verificar autenticidade de documentos",
-      },
-      {
-        label: "Ver Status",
-        href: "/signatures",
-        icon: "info",
-        description: "Acompanhe o status das aprovações",
-      },
-    ]
-  }
-
-  if (isCoordinator(user)) {
-    return [
-      {
-        label: "Nova Defesa",
-        href: "/defenses/new",
-        icon: "plus",
-        description: "Criar nova defesa",
-      },
-      {
-        label: "Novo Estudante",
-        href: "/students/new",
-        icon: "user-plus",
-        description: "Cadastrar estudante",
-      },
-      {
-        label: "Submeter Resultado",
-        href: "/defenses/results",
-        icon: "check-circle",
-        description: "Submeter resultado de defesa",
-      },
-    ]
-  }
-
-  if (isAdmin(user)) {
-    return [
-      {
-        label: "Novo Curso",
-        href: "/courses/new",
-        icon: "plus",
-        description: "Cadastrar novo curso",
-      },
-      {
-        label: "Novo Coordenador",
-        href: "/coordinators/new",
-        icon: "shield",
-        description: "Cadastrar novo coordenador",
-      },
-    ]
-  }
-
-  return []
 }

@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { useAuthStore } from "@/lib/store/auth-store"
 import { getUserCapabilities, getUserInfo } from "@/lib/helpers/user-capabilities"
-import { getNavigationItems, getQuickActions } from "@/lib/config/navigation"
+import { getNavigationItems } from "@/lib/config/navigation"
 import { getRoleConfig } from "@/lib/config/roles"
 
 export function useUserRole() {
@@ -27,18 +27,12 @@ export function useUserRole() {
     return getNavigationItems(user)
   }, [user])
 
-  const quickActions = useMemo(() => {
-    if (!user) return []
-    return getQuickActions(user)
-  }, [user])
-
   return {
     user,
     roleConfig,
     capabilities,
     userInfo,
     navigation,
-    quickActions,
     isStudent: user?.role === "STUDENT",
     isAdvisor: user?.role === "ADVISOR",
     isCoordinator: user?.role === "COORDINATOR",

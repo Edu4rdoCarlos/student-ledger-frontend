@@ -44,6 +44,20 @@ export interface Advisor {
   updatedAt: string
 }
 
+export interface Coordinator {
+  userId: string
+  name: string
+  email: string
+  course: {
+    id: string
+    name: string
+    code: string
+  } | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Orientador {
   id: string
   name: string

@@ -86,6 +86,10 @@ class ApiClient {
         throw new Error(error.message || `HTTP ${response.status}`)
       }
 
+      if (response.status === 204 || response.headers.get('content-length') === '0') {
+        return undefined as T
+      }
+
       return response.json()
     } catch (error) {
       if (error instanceof TypeError && error.message.includes("fetch")) {
@@ -223,6 +227,10 @@ class ApiClient {
       if (!response.ok) {
         const error = await response.json().catch(() => ({ message: "Erro na requisição" }))
         throw new Error(error.message || `HTTP ${response.status}`)
+      }
+
+      if (response.status === 204 || response.headers.get('content-length') === '0') {
+        return undefined as T
       }
 
       return response.json()
