@@ -13,7 +13,7 @@ import { documentService } from "@/lib/services/document-service"
 import type { DocumentValidationResponse } from "@/lib/types"
 import { toast } from "sonner"
 
-type ValidationResult = DocumentValidationResponse | "not-found" | null
+type ValidationResult = DocumentValidationResponse | null
 
 export default function VerifyPage() {
   const [loading, setLoading] = useState(false)
@@ -43,26 +43,33 @@ export default function VerifyPage() {
       const response = await documentService.validateDocument(file)
 
       if (!response) {
-        setResult("not-found")
-        toast.error("Documento não encontrado")
+        toast.error("Erro ao validar documento")
         return
       }
 
       setResult(response)
 
-      if (response.document) {
-        setValue("hash", response.document.documentHash)
+      if (response.document?.minutesCid) {
+        setValue("hash", response.document.minutesCid)
       }
 
-      if (response.isValid) {
-        toast.success("Documento autêntico!")
-      } else {
-        toast.warning(response.message || "Documento encontrado mas ainda não foi aprovado")
+      switch (response.status) {
+        case "APPROVED":
+          toast.success("Documento autêntico!")
+          break
+        case "PENDING":
+          toast.warning("Documento pendente de assinatura")
+          break
+        case "INACTIVE":
+          toast.warning("Documento inativado")
+          break
+        case "NOT_FOUND":
+          toast.error("Documento não encontrado no sistema")
+          break
       }
     } catch (error) {
       toast.error("Erro ao validar documento")
       console.error(error)
-      setResult("not-found")
     } finally {
       setCalculatingHash(false)
     }
@@ -74,22 +81,29 @@ export default function VerifyPage() {
       const response = await documentService.verifyDocumentHash(data.hash)
 
       if (!response) {
-        setResult("not-found")
-        toast.error("Documento não encontrado")
+        toast.error("Erro ao verificar documento")
         return
       }
 
       setResult(response)
 
-      if (response.isValid) {
-        toast.success("Documento autêntico!")
-      } else {
-        toast.warning(response.message || "Documento encontrado mas ainda não foi aprovado")
+      switch (response.status) {
+        case "APPROVED":
+          toast.success("Documento autêntico!")
+          break
+        case "PENDING":
+          toast.warning("Documento pendente de assinatura")
+          break
+        case "INACTIVE":
+          toast.warning("Documento inativado")
+          break
+        case "NOT_FOUND":
+          toast.error("Documento não encontrado no sistema")
+          break
       }
     } catch (error) {
       toast.error("Erro ao verificar documento")
       console.error(error)
-      setResult("not-found")
     } finally {
       setLoading(false)
     }
@@ -235,15 +249,15 @@ export default function VerifyPage() {
             </>
           ) : (
             <CardContent className="pt-6">
-              {result === "not-found" ? (
+              {result.status === "NOT_FOUND" ? (
                 <div className="flex flex-col items-center space-y-4 text-center py-8">
                   <div className="rounded-2xl bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-950/30 dark:to-rose-950/30 p-6 shadow-lg">
                     <XCircle className="h-12 w-12 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold mb-2">Documento Não Encontrado</h3>
+                    <h3 className="text-2xl font-bold mb-2 text-red-700 dark:text-red-400">Documento Não Encontrado</h3>
                     <p className="text-sm text-muted-foreground max-w-md">
-                      O documento não foi encontrado no sistema
+                      Este documento não foi submetido ao sistema. Possível documento fraudulento.
                     </p>
                   </div>
                   <Button
@@ -255,7 +269,7 @@ export default function VerifyPage() {
                     Nova Verificação
                   </Button>
                 </div>
-              ) : !result.isValid ? (
+              ) : result.status === "PENDING" || result.status === "INACTIVE" ? (
                 <div className="space-y-6">
                   <div className="flex flex-col items-center space-y-4 text-center pb-6 border-b border-border/50">
                     <div className="rounded-2xl bg-gradient-to-br from-amber-100 to-yellow-100 dark:from-amber-950/30 dark:to-yellow-950/30 p-6 shadow-lg">
@@ -263,10 +277,12 @@ export default function VerifyPage() {
                     </div>
                     <div>
                       <h3 className="text-2xl font-bold mb-2 text-amber-700 dark:text-amber-400">
-                        {result.document?.status === "INACTIVE" ? "Documento Inativo" : "Documento Pendente"}
+                        {result.status === "INACTIVE" ? "Documento Inativo" : "Documento Pendente"}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {result.message}
+                        {result.status === "INACTIVE"
+                          ? "Este documento foi inativado e não está mais válido"
+                          : "Documento pendente de assinatura"}
                       </p>
                     </div>
                   </div>
@@ -304,11 +320,21 @@ export default function VerifyPage() {
 
                       <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border border-amber-200/50 dark:border-amber-800/30">
                         <div className="flex items-center gap-2 mb-2">
+                          <FileText className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          <p className="text-xs font-medium text-amber-900 dark:text-amber-100">Tipo de Documento</p>
+                        </div>
+                        <p className="font-semibold text-amber-800 dark:text-amber-200">
+                          {result.document.documentType === "minutes" ? "Ata" : "Avaliação de Desempenho"}
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border border-amber-200/50 dark:border-amber-800/30">
+                        <div className="flex items-center gap-2 mb-2">
                           <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                           <p className="text-xs font-medium text-amber-900 dark:text-amber-100">Hash SHA-256</p>
                         </div>
                         <p className="break-all font-mono text-xs text-amber-800 dark:text-amber-200 bg-amber-100/50 dark:bg-amber-950/30 p-2 rounded">
-                          {result.document.documentHash}
+                          {result.document.documentType === "minutes" ? result.document.minutesHash : result.document.evaluationHash}
                         </p>
                       </div>
                     </div>
@@ -370,11 +396,21 @@ export default function VerifyPage() {
 
                       <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border border-emerald-200/50 dark:border-emerald-800/30">
                         <div className="flex items-center gap-2 mb-2">
+                          <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                          <p className="text-xs font-medium text-emerald-900 dark:text-emerald-100">Tipo de Documento</p>
+                        </div>
+                        <p className="font-semibold text-emerald-800 dark:text-emerald-200">
+                          {result.document.documentType === "minutes" ? "Ata" : "Avaliação de Desempenho"}
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border border-emerald-200/50 dark:border-emerald-800/30">
+                        <div className="flex items-center gap-2 mb-2">
                           <Lock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                           <p className="text-xs font-medium text-emerald-900 dark:text-emerald-100">Hash SHA-256</p>
                         </div>
                         <p className="break-all font-mono text-xs text-emerald-800 dark:text-emerald-200 bg-emerald-100/50 dark:bg-emerald-950/30 p-2 rounded">
-                          {result.document.documentHash}
+                          {result.document.documentType === "minutes" ? result.document.minutesHash : result.document.evaluationHash}
                         </p>
                       </div>
                     </div>

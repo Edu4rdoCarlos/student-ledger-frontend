@@ -166,7 +166,7 @@ export function NewVersionModal({
                 type="button"
                 variant={documentType === "minutes" ? "default" : "outline"}
                 className="w-full"
-                onClick={() => setDocumentType("minutes")}
+                onClick={() => { setDocumentType("minutes"); setFile(null); setReason(""); setFinalGrade("") }}
                 disabled={submitting}
               >
                 Ata
@@ -175,7 +175,7 @@ export function NewVersionModal({
                 type="button"
                 variant={documentType === "evaluation" ? "default" : "outline"}
                 className="w-full"
-                onClick={() => setDocumentType("evaluation")}
+                onClick={() => { setDocumentType("evaluation"); setFile(null); setReason(""); setFinalGrade("") }}
                 disabled={submitting}
               >
                 Avaliação de Desempenho
@@ -210,9 +210,13 @@ export function NewVersionModal({
                 disabled={submitting}
               />
               {file ? (
-                <div className="flex flex-col items-center gap-2">
-                  <FileText className="h-8 w-8 text-green-600" />
-                  <p className="text-sm font-medium truncate max-w-full px-2">{file.name}</p>
+                <div className="flex flex-col items-center gap-2 w-full overflow-hidden">
+                  <FileText className="h-8 w-8 text-green-600 shrink-0" />
+                  <p className="text-sm font-medium text-center px-2">
+                    {file.name.length > 30
+                      ? `${file.name.slice(0, 15)}...${file.name.slice(-12)}`
+                      : file.name}
+                  </p>
                   <p className={`text-xs ${file.size > 8 * 1024 * 1024 ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
                     ({(file.size / 1024 / 1024).toFixed(2)} MB)
                   </p>
@@ -259,24 +263,26 @@ export function NewVersionModal({
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label>
-              Nota Final <span className="text-muted-foreground font-normal">(opcional)</span>
-            </Label>
-            <Input
-              type="number"
-              placeholder="Digite a nota (0 a 10)"
-              value={finalGrade}
-              onChange={(e) => setFinalGrade(e.target.value)}
-              min={0}
-              max={10}
-              step={0.1}
-              disabled={submitting}
-            />
-            <p className="text-xs text-muted-foreground">
-              Informe a nota final do trabalho (0 a 10).
-            </p>
-          </div>
+          {documentType === "evaluation" && (
+            <div className="space-y-2">
+              <Label>
+                Nota Final <span className="text-muted-foreground font-normal">(opcional)</span>
+              </Label>
+              <Input
+                type="number"
+                placeholder="Digite a nota (0 a 10)"
+                value={finalGrade}
+                onChange={(e) => setFinalGrade(e.target.value)}
+                min={0}
+                max={10}
+                step={0.1}
+                disabled={submitting}
+              />
+              <p className="text-xs text-muted-foreground">
+                Informe a nota final do trabalho (0 a 10).
+              </p>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">

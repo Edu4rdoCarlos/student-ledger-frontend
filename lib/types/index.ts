@@ -113,9 +113,12 @@ export interface DashboardSummary {
 
 export type ValidatedDocumentType = "minutes" | "evaluation"
 
+export type ValidationStatus = "NOT_FOUND" | "PENDING" | "APPROVED" | "INACTIVE"
+
 export interface DocumentValidationResponse {
   isValid: boolean
-  document: {
+  status: ValidationStatus
+  document?: {
     id: string
     documentType: ValidatedDocumentType
     minutesHash?: string
@@ -128,6 +131,5 @@ export interface DocumentValidationResponse {
       advisor: string
       course: string
     }
-  } | null
-  message: string
+  }
 }

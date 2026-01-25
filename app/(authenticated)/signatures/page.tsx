@@ -147,7 +147,12 @@ export default function SignaturesPage() {
 
     const hasRejection = !!rejectedSignature
     const isCoordinator = user?.role === "COORDINATOR"
-    const canEvaluate = myPendingApproval && !(isCoordinator && hasRejection)
+
+    // Coordenador só pode avaliar quando todos os outros já tiverem aprovado
+    const otherSignatures = signatures.filter((s) => s.role !== "COORDINATOR")
+    const allOthersApproved = otherSignatures.length === 0 || otherSignatures.every((s) => s.status === "APPROVED")
+
+    const canEvaluate = myPendingApproval && !(isCoordinator && hasRejection) && (!isCoordinator || allOthersApproved)
 
     const statusColors = {
       PENDING: {
@@ -246,6 +251,11 @@ export default function SignaturesPage() {
                 {isCoordinator && hasRejection && (
                   <p className="text-xs text-muted-foreground italic">
                     Aguardando resolução da rejeição antes de avaliar
+                  </p>
+                )}
+                {isCoordinator && !hasRejection && !allOthersApproved && (
+                  <p className="text-xs text-muted-foreground italic">
+                    Aguardando as demais aprovações antes de avaliar
                   </p>
                 )}
               </div>
