@@ -1,23 +1,36 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { GraduationCap, Lock, Mail, Shield, FileCheck, Users } from "lucide-react"
-import { Button } from "@/components/primitives/button"
-import { Input } from "@/components/primitives/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared/card"
-import { loginSchema, type LoginFormData } from "@/lib/validations/auth"
-import { authService } from "@/lib/services/auth-service"
-import { userService } from "@/lib/services/user-service"
-import { useAuthStore } from "@/lib/store/auth-store"
-import { getHomeRouteForUser } from "@/lib/helpers/navigation-helpers"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  GraduationCap,
+  Lock,
+  Mail,
+  Shield,
+  FileCheck,
+  Users,
+} from "lucide-react";
+import { Button } from "@/components/primitives/button";
+import { Input } from "@/components/primitives/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/shared/card";
+import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
+import { authService } from "@/lib/services/auth-service";
+import { userService } from "@/lib/services/user-service";
+import { useAuthStore } from "@/lib/store/auth-store";
+import { getHomeRouteForUser } from "@/lib/helpers/navigation-helpers";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const setAuth = useAuthStore((state) => state.setAuth)
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -26,13 +39,13 @@ export default function LoginPage() {
     setError,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-  })
+  });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      setLoading(true)
+      setLoading(true);
 
-      const { accessToken } = await authService.login(data)
+      const { accessToken } = await authService.login(data);
 
       setAuth(
         {
@@ -40,28 +53,29 @@ export default function LoginPage() {
           name: "",
           email: "",
           role: "ADMIN",
-          isFirstAccess: false
+          isFirstAccess: false,
         },
         accessToken
-      )
+      );
 
-      const user = await userService.getMe()
-      setAuth(user, accessToken)
+      const user = await userService.getMe();
+      setAuth(user, accessToken);
 
       // Aguarda o tema ser aplicado antes de redirecionar
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      const homeRoute = getHomeRouteForUser(user)
-      router.push(homeRoute)
+      const homeRoute = getHomeRouteForUser(user);
+      router.push(homeRoute);
     } catch (error) {
       setError("password", {
         type: "manual",
-        message: error instanceof Error ? error.message : "Credenciais inválidas",
-      })
+        message:
+          error instanceof Error ? error.message : "Credenciais inválidas",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="relative flex min-h-screen overflow-hidden">
@@ -80,20 +94,24 @@ export default function LoginPage() {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 Academic Ledger
               </h1>
-              <p className="text-sm text-muted-foreground">Sistema de Gerenciamento Acadêmico</p>
+              <p className="text-sm text-muted-foreground">
+                Sistema de Gerenciamento Acadêmico
+              </p>
             </div>
           </div>
 
           <div className="space-y-6 mt-16">
             <h2 className="text-4xl font-bold leading-tight text-foreground">
-              Gestão de TCC com<br />
+              Gestão de TCC com
+              <br />
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 Tecnologia Blockchain
               </span>
             </h2>
 
             <p className="text-lg text-muted-foreground max-w-md">
-              Plataforma segura para gerenciamento de documentos acadêmicos com rastreabilidade e verificação via blockchain.
+              Plataforma segura para gerenciamento de documentos acadêmicos com
+              rastreabilidade e verificação via blockchain.
             </p>
 
             <div className="grid gap-4 mt-12">
@@ -102,9 +120,12 @@ export default function LoginPage() {
                   <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Segurança Blockchain</h3>
+                  <h3 className="font-semibold text-foreground">
+                    Segurança Blockchain
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Documentos protegidos com Hyperledger Fabric e certificados X.509
+                    Documentos protegidos com Hyperledger Fabric e certificados
+                    X.509
                   </p>
                 </div>
               </div>
@@ -114,9 +135,12 @@ export default function LoginPage() {
                   <FileCheck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Fluxo de Aprovações</h3>
+                  <h3 className="font-semibold text-foreground">
+                    Fluxo de Aprovações
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Workflow completo com assinaturas digitais de múltiplas partes
+                    Workflow completo com assinaturas digitais de múltiplas
+                    partes
                   </p>
                 </div>
               </div>
@@ -126,9 +150,12 @@ export default function LoginPage() {
                   <Users className="h-5 w-5 text-violet-600 dark:text-violet-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Gestão Colaborativa</h3>
+                  <h3 className="font-semibold text-foreground">
+                    Gestão Colaborativa
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Coordenação entre secretaria, coordenadores, orientadores e alunos
+                    Coordenação entre secretaria, coordenadores, orientadores e
+                    alunos
                   </p>
                 </div>
               </div>
@@ -170,7 +197,10 @@ export default function LoginPage() {
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Email
                   </label>
                   <div className="relative">
@@ -183,11 +213,18 @@ export default function LoginPage() {
                       {...register("email")}
                     />
                   </div>
-                  {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+                  {errors.email && (
+                    <p className="text-xs text-destructive">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="password"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Senha
                   </label>
                   <div className="relative">
@@ -200,7 +237,11 @@ export default function LoginPage() {
                       {...register("password")}
                     />
                   </div>
-                  {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+                  {errors.password && (
+                    <p className="text-xs text-destructive">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
 
                 <Button
@@ -222,7 +263,9 @@ export default function LoginPage() {
               <div className="mt-6 rounded-lg bg-blue-50/50 dark:bg-blue-950/30 p-4 border border-blue-200/50 dark:border-blue-800/50">
                 <div className="flex items-start gap-2">
                   <p className="text-xs text-blue-900 dark:text-blue-100">
-                    <strong>Protegido por blockchain:</strong> Todas as operações são registradas de forma imutável no Hyperledger Fabric.
+                    <strong>Protegido por blockchain:</strong> Todas as
+                    operações são registradas de forma imutável no Hyperledger
+                    Fabric.
                   </p>
                 </div>
               </div>
@@ -231,5 +274,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
