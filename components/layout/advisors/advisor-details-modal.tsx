@@ -89,9 +89,9 @@ export function AdvisorDetailsModal({ advisor, open, onOpenChange, onUpdateAdvis
       })
       setIsEditing(false)
       toast.success("Orientador atualizado com sucesso!")
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao atualizar orientador:", error)
-      const errorMessage = error?.response?.data?.message || error?.message || "Erro desconhecido"
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error("Erro ao atualizar orientador", {
         description: errorMessage,
       })

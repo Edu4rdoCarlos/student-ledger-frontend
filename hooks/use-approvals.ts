@@ -38,7 +38,6 @@ export interface DocumentWithApprovals {
 
 export interface PendingApproval extends DocumentWithApprovals {
   id: string
-  role: "ADVISOR" | "COORDINATOR" | "ADMIN" | "STUDENT"
   status: ApprovalStatus
   approverId?: string
   signatures: ApprovalItem[]
@@ -59,7 +58,6 @@ export function useApprovals(statusFilter: ApprovalStatus = "PENDING") {
       const transformedData: PendingApproval[] = response.data.map((doc) => ({
         ...doc,
         id: doc.documentId,
-        role: "PENDING" as any,
         status: statusFilter,
         signatures: doc.approvals,
       }))

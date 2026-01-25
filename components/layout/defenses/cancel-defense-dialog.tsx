@@ -41,9 +41,9 @@ export function CancelDefenseDialog({ open, onOpenChange, onSuccess, defenseId }
       form.reset()
       onOpenChange(false)
       onSuccess?.()
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao cancelar defesa:", error)
-      const errorMessage = error?.message || "Erro desconhecido"
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error("Erro ao cancelar defesa", {
         description: errorMessage,
       })

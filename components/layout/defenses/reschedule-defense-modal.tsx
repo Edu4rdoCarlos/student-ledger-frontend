@@ -52,9 +52,9 @@ export function RescheduleDefenseModal({ open, onOpenChange, onSuccess, defense 
       form.reset()
       onOpenChange(false)
       onSuccess?.()
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao reagendar defesa:", error)
-      const errorMessage = error?.message || "Erro desconhecido"
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error("Erro ao reagendar defesa", {
         description: errorMessage,
       })

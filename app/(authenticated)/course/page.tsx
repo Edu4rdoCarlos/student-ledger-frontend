@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/shared/card"
+import { Card, CardContent } from "@/components/shared/card"
 import { Button } from "@/components/primitives/button"
 import { Book, Plus } from "lucide-react"
 import { useUser } from "@/lib/hooks/use-user-role"

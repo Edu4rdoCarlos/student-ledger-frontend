@@ -1,44 +1,60 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useMemo } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/primitives/button"
-import { Badge } from "@/components/primitives/badge"
-import { Separator } from "@/components/primitives/separator"
-import { Calendar, Users, FileText, CheckCircle2, Clock, XCircle, Shield, Download, Hash, ChevronRight, Upload, X, CalendarClock, MoreVertical, ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import type { Defense } from "@/lib/types/defense"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { defenseService } from "@/lib/services/defense-service"
-import { documentService } from "@/lib/services/document-service"
-import { toast } from "sonner"
-import { useUser } from "@/lib/hooks/use-user-role"
+import { useState, useEffect, useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/primitives/button";
+import { Badge } from "@/components/primitives/badge";
+import { Separator } from "@/components/primitives/separator";
+import {
+  Calendar,
+  Users,
+  FileText,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Shield,
+  Download,
+  Hash,
+  ChevronRight,
+  Upload,
+  X,
+  CalendarClock,
+  MoreVertical,
+  ArrowLeft,
+} from "lucide-react";
+import Link from "next/link";
+import type { Defense } from "@/lib/types/defense";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { defenseService } from "@/lib/services/defense-service";
+import { documentService } from "@/lib/services/document-service";
+import { toast } from "sonner";
+import { useUser } from "@/lib/hooks/use-user-role";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/shared/dropdown-menu"
-import { RescheduleDefenseModal } from "@/components/layout/defenses/reschedule-defense-modal"
-import { FinalizeDefenseDialog } from "@/components/layout/defenses/finalize-defense-dialog"
-import { CancelDefenseDialog } from "@/components/layout/defenses/cancel-defense-dialog"
-import { NewVersionModal } from "@/components/layout/documents/new-version-modal"
+} from "@/components/shared/dropdown-menu";
+import { RescheduleDefenseModal } from "@/components/layout/defenses/reschedule-defense-modal";
+import { FinalizeDefenseDialog } from "@/components/layout/defenses/finalize-defense-dialog";
+import { CancelDefenseDialog } from "@/components/layout/defenses/cancel-defense-dialog";
+import { NewVersionModal } from "@/components/layout/documents/new-version-modal";
 
 export default function DefenseDetailsPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { user } = useUser()
-  const [defense, setDefense] = useState<Defense | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
-  const [finalizeModalOpen, setFinalizeModalOpen] = useState(false)
-  const [cancelModalOpen, setCancelModalOpen] = useState(false)
-  const [newVersionModalOpen, setNewVersionModalOpen] = useState(false)
+  const params = useParams();
+  const router = useRouter();
+  const { user } = useUser();
+  const [defense, setDefense] = useState<Defense | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [finalizeModalOpen, setFinalizeModalOpen] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [newVersionModalOpen, setNewVersionModalOpen] = useState(false);
   const [selectedDocForNewVersion, setSelectedDocForNewVersion] = useState<{
-    approvalId: string
-    documentTitle: string
-  } | null>(null)
+    approvalId: string;
+    documentTitle: string;
+  } | null>(null);
 
   const userRelationship = useMemo(() => {
     if (!user || !defense) {
@@ -49,14 +65,18 @@ export default function DefenseDetailsPage() {
         isAdvisor: false,
         isExamBoardMember: false,
         isCoordinatorOfCourse: false,
-      }
+      };
     }
 
-    const isStudent = defense.students?.some(student => student.email === user.email) ?? false
-    const isAdvisor = defense.advisor?.email === user.email
-    const isExamBoardMember = defense.examBoard?.some(member => member.email === user.email) ?? false
-    const defenseCourseId = defense.course?.id
-    const isCoordinatorOfCourse = user.role === "COORDINATOR" && user.courseId === defenseCourseId
+    const isStudent =
+      defense.students?.some((student) => student.email === user.email) ??
+      false;
+    const isAdvisor = defense.advisor?.email === user.email;
+    const isExamBoardMember =
+      defense.examBoard?.some((member) => member.email === user.email) ?? false;
+    const defenseCourseId = defense.course?.id;
+    const isCoordinatorOfCourse =
+      user.role === "COORDINATOR" && user.courseId === defenseCourseId;
 
     return {
       isAdmin: user.role === "ADMIN",
@@ -65,103 +85,126 @@ export default function DefenseDetailsPage() {
       isAdvisor,
       isExamBoardMember,
       isCoordinatorOfCourse,
-    }
-  }, [user, defense])
+    };
+  }, [user, defense]);
 
   const canDownload = useMemo(() => {
-    const { isAdmin, isCoordinator, isStudent, isAdvisor, isExamBoardMember } = userRelationship
-    return isAdmin || isCoordinator || isStudent || isAdvisor || isExamBoardMember
-  }, [userRelationship])
+    const { isAdmin, isCoordinator, isStudent, isAdvisor, isExamBoardMember } =
+      userRelationship;
+    return (
+      isAdmin || isCoordinator || isStudent || isAdvisor || isExamBoardMember
+    );
+  }, [userRelationship]);
 
   const canViewDocuments = useMemo(() => {
-    const { isAdmin, isCoordinator, isStudent, isAdvisor, isExamBoardMember } = userRelationship
-    return isAdmin || isCoordinator || isStudent || isAdvisor || isExamBoardMember
-  }, [userRelationship])
+    const { isAdmin, isCoordinator, isStudent, isAdvisor, isExamBoardMember } =
+      userRelationship;
+    return (
+      isAdmin || isCoordinator || isStudent || isAdvisor || isExamBoardMember
+    );
+  }, [userRelationship]);
 
   const canManageDefense = useMemo(() => {
-    const { isAdmin, isCoordinatorOfCourse } = userRelationship
-    return isAdmin || isCoordinatorOfCourse
-  }, [userRelationship])
+    const { isAdmin, isCoordinatorOfCourse } = userRelationship;
+    return isAdmin || isCoordinatorOfCourse;
+  }, [userRelationship]);
 
   const canFinalizeDefense = useMemo(() => {
-    if (!defense) return false
-    const defenseDate = new Date(defense.defenseDate)
-    const now = new Date()
-    return defenseDate <= now
-  }, [defense])
+    if (!defense) return false;
+    const defenseDate = new Date(defense.defenseDate);
+    const now = new Date();
+    return defenseDate <= now;
+  }, [defense]);
 
   useEffect(() => {
     const fetchDefense = async () => {
       try {
-        setLoading(true)
-        const data = await defenseService.getDefenseById(params.id as string)
-        setDefense(data)
+        setLoading(true);
+        const data = await defenseService.getDefenseById(params.id as string);
+        setDefense(data);
       } catch (error) {
-        console.error("Erro ao buscar defesa:", error)
-        toast.error("Erro ao carregar defesa")
-        router.push("/defenses")
+        console.error("Erro ao buscar defesa:", error);
+        toast.error("Erro ao carregar defesa");
+        router.push("/defenses");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (params.id) {
-      fetchDefense()
+      fetchDefense();
     }
-  }, [params.id, router])
+  }, [params.id, router]);
 
   const handleRescheduleSuccess = async () => {
     try {
-      const data = await defenseService.getDefenseById(params.id as string)
-      setDefense(data)
+      const data = await defenseService.getDefenseById(params.id as string);
+      setDefense(data);
     } catch (error) {
-      console.error("Erro ao atualizar defesa:", error)
+      console.error("Erro ao atualizar defesa:", error);
     }
-  }
+  };
 
   const getRoleLabel = (roles: string[]) => {
-    const hasCoordinator = roles.includes("COORDINATOR")
-    const hasAdvisor = roles.includes("ADVISOR")
-    const hasStudent = roles.includes("STUDENT")
+    const hasCoordinator = roles.includes("COORDINATOR");
+    const hasAdvisor = roles.includes("ADVISOR");
+    const hasStudent = roles.includes("STUDENT");
 
     if (hasCoordinator && hasAdvisor) {
-      return "Coordenador e Orientador"
+      return "Coordenador e Orientador";
     }
     if (hasCoordinator) {
-      return "Coordenador"
+      return "Coordenador";
     }
     if (hasAdvisor) {
-      return "Orientador"
+      return "Orientador";
     }
     if (hasStudent) {
-      return "Aluno"
+      return "Aluno";
     }
-    return roles.join(", ")
-  }
+    return roles.join(", ");
+  };
 
-  const mergeSignaturesByEmail = (signatures: Array<{ role: string; email: string; timestamp: string; status: "PENDING" | "APPROVED" | "REJECTED"; justification?: string }> | undefined) => {
-    if (!signatures) return []
+  const mergeSignaturesByEmail = (
+    signatures:
+      | Array<{
+          role: string;
+          email: string;
+          timestamp: string;
+          status: "PENDING" | "APPROVED" | "REJECTED";
+          justification?: string;
+        }>
+      | undefined
+  ) => {
+    if (!signatures) return [];
 
-    const signatureMap = new Map<string, {
-      roles: string[]
-      email: string
-      timestamp: string
-      status: "PENDING" | "APPROVED" | "REJECTED"
-      justification?: string
-    }>()
+    const signatureMap = new Map<
+      string,
+      {
+        roles: string[];
+        email: string;
+        timestamp: string;
+        status: "PENDING" | "APPROVED" | "REJECTED";
+        justification?: string;
+      }
+    >();
 
     for (const sig of signatures) {
-      const existing = signatureMap.get(sig.email)
+      const existing = signatureMap.get(sig.email);
       if (existing) {
-        existing.roles.push(sig.role)
+        existing.roles.push(sig.role);
         if (sig.status === "REJECTED") {
-          existing.status = "REJECTED"
-          existing.justification = sig.justification
+          existing.status = "REJECTED";
+          existing.justification = sig.justification;
         } else if (sig.status === "PENDING" && existing.status !== "REJECTED") {
-          existing.status = "PENDING"
+          existing.status = "PENDING";
         }
-        if (sig.timestamp && (!existing.timestamp || new Date(sig.timestamp) > new Date(existing.timestamp))) {
-          existing.timestamp = sig.timestamp
+        if (
+          sig.timestamp &&
+          (!existing.timestamp ||
+            new Date(sig.timestamp) > new Date(existing.timestamp))
+        ) {
+          existing.timestamp = sig.timestamp;
         }
       } else {
         signatureMap.set(sig.email, {
@@ -170,12 +213,12 @@ export default function DefenseDetailsPage() {
           timestamp: sig.timestamp,
           status: sig.status,
           justification: sig.justification,
-        })
+        });
       }
     }
 
-    return Array.from(signatureMap.values())
-  }
+    return Array.from(signatureMap.values());
+  };
 
   if (loading) {
     return (
@@ -187,11 +230,11 @@ export default function DefenseDetailsPage() {
           </div>
         </div>
       </DashboardLayout>
-    )
+    );
   }
 
   if (!defense) {
-    return null
+    return null;
   }
 
   return (
@@ -208,7 +251,10 @@ export default function DefenseDetailsPage() {
             Voltar
           </Button>
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/defenses" className="hover:text-foreground transition-colors">
+            <Link
+              href="/defenses"
+              className="hover:text-foreground transition-colors"
+            >
               Defesas
             </Link>
             <ChevronRight className="h-4 w-4" />
@@ -272,7 +318,9 @@ export default function DefenseDetailsPage() {
                       <FileText className="mr-2 h-4 w-4" />
                       Finalizar Defesa
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsRescheduleModalOpen(true)}>
+                    <DropdownMenuItem
+                      onClick={() => setIsRescheduleModalOpen(true)}
+                    >
                       <CalendarClock className="mr-2 h-4 w-4" />
                       Reagendar
                     </DropdownMenuItem>
@@ -287,55 +335,67 @@ export default function DefenseDetailsPage() {
                   </>
                 )}
 
-                {defense.status === "COMPLETED" && defense.documents && defense.documents.length > 0 && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <div className="px-2 py-1.5">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        Documentos
-                      </p>
-                    </div>
-                    {defense.documents
-                      .filter(doc => doc.status !== "INACTIVE")
-                      .map((doc, index) => {
-                        const allApproved = doc.signatures?.every(sig => sig.status === "APPROVED")
-                        const hasPendingApprovals = doc.signatures?.some(sig => sig.status === "PENDING")
+                {defense.status === "COMPLETED" &&
+                  defense.documents &&
+                  defense.documents.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <div className="px-2 py-1.5">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Documentos
+                        </p>
+                      </div>
+                      {defense.documents
+                        .filter((doc) => doc.status !== "INACTIVE")
+                        .map((doc, index) => {
+                          const allApproved = doc.signatures?.every(
+                            (sig) => sig.status === "APPROVED"
+                          );
+                          const hasPendingApprovals = doc.signatures?.some(
+                            (sig) => sig.status === "PENDING"
+                          );
 
-                        return (
-                          <div key={doc.id}>
-                            {index > 0 && <DropdownMenuSeparator />}
-                            <div className="px-2 py-1">
-                              <p className="text-xs text-muted-foreground">Versão {doc.version}</p>
+                          return (
+                            <div key={doc.id}>
+                              {index > 0 && <DropdownMenuSeparator />}
+                              <div className="px-2 py-1">
+                                <p className="text-xs text-muted-foreground">
+                                  Versão {doc.version}
+                                </p>
+                              </div>
+                              {allApproved && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedDocForNewVersion({
+                                      approvalId: doc.id,
+                                      documentTitle: `${defense.title} - Versão ${doc.version}`,
+                                    });
+                                    setNewVersionModalOpen(true);
+                                  }}
+                                >
+                                  <Upload className="mr-2 h-4 w-4" />
+                                  Nova Versão
+                                </DropdownMenuItem>
+                              )}
+                              {hasPendingApprovals && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedDocForNewVersion({
+                                      approvalId: doc.id,
+                                      documentTitle: `${defense.title} - Versão ${doc.version}`,
+                                    });
+                                    setNewVersionModalOpen(true);
+                                  }}
+                                >
+                                  <Upload className="mr-2 h-4 w-4" />
+                                  Substituir Documento
+                                </DropdownMenuItem>
+                              )}
                             </div>
-                            {allApproved && (
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedDocForNewVersion({
-                                  approvalId: doc.id,
-                                  documentTitle: `${defense.title} - Versão ${doc.version}`,
-                                })
-                                setNewVersionModalOpen(true)
-                              }}>
-                                <Upload className="mr-2 h-4 w-4" />
-                                Nova Versão
-                              </DropdownMenuItem>
-                            )}
-                            {hasPendingApprovals && (
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedDocForNewVersion({
-                                  approvalId: doc.id,
-                                  documentTitle: `${defense.title} - Versão ${doc.version}`,
-                                })
-                                setNewVersionModalOpen(true)
-                              }}>
-                                <Upload className="mr-2 h-4 w-4" />
-                                Substituir Documento
-                              </DropdownMenuItem>
-                            )}
-                          </div>
-                        )
-                      })}
-                  </>
-                )}
+                          );
+                        })}
+                    </>
+                  )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -354,18 +414,20 @@ export default function DefenseDetailsPage() {
                 {defense.course && (
                   <div>
                     <p className="text-muted-foreground">Curso</p>
-                    <p className="font-medium text-primary">{defense.course.name}</p>
+                    <p className="font-medium text-primary">
+                      {defense.course.name}
+                    </p>
                   </div>
                 )}
                 <div>
                   <p className="text-muted-foreground">Data e Hora</p>
                   <p className="font-medium">
-                    {new Date(defense.defenseDate).toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: 'long',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
+                    {new Date(defense.defenseDate).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </p>
                 </div>
@@ -392,9 +454,13 @@ export default function DefenseDetailsPage() {
                 </div>
                 <div className="text-sm p-3 rounded-lg border bg-muted/50">
                   <p className="font-medium">{defense.advisor.name}</p>
-                  <p className="text-muted-foreground text-xs">{defense.advisor.email}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {defense.advisor.email}
+                  </p>
                   {defense.advisor.specialization && (
-                    <p className="text-muted-foreground text-xs">{defense.advisor.specialization}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {defense.advisor.specialization}
+                    </p>
                   )}
                 </div>
               </div>
@@ -410,10 +476,17 @@ export default function DefenseDetailsPage() {
                 </div>
                 <div className="space-y-2">
                   {defense.students.map((student) => (
-                    <div key={student.id} className="text-sm p-3 rounded-lg border bg-muted/50">
+                    <div
+                      key={student.id}
+                      className="text-sm p-3 rounded-lg border bg-muted/50"
+                    >
                       <p className="font-medium">{student.name}</p>
-                      <p className="text-muted-foreground text-xs">{student.email}</p>
-                      <p className="text-muted-foreground text-xs">Matrícula: {student.registration}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {student.email}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        Matrícula: {student.registration}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -428,9 +501,14 @@ export default function DefenseDetailsPage() {
                 </div>
                 <div className="space-y-2">
                   {defense.examBoard.map((member) => (
-                    <div key={member.id} className="text-sm p-3 rounded-lg border bg-muted/50">
+                    <div
+                      key={member.id}
+                      className="text-sm p-3 rounded-lg border bg-muted/50"
+                    >
                       <p className="font-medium">{member.name}</p>
-                      <p className="text-muted-foreground text-xs">{member.email}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {member.email}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -439,201 +517,281 @@ export default function DefenseDetailsPage() {
           </div>
         </div>
 
-        {canViewDocuments && defense.documents && defense.documents.length > 0 && (
-          <div>
-            <Separator className="mb-6" />
-            <div className="flex items-center gap-2 mb-4">
-              <FileText className="h-5 w-5 text-muted-foreground" />
-              <h3 className="text-xl font-semibold">Documentos</h3>
-            </div>
-            <div className="space-y-4">
-              {defense.documents.map((doc) => (
-                <div key={doc.id} className="p-6 rounded-lg border bg-muted/50 space-y-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-semibold">Versão {doc.version}</p>
-                        {doc.createdAt && (
-                          <p className="text-xs text-muted-foreground">
-                            Criado em {new Date(doc.createdAt).toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: 'short',
-                              year: 'numeric',
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Badge variant={doc.status === "APPROVED" ? "secondary" : "default"}>
-                      {doc.status === "APPROVED" ? "Aprovado" : doc.status === "PENDING" ? "Pendente" : "Inativo"}
-                    </Badge>
-                  </div>
-
-                  {(doc.changeReason || doc.minutesCid || doc.evaluationCid || doc.blockchainRegisteredAt) && (
-                    <div className="space-y-2 pt-2 border-t">
-                      {doc.changeReason && (
-                        <div className="flex items-start gap-2">
-                          <p className="text-xs font-medium text-muted-foreground min-w-fit">Motivo da mudança:</p>
-                          <p className="text-xs text-muted-foreground">{doc.changeReason}</p>
-                        </div>
-                      )}
-                      {doc.minutesCid && (
-                        <div className="flex items-start gap-2">
-                          <Hash className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-xs font-medium text-muted-foreground">CID da Ata</p>
-                            <p className="text-xs text-muted-foreground font-mono break-all">{doc.minutesCid}</p>
-                          </div>
-                        </div>
-                      )}
-                      {doc.evaluationCid && (
-                        <div className="flex items-start gap-2">
-                          <Hash className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-xs font-medium text-muted-foreground">CID da Avaliação</p>
-                            <p className="text-xs text-muted-foreground font-mono break-all">{doc.evaluationCid}</p>
-                          </div>
-                        </div>
-                      )}
-                      {doc.blockchainRegisteredAt && (
-                        <div className="flex items-start gap-2">
-                          <Shield className="h-3.5 w-3.5 text-green-600 mt-0.5" />
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">Registrado no Ledger</p>
+        {canViewDocuments &&
+          defense.documents &&
+          defense.documents.length > 0 && (
+            <div>
+              <Separator className="mb-6" />
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <h3 className="text-xl font-semibold">Documentos</h3>
+              </div>
+              <div className="space-y-4">
+                {defense.documents.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="p-6 rounded-lg border bg-muted/50 space-y-4"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-semibold">Versão {doc.version}</p>
+                          {doc.createdAt && (
                             <p className="text-xs text-muted-foreground">
-                              {new Date(doc.blockchainRegisteredAt).toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
+                              Criado em{" "}
+                              {new Date(doc.createdAt).toLocaleDateString(
+                                "pt-BR",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                }
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Badge
+                        variant={
+                          doc.status === "APPROVED" ? "secondary" : "default"
+                        }
+                      >
+                        {doc.status === "APPROVED"
+                          ? "Aprovado"
+                          : doc.status === "PENDING"
+                          ? "Pendente"
+                          : "Inativo"}
+                      </Badge>
+                    </div>
+
+                    {(doc.changeReason ||
+                      doc.minutesCid ||
+                      doc.evaluationCid ||
+                      doc.blockchainRegisteredAt) && (
+                      <div className="space-y-2 pt-2 border-t">
+                        {doc.changeReason && (
+                          <div className="flex items-start gap-2">
+                            <p className="text-xs font-medium text-muted-foreground min-w-fit">
+                              Motivo da mudança:
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {doc.changeReason}
                             </p>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {doc.signatures && doc.signatures.length > 0 && (
-                    <div className="pt-2 border-t">
-                      <p className="text-sm font-semibold mb-3">Assinaturas:</p>
-                      <div className="grid gap-3">
-                        {mergeSignaturesByEmail(doc.signatures).map((signature, index) => {
-                          const isCurrentUser = signature.email === user?.email
-
-                          return (
-                            <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-background border">
-                              {signature.status === "APPROVED" ? (
-                                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
-                              ) : signature.status === "REJECTED" ? (
-                                <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
-                              ) : (
-                                <Clock className="h-5 w-5 text-yellow-600 mt-0.5 shrink-0" />
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap mb-1">
-                                  <p className="text-sm font-medium">
-                                    {getRoleLabel(signature.roles)}
-                                    {isCurrentUser && <span className="text-muted-foreground ml-1">(você)</span>}
-                                  </p>
-                                  <Badge variant={signature.status === "APPROVED" ? "secondary" : signature.status === "REJECTED" ? "destructive" : "default"} className="text-xs">
-                                    {signature.status === "APPROVED" ? "Aprovado" : signature.status === "REJECTED" ? "Rejeitado" : "Pendente"}
-                                  </Badge>
-                                </div>
-                                {signature.email && (
-                                  <p className="text-xs text-muted-foreground">{signature.email}</p>
-                                )}
-                                {signature.timestamp && (
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    {new Date(signature.timestamp).toLocaleDateString('pt-BR', {
-                                      day: '2-digit',
-                                      month: 'short',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}
-                                  </p>
-                                )}
-                                {signature.justification && (
-                                  <p className="text-xs text-muted-foreground italic mt-2 pl-3 border-l-2">
-                                    "{signature.justification}"
-                                  </p>
-                                )}
-                              </div>
+                        )}
+                        {doc.minutesCid && (
+                          <div className="flex items-start gap-2">
+                            <Hash className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-muted-foreground">
+                                CID da Ata
+                              </p>
+                              <p className="text-xs text-muted-foreground font-mono break-all">
+                                {doc.minutesCid}
+                              </p>
                             </div>
-                          )
-                        })}
+                          </div>
+                        )}
+                        {doc.evaluationCid && (
+                          <div className="flex items-start gap-2">
+                            <Hash className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-muted-foreground">
+                                CID da Avaliação
+                              </p>
+                              <p className="text-xs text-muted-foreground font-mono break-all">
+                                {doc.evaluationCid}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {doc.blockchainRegisteredAt && (
+                          <div className="flex items-start gap-2">
+                            <Shield className="h-3.5 w-3.5 text-green-600 mt-0.5" />
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">
+                                Registrado no Ledger
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(
+                                  doc.blockchainRegisteredAt
+                                ).toLocaleDateString("pt-BR", {
+                                  day: "2-digit",
+                                  month: "long",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {canDownload && (
-                    <div className="pt-2 space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground">Downloads:</p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                          onClick={async () => {
-                            try {
-                              const blob = await documentService.downloadDocument(doc.id, "minutes")
-                              const url = window.URL.createObjectURL(blob)
-                              const a = document.createElement('a')
-                              a.href = url
-                              a.download = `${defense.title}-Ata-v${doc.version}.pdf`
-                              document.body.appendChild(a)
-                              a.click()
-                              window.URL.revokeObjectURL(url)
-                              document.body.removeChild(a)
-                              toast.success('Ata baixada com sucesso!')
-                            } catch (error) {
-                              console.error('Erro ao baixar Ata:', error)
-                              toast.error('Erro ao baixar Ata', {
-                                description: 'Não foi possível baixar o documento.',
-                              })
+                    {doc.signatures && doc.signatures.length > 0 && (
+                      <div className="pt-2 border-t">
+                        <p className="text-sm font-semibold mb-3">
+                          Assinaturas:
+                        </p>
+                        <div className="grid gap-3">
+                          {mergeSignaturesByEmail(doc.signatures).map(
+                            (signature, index) => {
+                              const isCurrentUser =
+                                signature.email === user?.email;
+
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex items-start gap-3 p-3 rounded-lg bg-background border"
+                                >
+                                  {signature.status === "APPROVED" ? (
+                                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                                  ) : signature.status === "REJECTED" ? (
+                                    <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+                                  ) : (
+                                    <Clock className="h-5 w-5 text-yellow-600 mt-0.5 shrink-0" />
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                                      <p className="text-sm font-medium">
+                                        {getRoleLabel(signature.roles)}
+                                        {isCurrentUser && (
+                                          <span className="text-muted-foreground ml-1">
+                                            (você)
+                                          </span>
+                                        )}
+                                      </p>
+                                      <Badge
+                                        variant={
+                                          signature.status === "APPROVED"
+                                            ? "secondary"
+                                            : signature.status === "REJECTED"
+                                            ? "destructive"
+                                            : "default"
+                                        }
+                                        className="text-xs"
+                                      >
+                                        {signature.status === "APPROVED"
+                                          ? "Aprovado"
+                                          : signature.status === "REJECTED"
+                                          ? "Rejeitado"
+                                          : "Pendente"}
+                                      </Badge>
+                                    </div>
+                                    {signature.email && (
+                                      <p className="text-xs text-muted-foreground">
+                                        {signature.email}
+                                      </p>
+                                    )}
+                                    {signature.timestamp && (
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {new Date(
+                                          signature.timestamp
+                                        ).toLocaleDateString("pt-BR", {
+                                          day: "2-digit",
+                                          month: "short",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })}
+                                      </p>
+                                    )}
+                                    {signature.justification && (
+                                      <p className="text-xs text-muted-foreground italic mt-2 pl-3 border-l-2">
+                                        &ldquo;{signature.justification}&rdquo;
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              );
                             }
-                          }}
-                        >
-                          <Download className="h-4 w-4" />
-                          Ata
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                          onClick={async () => {
-                            try {
-                              const blob = await documentService.downloadDocument(doc.id, "evaluation")
-                              const url = window.URL.createObjectURL(blob)
-                              const a = document.createElement('a')
-                              a.href = url
-                              a.download = `${defense.title}-Avaliacao-v${doc.version}.pdf`
-                              document.body.appendChild(a)
-                              a.click()
-                              window.URL.revokeObjectURL(url)
-                              document.body.removeChild(a)
-                              toast.success('Avaliação baixada com sucesso!')
-                            } catch (error) {
-                              console.error('Erro ao baixar Avaliação:', error)
-                              toast.error('Erro ao baixar Avaliação', {
-                                description: 'Não foi possível baixar o documento.',
-                              })
-                            }
-                          }}
-                        >
-                          <Download className="h-4 w-4" />
-                          Avaliação
-                        </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+
+                    {canDownload && (
+                      <div className="pt-2 space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Downloads:
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                            onClick={async () => {
+                              try {
+                                const blob =
+                                  await documentService.downloadDocument(
+                                    doc.id,
+                                    "minutes"
+                                  );
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = `${defense.title}-Ata-v${doc.version}.pdf`;
+                                document.body.appendChild(a);
+                                a.click();
+                                window.URL.revokeObjectURL(url);
+                                document.body.removeChild(a);
+                                toast.success("Ata baixada com sucesso!");
+                              } catch (error) {
+                                console.error("Erro ao baixar Ata:", error);
+                                toast.error("Erro ao baixar Ata", {
+                                  description:
+                                    "Não foi possível baixar o documento.",
+                                });
+                              }
+                            }}
+                          >
+                            <Download className="h-4 w-4" />
+                            Ata
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                            onClick={async () => {
+                              try {
+                                const blob =
+                                  await documentService.downloadDocument(
+                                    doc.id,
+                                    "evaluation"
+                                  );
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = `${defense.title}-Avaliacao-v${doc.version}.pdf`;
+                                document.body.appendChild(a);
+                                a.click();
+                                window.URL.revokeObjectURL(url);
+                                document.body.removeChild(a);
+                                toast.success("Avaliação baixada com sucesso!");
+                              } catch (error) {
+                                console.error(
+                                  "Erro ao baixar Avaliação:",
+                                  error
+                                );
+                                toast.error("Erro ao baixar Avaliação", {
+                                  description:
+                                    "Não foi possível baixar o documento.",
+                                });
+                              }
+                            }}
+                          >
+                            <Download className="h-4 w-4" />
+                            Avaliação
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
 
       <RescheduleDefenseModal
@@ -648,8 +806,10 @@ export default function DefenseDetailsPage() {
         onOpenChange={setFinalizeModalOpen}
         defenseId={defense.id}
         onSuccess={async () => {
-          const updatedDefense = await defenseService.getDefenseById(defense.id)
-          setDefense(updatedDefense)
+          const updatedDefense = await defenseService.getDefenseById(
+            defense.id
+          );
+          setDefense(updatedDefense);
         }}
       />
 
@@ -658,8 +818,10 @@ export default function DefenseDetailsPage() {
         onOpenChange={setCancelModalOpen}
         defenseId={defense.id}
         onSuccess={async () => {
-          const updatedDefense = await defenseService.getDefenseById(defense.id)
-          setDefense(updatedDefense)
+          const updatedDefense = await defenseService.getDefenseById(
+            defense.id
+          );
+          setDefense(updatedDefense);
         }}
       />
 
@@ -670,11 +832,13 @@ export default function DefenseDetailsPage() {
           documentTitle={selectedDocForNewVersion.documentTitle}
           approvalId={selectedDocForNewVersion.approvalId}
           onSuccess={async () => {
-            const updatedDefense = await defenseService.getDefenseById(defense.id)
-            setDefense(updatedDefense)
+            const updatedDefense = await defenseService.getDefenseById(
+              defense.id
+            );
+            setDefense(updatedDefense);
           }}
         />
       )}
     </DashboardLayout>
-  )
+  );
 }

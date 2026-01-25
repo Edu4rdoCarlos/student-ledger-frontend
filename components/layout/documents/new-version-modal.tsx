@@ -152,8 +152,8 @@ export function NewVersionModal({
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Motivo da rejeição</label>
-                <p className="text-sm text-muted-foreground italic border-l-2 border-red-400 pl-3 py-2 bg-red-50 dark:bg-red-950/20 rounded">
-                  "{rejectionReason}"
+                                <p className="text-sm text-muted-foreground italic border-l-2 border-red-400 pl-3 py-2 bg-red-50 dark:bg-red-950/20 rounded">
+                  &ldquo;{rejectionReason}&rdquo;
                 </p>
               </div>
             </>

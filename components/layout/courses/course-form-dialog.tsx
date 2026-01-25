@@ -76,9 +76,9 @@ export function CourseFormDialog({ open, onOpenChange, onSuccess, course }: Cour
       createForm.reset()
       onOpenChange(false)
       onSuccess?.()
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao criar curso:", error)
-      const errorMessage = error?.message || "Erro desconhecido"
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error("Erro ao criar curso", {
         description: errorMessage,
       })
@@ -99,9 +99,9 @@ export function CourseFormDialog({ open, onOpenChange, onSuccess, course }: Cour
       updateForm.reset()
       onOpenChange(false)
       onSuccess?.()
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao atualizar curso:", error)
-      const errorMessage = error?.message || "Erro desconhecido"
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error("Erro ao atualizar curso", {
         description: errorMessage,
       })
