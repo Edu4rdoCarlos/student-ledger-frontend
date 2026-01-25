@@ -29,7 +29,7 @@ export function useStudents(page = 1, perPage = 10) {
     }
   }
 
-  const createStudent = async (data: any) => {
+  const createStudent = async (data: Parameters<typeof studentService.createStudent>[0]) => {
     try {
       const newStudent = await studentService.createStudent(data)
       setStudents((prev) => [...prev, newStudent])

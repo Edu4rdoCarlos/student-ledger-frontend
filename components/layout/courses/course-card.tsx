@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/shared/card"
 import { Button } from "@/components/primitives/button"
-import { Badge } from "@/components/primitives/badge"
 import { Book, User, Eye, Pencil } from "lucide-react"
 import type { Course } from "@/lib/types"
 

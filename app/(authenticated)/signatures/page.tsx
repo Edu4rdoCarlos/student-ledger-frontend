@@ -1,158 +1,228 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { FileText, AlertCircle, User, Clock, CheckCircle, XCircle, Search, RefreshCcw, Upload, Mail } from "lucide-react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent } from "@/components/shared/card"
-import { useApprovals, type PendingApproval } from "@/hooks/use-approvals"
-import { ApprovalDetailsModal } from "@/components/layout/approvals/approval-details-modal"
-import { NewVersionModal } from "@/components/layout/documents/new-version-modal"
-import { EvaluateDocumentModal } from "@/components/layout/documents/evaluate-document-modal"
-import { Input } from "@/components/primitives/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shared/tabs"
-import { Button } from "@/components/primitives/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/shared/dialog"
-import { Textarea } from "@/components/primitives/textarea"
-import { approvalService } from "@/lib/services/approval-service"
-import { toast } from "sonner"
-import { useAuthStore } from "@/lib/store/auth-store"
+import { useState } from "react";
+import {
+  FileText,
+  AlertCircle,
+  User,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Search,
+  RefreshCcw,
+  Upload,
+} from "lucide-react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Card, CardContent } from "@/components/shared/card";
+import { useApprovals, type PendingApproval } from "@/hooks/use-approvals";
+import { ApprovalDetailsModal } from "@/components/layout/approvals/approval-details-modal";
+import { NewVersionModal } from "@/components/layout/documents/new-version-modal";
+import { EvaluateDocumentModal } from "@/components/layout/documents/evaluate-document-modal";
+import { Input } from "@/components/primitives/input";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/shared/tabs";
+import { Button } from "@/components/primitives/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/shared/dialog";
+import { Textarea } from "@/components/primitives/textarea";
+import { approvalService } from "@/lib/services/approval-service";
+import { toast } from "sonner";
+import { useAuthStore } from "@/lib/store/auth-store";
 
 export default function SignaturesPage() {
-  const { user } = useAuthStore()
-  const { approvals: pendingApprovals, loading: pendingLoading, refetch: refetchPending } = useApprovals("PENDING")
-  const { approvals: approvedApprovals, loading: approvedLoading, refetch: refetchApproved } = useApprovals("APPROVED")
-  const { approvals: rejectedApprovals, loading: rejectedLoading, refetch: refetchRejected } = useApprovals("REJECTED")
-  const [selectedApproval, setSelectedApproval] = useState<PendingApproval | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [reconsiderModalOpen, setReconsiderModalOpen] = useState(false)
-  const [selectedRejection, setSelectedRejection] = useState<{ approvalId: string; documentTitle: string; rejectionReason: string; approverName: string } | null>(null)
-  const [reconsiderationReason, setReconsiderationReason] = useState("")
-  const [submitting, setSubmitting] = useState(false)
-  const [newVersionModalOpen, setNewVersionModalOpen] = useState(false)
-  const [selectedForNewVersion, setSelectedForNewVersion] = useState<{ approvalId: string; documentTitle: string; rejectionReason: string; approverName: string } | null>(null)
-  const [evaluateModalOpen, setEvaluateModalOpen] = useState(false)
-  const [selectedForEvaluation, setSelectedForEvaluation] = useState<PendingApproval | null>(null)
+  const { user } = useAuthStore();
+  const {
+    approvals: pendingApprovals,
+    loading: pendingLoading,
+    refetch: refetchPending,
+  } = useApprovals("PENDING");
+  const {
+    approvals: approvedApprovals,
+    loading: approvedLoading,
+    refetch: refetchApproved,
+  } = useApprovals("APPROVED");
+  const {
+    approvals: rejectedApprovals,
+    loading: rejectedLoading,
+    refetch: refetchRejected,
+  } = useApprovals("REJECTED");
+  const [selectedApproval, setSelectedApproval] =
+    useState<PendingApproval | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [reconsiderModalOpen, setReconsiderModalOpen] = useState(false);
+  const [selectedRejection, setSelectedRejection] = useState<{
+    approvalId: string;
+    documentTitle: string;
+    rejectionReason: string;
+    approverName: string;
+  } | null>(null);
+  const [reconsiderationReason, setReconsiderationReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [newVersionModalOpen, setNewVersionModalOpen] = useState(false);
+  const [selectedForNewVersion, setSelectedForNewVersion] = useState<{
+    approvalId: string;
+    documentTitle: string;
+    rejectionReason: string;
+    approverName: string;
+  } | null>(null);
+  const [evaluateModalOpen, setEvaluateModalOpen] = useState(false);
+  const [selectedForEvaluation, setSelectedForEvaluation] =
+    useState<PendingApproval | null>(null);
 
   const handleApprovalClick = (approval: PendingApproval) => {
-    setSelectedApproval(approval)
-    setModalOpen(true)
-  }
+    setSelectedApproval(approval);
+    setModalOpen(true);
+  };
 
-  const handleRequestReconsideration = (approvalId: string, documentTitle: string, rejectionReason: string, approverName: string) => {
-    setSelectedRejection({ approvalId, documentTitle, rejectionReason, approverName })
-    setReconsiderModalOpen(true)
-  }
+  const handleRequestReconsideration = (
+    approvalId: string,
+    documentTitle: string,
+    rejectionReason: string,
+    approverName: string
+  ) => {
+    setSelectedRejection({
+      approvalId,
+      documentTitle,
+      rejectionReason,
+      approverName,
+    });
+    setReconsiderModalOpen(true);
+  };
 
-  const handleNewVersion = (approvalId: string, documentTitle: string, rejectionReason: string, approverName: string) => {
-    setSelectedForNewVersion({ approvalId, documentTitle, rejectionReason, approverName })
-    setNewVersionModalOpen(true)
-  }
+  const handleNewVersion = (
+    approvalId: string,
+    documentTitle: string,
+    rejectionReason: string,
+    approverName: string
+  ) => {
+    setSelectedForNewVersion({
+      approvalId,
+      documentTitle,
+      rejectionReason,
+      approverName,
+    });
+    setNewVersionModalOpen(true);
+  };
 
   const handleEvaluate = (approval: PendingApproval) => {
-    setSelectedForEvaluation(approval)
-    setEvaluateModalOpen(true)
-  }
-
-  const handleNotifyApprover = async (approvalId: string) => {
-    try {
-      await approvalService.notifyApprover(approvalId)
-      toast.success("Notificação enviada!", {
-        description: "O aprovador foi notificado por e-mail.",
-      })
-    } catch (error) {
-      console.error("Erro ao notificar aprovador:", error)
-      toast.error("Erro ao enviar notificação", {
-        description: "Não foi possível enviar a notificação. Tente novamente.",
-      })
-    }
-  }
+    setSelectedForEvaluation(approval);
+    setEvaluateModalOpen(true);
+  };
 
   const handleSubmitReconsideration = async () => {
-    if (!selectedRejection) return
+    if (!selectedRejection) return;
 
     if (!reconsiderationReason.trim()) {
-      toast.error("Por favor, informe o motivo da solicitação de reconsideração")
-      return
+      toast.error(
+        "Por favor, informe o motivo da solicitação de reconsideração"
+      );
+      return;
     }
 
-    setSubmitting(true)
+    setSubmitting(true);
     try {
-      await approvalService.overrideRejection(selectedRejection.approvalId, reconsiderationReason)
+      await approvalService.overrideRejection(
+        selectedRejection.approvalId,
+        reconsiderationReason
+      );
       toast.success("Solicitação de reconsideração enviada!", {
-        description: "O avaliador será notificado e a assinatura voltará para pendente.",
-      })
-      setReconsiderModalOpen(false)
-      setReconsiderationReason("")
-      setSelectedRejection(null)
+        description:
+          "O avaliador será notificado e a assinatura voltará para pendente.",
+      });
+      setReconsiderModalOpen(false);
+      setReconsiderationReason("");
+      setSelectedRejection(null);
       // Refetch both lists
-      refetchRejected()
-      refetchPending()
+      refetchRejected();
+      refetchPending();
     } catch (error) {
-      console.error("Erro ao solicitar reconsideração:", error)
+      console.error("Erro ao solicitar reconsideração:", error);
       toast.error("Erro ao solicitar reconsideração", {
-        description: "Não foi possível processar sua solicitação. Tente novamente.",
-      })
+        description:
+          "Não foi possível processar sua solicitação. Tente novamente.",
+      });
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const filterApprovals = (approvals: PendingApproval[]) => {
-    if (!searchQuery) return approvals
+    if (!searchQuery) return approvals;
 
-    const query = searchQuery.toLowerCase()
+    const query = searchQuery.toLowerCase();
     return approvals.filter(
       (approval) =>
         approval.documentTitle.toLowerCase().includes(query) ||
         approval.courseName.toLowerCase().includes(query) ||
         approval.students.some((s) => s.name.toLowerCase().includes(query))
-    )
-  }
+    );
+  };
 
   const getRoleLabel = (role: string, isCoordinatorAlsoAdvisor: boolean) => {
-    if (role === "COORDINATOR" && isCoordinatorAlsoAdvisor) return "Coordenador e Orientador"
-    if (role === "COORDINATOR") return "Coordenador"
-    if (role === "ADVISOR") return "Orientador"
-    if (role === "STUDENT") return "Aluno"
-    return role
-  }
+    if (role === "COORDINATOR" && isCoordinatorAlsoAdvisor)
+      return "Coordenador e Orientador";
+    if (role === "COORDINATOR") return "Coordenador";
+    if (role === "ADVISOR") return "Orientador";
+    if (role === "STUDENT") return "Aluno";
+    return role;
+  };
 
-  const renderApprovalCard = (approval: PendingApproval, status: "PENDING" | "APPROVED" | "REJECTED") => {
-    const signatures = approval.signatures || approval.approvals || []
-    const coordinatorSig = signatures.find((s) => s.role === "COORDINATOR")
-    const advisorSig = signatures.find((s) => s.role === "ADVISOR")
+  const renderApprovalCard = (
+    approval: PendingApproval,
+    status: "PENDING" | "APPROVED" | "REJECTED"
+  ) => {
+    const signatures = approval.signatures || approval.approvals || [];
+    const coordinatorSig = signatures.find((s) => s.role === "COORDINATOR");
+    const advisorSig = signatures.find((s) => s.role === "ADVISOR");
     const isCoordinatorAlsoAdvisor = !!(
       coordinatorSig?.approverId &&
       advisorSig?.approverId &&
       coordinatorSig.approverId === advisorSig.approverId
-    )
+    );
 
     const displaySignatures = isCoordinatorAlsoAdvisor
       ? signatures.filter((s) => s.role !== "ADVISOR")
-      : signatures
+      : signatures;
 
-    const approvedCount = signatures.filter((s) => s.status === "APPROVED").length
-    const totalSignatures = displaySignatures.length
+    const approvedCount = signatures.filter(
+      (s) => s.status === "APPROVED"
+    ).length;
+    const totalSignatures = displaySignatures.length;
     const pendingRoles = displaySignatures
       .filter((s) => s.status === "PENDING")
       .map((s) => getRoleLabel(s.role, isCoordinatorAlsoAdvisor))
-      .join(", ")
+      .join(", ");
 
-    const rejectedSignature = signatures.find((s) => s.status === "REJECTED")
+    const rejectedSignature = signatures.find((s) => s.status === "REJECTED");
 
     const myPendingApproval = signatures.find(
       (s) => s.status === "PENDING" && s.approverId === user?.id
-    )
+    );
 
-    const hasRejection = !!rejectedSignature
-    const isCoordinator = user?.role === "COORDINATOR"
+    const hasRejection = !!rejectedSignature;
+    const isCoordinator = user?.role === "COORDINATOR";
 
     // Coordenador só pode avaliar quando todos os outros já tiverem aprovado
-    const otherSignatures = signatures.filter((s) => s.role !== "COORDINATOR")
-    const allOthersApproved = otherSignatures.length === 0 || otherSignatures.every((s) => s.status === "APPROVED")
+    const otherSignatures = signatures.filter((s) => s.role !== "COORDINATOR");
+    const allOthersApproved =
+      otherSignatures.length === 0 ||
+      otherSignatures.every((s) => s.status === "APPROVED");
 
-    const canEvaluate = myPendingApproval && !(isCoordinator && hasRejection) && (!isCoordinator || allOthersApproved)
+    const canEvaluate =
+      myPendingApproval &&
+      !(isCoordinator && hasRejection) &&
+      (!isCoordinator || allOthersApproved);
 
     const statusColors = {
       PENDING: {
@@ -173,10 +243,10 @@ export default function SignaturesPage() {
         text: "text-red-700 dark:text-red-400",
         icon: XCircle,
       },
-    }
+    };
 
-    const config = statusColors[status]
-    const StatusIcon = config.icon
+    const config = statusColors[status];
+    const StatusIcon = config.icon;
 
     return (
       <div
@@ -190,9 +260,13 @@ export default function SignaturesPage() {
           >
             <div className="flex-1 space-y-1.5 min-w-0">
               <div className="flex items-start gap-2">
-                <FileText className={`h-4 w-4 ${config.text} mt-0.5 flex-shrink-0`} />
+                <FileText
+                  className={`h-4 w-4 ${config.text} mt-0.5 flex-shrink-0`}
+                />
                 <div className="flex-1 min-w-0">
-                  <h4 className={`text-sm font-semibold text-foreground group-hover:${config.text} transition-colors line-clamp-2`}>
+                  <h4
+                    className={`text-sm font-semibold text-foreground group-hover:${config.text} transition-colors line-clamp-2`}
+                  >
                     {approval.documentTitle}
                   </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -212,10 +286,28 @@ export default function SignaturesPage() {
             </div>
 
             <div className="flex flex-col m-0 ml-auto items-end gap-2">
-              <div className={`flex items-center gap-1 px-2 py-1 rounded-md bg-${status === "PENDING" ? "amber" : status === "APPROVED" ? "emerald" : "red"}-100 dark:bg-${status === "PENDING" ? "amber" : status === "APPROVED" ? "emerald" : "red"}-900/30`}>
+              <div
+                className={`flex items-center gap-1 px-2 py-1 rounded-md bg-${
+                  status === "PENDING"
+                    ? "amber"
+                    : status === "APPROVED"
+                    ? "emerald"
+                    : "red"
+                }-100 dark:bg-${
+                  status === "PENDING"
+                    ? "amber"
+                    : status === "APPROVED"
+                    ? "emerald"
+                    : "red"
+                }-900/30`}
+              >
                 <StatusIcon className={`h-3 w-3 ${config.text}`} />
                 <span className={`text-xs font-medium ${config.text}`}>
-                  {status === "PENDING" ? pendingRoles || approval.role : status === "APPROVED" ? "Aprovado" : "Rejeitado"}
+                  {status === "PENDING"
+                    ? pendingRoles
+                    : status === "APPROVED"
+                    ? "Aprovado"
+                    : "Rejeitado"}
                 </span>
               </div>
             </div>
@@ -227,7 +319,9 @@ export default function SignaturesPage() {
                 <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary transition-all duration-500"
-                    style={{ width: `${(approvedCount / totalSignatures) * 100}%` }}
+                    style={{
+                      width: `${(approvedCount / totalSignatures) * 100}%`,
+                    }}
                   />
                 </div>
                 <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
@@ -239,8 +333,8 @@ export default function SignaturesPage() {
                   variant="default"
                   size="sm"
                   onClick={(e) => {
-                    e.stopPropagation()
-                    handleEvaluate(approval)
+                    e.stopPropagation();
+                    handleEvaluate(approval);
                   }}
                   disabled={!canEvaluate || !myPendingApproval}
                   className="w-full gap-2"
@@ -265,15 +359,23 @@ export default function SignaturesPage() {
           {status === "REJECTED" && rejectedSignature && (
             <div className="pl-6 space-y-3 border-t pt-3">
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Rejeitado por:</p>
-                <p className="text-sm font-medium">{rejectedSignature.approverName}</p>
-                <p className="text-xs text-muted-foreground">{rejectedSignature.role}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Rejeitado por:
+                </p>
+                <p className="text-sm font-medium">
+                  {rejectedSignature.approverName}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {rejectedSignature.role}
+                </p>
               </div>
               {rejectedSignature.justification && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Motivo da rejeição:</p>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Motivo da rejeição:
+                  </p>
                   <p className="text-sm text-muted-foreground italic border-l-2 border-red-400 pl-2">
-                    "{rejectedSignature.justification}"
+                    &ldquo;{rejectedSignature.justification}&rdquo;
                   </p>
                 </div>
               )}
@@ -282,13 +384,13 @@ export default function SignaturesPage() {
                   variant="outline"
                   size="sm"
                   onClick={(e) => {
-                    e.stopPropagation()
+                    e.stopPropagation();
                     handleRequestReconsideration(
                       rejectedSignature.id,
                       approval.documentTitle,
                       rejectedSignature.justification || "Sem justificativa",
                       rejectedSignature.approverName
-                    )
+                    );
                   }}
                   className="flex-1 gap-2 border-slate-300 hover:bg-slate-50 hover:border-slate-400 dark:border-slate-600 dark:hover:bg-slate-800 dark:hover:border-slate-500"
                 >
@@ -299,13 +401,13 @@ export default function SignaturesPage() {
                   variant="outline"
                   size="sm"
                   onClick={(e) => {
-                    e.stopPropagation()
+                    e.stopPropagation();
                     handleNewVersion(
                       rejectedSignature.id,
                       approval.documentTitle,
                       rejectedSignature.justification || "Sem justificativa",
                       rejectedSignature.approverName
-                    )
+                    );
                   }}
                   className="flex-1 gap-2 border-slate-300 hover:bg-slate-50 hover:border-slate-400 dark:border-slate-600 dark:hover:bg-slate-800 dark:hover:border-slate-500"
                 >
@@ -317,8 +419,8 @@ export default function SignaturesPage() {
           )}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const renderApprovalsList = (
     approvals: PendingApproval[],
@@ -331,13 +433,15 @@ export default function SignaturesPage() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Carregando assinaturas...</p>
+            <p className="mt-4 text-muted-foreground">
+              Carregando assinaturas...
+            </p>
           </div>
         </div>
-      )
+      );
     }
 
-    const filteredApprovals = filterApprovals(approvals)
+    const filteredApprovals = filterApprovals(approvals);
 
     if (filteredApprovals.length === 0) {
       return (
@@ -354,22 +458,26 @@ export default function SignaturesPage() {
             </p>
           </CardContent>
         </Card>
-      )
+      );
     }
 
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 ">
-        {filteredApprovals.map((approval) => renderApprovalCard(approval, status))}
+        {filteredApprovals.map((approval) =>
+          renderApprovalCard(approval, status)
+        )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Assinaturas</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">
+              Assinaturas
+            </h1>
             <p className="text-muted-foreground">
               Gerencie as assinaturas de documentos do sistema
             </p>
@@ -443,7 +551,8 @@ export default function SignaturesPage() {
           <DialogHeader>
             <DialogTitle>Solicitar Reconsideração</DialogTitle>
             <DialogDescription>
-              Você está solicitando que o avaliador reconsidere a rejeição deste documento.
+              Você está solicitando que o avaliador reconsidere a rejeição deste
+              documento.
             </DialogDescription>
           </DialogHeader>
 
@@ -451,24 +560,31 @@ export default function SignaturesPage() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Documento</label>
-                <p className="text-sm text-muted-foreground">{selectedRejection.documentTitle}</p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedRejection.documentTitle}
+                </p>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Rejeitado por</label>
-                <p className="text-sm font-medium">{selectedRejection.approverName}</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Motivo da rejeição</label>
-                <p className="text-sm text-muted-foreground italic border-l-2 border-red-400 pl-3 py-2 bg-red-50 dark:bg-red-950/20 rounded">
-                  "{selectedRejection.rejectionReason}"
+                <p className="text-sm font-medium">
+                  {selectedRejection.approverName}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  Justificativa para reconsideração <span className="text-red-500">*</span>
+                  Motivo da rejeição
+                </label>
+                <p className="text-sm text-muted-foreground italic border-l-2 border-red-400 pl-3 py-2 bg-red-50 dark:bg-red-950/20 rounded">
+                  &ldquo;{selectedRejection.rejectionReason}&rdquo;
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Justificativa para reconsideração{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <Textarea
                   placeholder="Explique por que você acredita que o documento deveria ser reconsiderado..."
@@ -478,7 +594,8 @@ export default function SignaturesPage() {
                   className="resize-none"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Esta justificativa será enviada ao avaliador junto com a notificação de reconsideração.
+                  Esta justificativa será enviada ao avaliador junto com a
+                  notificação de reconsideração.
                 </p>
               </div>
             </div>
@@ -488,9 +605,9 @@ export default function SignaturesPage() {
             <Button
               variant="outline"
               onClick={() => {
-                setReconsiderModalOpen(false)
-                setReconsiderationReason("")
-                setSelectedRejection(null)
+                setReconsiderModalOpen(false);
+                setReconsiderationReason("");
+                setSelectedRejection(null);
               }}
               disabled={submitting}
             >
@@ -517,9 +634,9 @@ export default function SignaturesPage() {
           rejectionReason={selectedForNewVersion.rejectionReason}
           approverName={selectedForNewVersion.approverName}
           onSuccess={() => {
-            setSelectedForNewVersion(null)
-            refetchRejected()
-            refetchPending()
+            setSelectedForNewVersion(null);
+            refetchRejected();
+            refetchPending();
           }}
         />
       )}
@@ -538,12 +655,12 @@ export default function SignaturesPage() {
             )?.id || ""
           }
           onSuccess={() => {
-            setSelectedForEvaluation(null)
-            refetchPending()
-            refetchApproved()
+            setSelectedForEvaluation(null);
+            refetchPending();
+            refetchApproved();
           }}
         />
       )}
     </DashboardLayout>
-  )
+  );
 }

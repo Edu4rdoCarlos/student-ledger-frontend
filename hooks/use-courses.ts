@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react"
 import { courseService } from "@/lib/services/course-service"
 import type { Course, PaginationMetadata } from "@/lib/types"
 import { useUserRole } from "@/lib/hooks/use-user-role"
-import { isCoordinator } from "@/lib/types/user"
 
 export function useCourses(page = 1, perPage = 100) {
   const { user } = useUserRole()

@@ -1,5 +1,6 @@
 "use client"
 
+import type React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -18,7 +19,7 @@ import {
 import { useUser } from "@/lib/hooks/use-user-role"
 import { getNavigationItems } from "@/lib/config/navigation"
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   home: LayoutDashboard,
   file: FileText,
   users: Users,
