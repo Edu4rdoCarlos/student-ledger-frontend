@@ -40,7 +40,7 @@ export default function LoginPage() {
           name: "",
           email: "",
           role: "ADMIN",
-          metadata: {},
+          isFirstAccess: false
         },
         accessToken
       )
