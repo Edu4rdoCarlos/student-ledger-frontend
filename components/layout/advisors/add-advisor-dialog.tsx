@@ -99,7 +99,7 @@ export function AddAdvisorDialog({ open, onOpenChange, onSuccess }: AddAdvisorDi
             <Input
               {...register("email")}
               type="email"
-              placeholder="orientador@ufrgs.edu.br"
+              placeholder="orientador@example.com"
               disabled={isSubmitting}
             />
             {errors.email && (

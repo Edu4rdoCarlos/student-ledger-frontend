@@ -136,7 +136,7 @@ export function AddStudentDialog({ open, onOpenChange, onSuccess }: AddStudentDi
             <Input
               {...register("email")}
               type="email"
-              placeholder="aluno@ufrgs.edu.br"
+              placeholder="aluno@example.com"
               disabled={isSubmitting}
             />
             {errors.email && (
