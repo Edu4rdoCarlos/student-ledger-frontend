@@ -32,7 +32,7 @@ function FeatureItem({
 const features: FeatureItemProps[] = [
   {
     icon: Shield,
-    title: "Seguranca Blockchain",
+    title: "Segurança Blockchain",
     description:
       "Documentos protegidos com Hyperledger Fabric e certificados X.509",
     colorClass:
@@ -40,16 +40,16 @@ const features: FeatureItemProps[] = [
   },
   {
     icon: FileCheck,
-    title: "Fluxo de Aprovacoes",
-    description: "Workflow completo com assinaturas digitais de multiplas partes",
+    title: "Fluxo de Aprovações",
+    description: "Workflow completo com assinaturas digitais de múltiplas partes",
     colorClass:
       "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
   },
   {
     icon: Users,
-    title: "Gestao Colaborativa",
+    title: "Gestão Colaborativa",
     description:
-      "Coordenacao entre secretaria, coordenadores, orientadores e alunos",
+      "Coordenação entre secretaria, coordenadores, orientadores e alunos",
     colorClass:
       "bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400",
   },
@@ -68,14 +68,14 @@ export function LoginInfoPanel() {
               Academic Ledger
             </h1>
             <p className="text-sm text-muted-foreground">
-              Sistema de Gerenciamento Academico
+              Sistema de Gerenciamento Acadêmico
             </p>
           </div>
         </div>
 
         <div className="space-y-6 mt-16">
           <h2 className="text-4xl font-bold leading-tight text-foreground">
-            Gestao de TCC com
+            Gestão de TCC com
             <br />
             <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Tecnologia Blockchain
@@ -83,8 +83,8 @@ export function LoginInfoPanel() {
           </h2>
 
           <p className="text-lg text-muted-foreground max-w-md">
-            Plataforma segura para gerenciamento de documentos academicos com
-            rastreabilidade e verificacao via blockchain.
+            Plataforma segura para gerenciamento de documentos acadêmicos com
+            rastreabilidade e verificação via blockchain.
           </p>
 
           <div className="grid gap-4 mt-12">

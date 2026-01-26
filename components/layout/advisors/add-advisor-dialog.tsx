@@ -1,77 +1,49 @@
-"use client"
+"use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/shared/dialog"
-import { Button } from "@/components/primitives/button"
-import { Input } from "@/components/primitives/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select"
-import { useCourses } from "@/hooks/use-courses"
-import { advisorService } from "@/lib/services/advisor-service"
-import { addAdvisorSchema, type AddAdvisorFormData } from "@/lib/validations/advisor"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { GraduationCap, Mail, User, Briefcase } from "lucide-react"
-import { useForm, Controller } from "react-hook-form"
-import { toast } from "sonner"
-import { useEffect } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/shared/dialog";
+import { Button } from "@/components/primitives/button";
+import { Input } from "@/components/primitives/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/shared/select";
+import { useCourses } from "@/hooks/use-courses";
+import { useAddAdvisor } from "@/lib/hooks/use-add-advisor";
+import { Controller } from "react-hook-form";
+import { GraduationCap, Mail, User, Briefcase } from "lucide-react";
 
 interface AddAdvisorDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess?: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export function AddAdvisorDialog({ open, onOpenChange, onSuccess }: AddAdvisorDialogProps) {
-  const { myCourses, loading: loadingCourses } = useCourses()
+export function AddAdvisorDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+}: AddAdvisorDialogProps) {
+  const { myCourses, loading: loadingCourses } = useCourses();
+  const { form, onSubmit, handleClose } = useAddAdvisor({
+    open,
+    onOpenChange,
+    onSuccess,
+  });
 
   const {
     register,
-    handleSubmit,
     control,
-    reset,
     formState: { errors, isSubmitting },
-  } = useForm<AddAdvisorFormData>({
-    resolver: zodResolver(addAdvisorSchema),
-    defaultValues: {
-      email: "",
-      name: "",
-      specialization: "",
-      courseId: "",
-    },
-  })
-
-  useEffect(() => {
-    if (!open) {
-      reset()
-    }
-  }, [open, reset])
-
-  const onSubmit = async (data: AddAdvisorFormData) => {
-    try {
-      await advisorService.createAdvisor({
-        email: data.email,
-        name: data.name,
-        specialization: data.specialization,
-        courseId: data.courseId,
-      })
-
-      toast.success("Orientador cadastrado com sucesso!")
-      reset()
-      onOpenChange(false)
-      onSuccess?.()
-    } catch (error) {
-      console.error("Erro ao cadastrar orientador:", error)
-      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
-      toast.error("Erro ao cadastrar orientador", {
-        description: errorMessage,
-      })
-    }
-  }
-
-  const handleClose = () => {
-    if (!isSubmitting) {
-      reset()
-      onOpenChange(false)
-    }
-  }
+  } = form;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -90,7 +62,7 @@ export function AddAdvisorDialog({ open, onOpenChange, onSuccess }: AddAdvisorDi
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
+        <form onSubmit={onSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Mail className="h-4 w-4" />
@@ -133,7 +105,9 @@ export function AddAdvisorDialog({ open, onOpenChange, onSuccess }: AddAdvisorDi
               disabled={isSubmitting}
             />
             {errors.specialization && (
-              <p className="text-sm text-red-600">{errors.specialization.message}</p>
+              <p className="text-sm text-red-600">
+                {errors.specialization.message}
+              </p>
             )}
           </div>
 
@@ -152,7 +126,13 @@ export function AddAdvisorDialog({ open, onOpenChange, onSuccess }: AddAdvisorDi
                   disabled={isSubmitting || loadingCourses}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder={loadingCourses ? "Carregando cursos..." : "Selecione o curso"} />
+                    <SelectValue
+                      placeholder={
+                        loadingCourses
+                          ? "Carregando cursos..."
+                          : "Selecione o curso"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {myCourses.map((course) => (
@@ -189,5 +169,5 @@ export function AddAdvisorDialog({ open, onOpenChange, onSuccess }: AddAdvisorDi
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
