@@ -1,26 +1,45 @@
-"use client"
+"use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/shared/dialog"
-import { Button } from "@/components/primitives/button"
-import { Input } from "@/components/primitives/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select"
-import { useCourses } from "@/hooks/use-courses"
-import { coordinatorService } from "@/lib/services/coordinator-service"
-import { addCoordinatorSchema, type AddCoordinatorFormData } from "@/lib/validations/coordinator"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { GraduationCap, Mail, User } from "lucide-react"
-import { useForm, Controller } from "react-hook-form"
-import { toast } from "sonner"
-import { useEffect } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/shared/dialog";
+import { Button } from "@/components/primitives/button";
+import { Input } from "@/components/primitives/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/shared/select";
+import { useCourses } from "@/hooks/use-courses";
+import { coordinatorService } from "@/lib/services/coordinator-service";
+import {
+  addCoordinatorSchema,
+  type AddCoordinatorFormData,
+} from "@/lib/validations/coordinator";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { GraduationCap, Mail, User } from "lucide-react";
+import { useForm, Controller } from "react-hook-form";
+import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface AddCoordinatorDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess?: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export function AddCoordinatorDialog({ open, onOpenChange, onSuccess }: AddCoordinatorDialogProps) {
-  const { courses, loading: loadingCourses } = useCourses()
+export function AddCoordinatorDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+}: AddCoordinatorDialogProps) {
+  const { courses, loading: loadingCourses } = useCourses();
 
   const {
     register,
@@ -35,13 +54,13 @@ export function AddCoordinatorDialog({ open, onOpenChange, onSuccess }: AddCoord
       name: "",
       courseId: "",
     },
-  })
+  });
 
   useEffect(() => {
     if (!open) {
-      reset()
+      reset();
     }
-  }, [open, reset])
+  }, [open, reset]);
 
   const onSubmit = async (data: AddCoordinatorFormData) => {
     try {
@@ -49,27 +68,29 @@ export function AddCoordinatorDialog({ open, onOpenChange, onSuccess }: AddCoord
         email: data.email,
         name: data.name,
         courseId: data.courseId,
-      })
+      });
 
-      toast.success("Coordenador cadastrado com sucesso!")
-      reset()
-      onOpenChange(false)
-      onSuccess?.()
-    } catch (error: any) {
-      console.error("Erro ao cadastrar coordenador:", error)
-      const errorMessage = error?.response?.data?.message || error?.message || "Erro desconhecido"
+      toast.success("Coordenador cadastrado com sucesso!");
+      reset();
+      onOpenChange(false);
+      onSuccess?.();
+    } catch (error) {
+      console.error("Erro ao cadastrar coordenador:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro desconhecido";
+
       toast.error("Erro ao cadastrar coordenador", {
         description: errorMessage,
-      })
+      });
     }
-  }
+  };
 
   const handleClose = () => {
     if (!isSubmitting) {
-      reset()
-      onOpenChange(false)
+      reset();
+      onOpenChange(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -135,7 +156,13 @@ export function AddCoordinatorDialog({ open, onOpenChange, onSuccess }: AddCoord
                   disabled={isSubmitting || loadingCourses}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder={loadingCourses ? "Carregando cursos..." : "Selecione o curso"} />
+                    <SelectValue
+                      placeholder={
+                        loadingCourses
+                          ? "Carregando cursos..."
+                          : "Selecione o curso"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {courses.map((course) => (
@@ -172,5 +199,5 @@ export function AddCoordinatorDialog({ open, onOpenChange, onSuccess }: AddCoord
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

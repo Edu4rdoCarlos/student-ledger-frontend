@@ -14,7 +14,7 @@ interface DataTableProps<T> {
   emptyMessage?: string
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends object>({
   data,
   columns,
   loading,
@@ -50,7 +50,7 @@ export function DataTable<T extends Record<string, unknown>>({
           {data.map((item, index) => (
             <TableRow key={index}>
               {columns.map((column) => (
-                <TableCell key={column.key}>{column.render ? column.render(item) : item[column.key]}</TableCell>
+                <TableCell key={column.key}>{column.render ? column.render(item) : (item as Record<string, unknown>)[column.key] as React.ReactNode}</TableCell>
               ))}
             </TableRow>
           ))}
