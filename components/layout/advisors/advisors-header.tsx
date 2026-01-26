@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/primitives/button";
-import { GraduationCap, Plus } from "lucide-react";
+import { GraduationCap } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
 
 interface AdvisorsHeaderProps {
   onAddClick: () => void;
@@ -9,23 +9,12 @@ interface AdvisorsHeaderProps {
 
 export function AdvisorsHeader({ onAddClick }: AdvisorsHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <GraduationCap className="h-6 w-6 text-primary" />
-          <h1 className="text-3xl font-bold text-primary">Orientadores</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Gerencie os orientadores cadastrados no sistema
-        </p>
-      </div>
-      <Button
-        onClick={onAddClick}
-        className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 cursor-pointer"
-      >
-        <Plus className="h-4 w-4" />
-        Novo Orientador
-      </Button>
-    </div>
+    <PageHeader
+      icon={GraduationCap}
+      title="Orientadores"
+      description="Gerencie os orientadores cadastrados no sistema"
+      buttonLabel="Novo Orientador"
+      onButtonClick={onAddClick}
+    />
   );
 }

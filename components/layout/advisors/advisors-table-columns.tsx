@@ -3,13 +3,8 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/primitives/button";
 import { Badge } from "@/components/primitives/badge";
-import {
-  GraduationCap,
-  User,
-  Eye,
-  CheckCircle2,
-  XCircle,
-} from "lucide-react";
+import { GraduationCap, User, Eye } from "lucide-react";
+import { StatusBadge } from "@/components/shared/status-badge";
 import type { Advisor } from "@/lib/types";
 
 interface Column<T> {
@@ -125,25 +120,9 @@ export function getAdvisorColumns({ currentUserId, onViewDetails }: GetColumnsPr
     {
       key: "isActive",
       label: "Status",
-      render: (advisor: Advisor) => {
-        const isActive = advisor.isActive ?? true;
-
-        return (
-          <div>
-            {isActive ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-400">
-                <CheckCircle2 className="h-3 w-3" />
-                Ativo
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-400">
-                <XCircle className="h-3 w-3" />
-                Inativo
-              </span>
-            )}
-          </div>
-        );
-      },
+      render: (advisor: Advisor) => (
+        <StatusBadge isActive={advisor.isActive ?? true} />
+      ),
     },
     {
       key: "actions",
