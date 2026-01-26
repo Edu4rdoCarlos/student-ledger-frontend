@@ -90,9 +90,9 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
       })
       setIsEditing(false)
       toast.success("Estudante atualizado com sucesso!")
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao atualizar estudante:", error)
-      const errorMessage = error?.response?.data?.message || error?.message || "Erro desconhecido"
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error("Erro ao atualizar estudante", {
         description: errorMessage,
       })
@@ -549,7 +549,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                               </span>
                             </div>
                           </div>
-                          {doc.status === "APPROVED" && doc.downloadUrl && (
+                          {doc.status === "APPROVED" && (
                             <Button
                               variant="outline"
                               size="sm"

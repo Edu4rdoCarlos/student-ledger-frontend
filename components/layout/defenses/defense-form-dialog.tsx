@@ -95,9 +95,9 @@ export function DefenseFormDialog({ open, onOpenChange, onSuccess, advisors = []
       setSelectedStudents([])
       onOpenChange(false)
       onSuccess?.()
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao criar defesa:", error)
-      const errorMessage = error?.message || "Erro desconhecido"
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error("Erro ao criar defesa", {
         description: errorMessage,
       })

@@ -57,9 +57,9 @@ export function AddAdvisorDialog({ open, onOpenChange, onSuccess }: AddAdvisorDi
       reset()
       onOpenChange(false)
       onSuccess?.()
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao cadastrar orientador:", error)
-      const errorMessage = error?.response?.data?.message || error?.message || "Erro desconhecido"
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
       toast.error("Erro ao cadastrar orientador", {
         description: errorMessage,
       })

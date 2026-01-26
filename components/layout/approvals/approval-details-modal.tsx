@@ -22,7 +22,7 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
 
   if (!approval) return null
 
-  const handleSendEmail = async (signature: any) => {
+  const handleSendEmail = async (signature: { id: string; approverName: string }) => {
     setSendingEmail(true)
     try {
       await approvalService.notifyApprover(signature.id)

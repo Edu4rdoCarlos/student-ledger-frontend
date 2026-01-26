@@ -69,8 +69,8 @@ export function ChangePasswordModal({ open, onSuccess, isFirstAccess = false }: 
       toast.success("Senha alterada com sucesso!")
       reset()
       onSuccess()
-    } catch (error) {
-      toast.error("Erro ao alterar senha. Verifique a senha atual e tente novamente.")
+    } catch {
+      toast.error("Erro ao alterar senha. Verifique a senha atual e tente novamente:")
     }
   }
 
