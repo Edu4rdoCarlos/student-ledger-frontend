@@ -137,12 +137,17 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="!max-w-5xl !w-[85vw] min-h-[600px] max-h-[85vh] overflow-y-auto flex flex-col">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="flex flex-col items-center gap-3">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-              <p className="text-sm text-muted-foreground">Carregando detalhes...</p>
+          <>
+            <DialogHeader className="sr-only">
+              <DialogTitle>Carregando detalhes do estudante</DialogTitle>
+            </DialogHeader>
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                <p className="text-sm text-muted-foreground">Carregando detalhes...</p>
+              </div>
             </div>
-          </div>
+          </>
         ) : (
           <>
             <DialogHeader>

@@ -64,7 +64,12 @@ export function AdvisorDetailsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="!max-w-5xl !w-[85vw] min-h-[600px] max-h-[85vh] overflow-y-auto flex flex-col">
         {loading ? (
-          <LoadingState message="Carregando detalhes..." />
+          <>
+            <DialogHeader className="sr-only">
+              <DialogTitle>Carregando detalhes do orientador</DialogTitle>
+            </DialogHeader>
+            <LoadingState message="Carregando detalhes..." />
+          </>
         ) : (
           <>
             <DialogHeader>
