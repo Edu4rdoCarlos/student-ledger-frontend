@@ -49,7 +49,7 @@ export function CourseFormDialog({ open, onOpenChange, onSuccess, course }: Cour
       if (isEditing && course) {
         updateForm.reset({
           name: course.name,
-          active: true,
+          active: course.active,
           coordinatorId: course.coordinator?.id,
         })
       } else {
@@ -202,7 +202,7 @@ export function CourseFormDialog({ open, onOpenChange, onSuccess, course }: Cour
               </label>
               <Input
                 {...createForm.register("code")}
-                placeholder="CC-UFRGS"
+                placeholder="CC-IES"
                 disabled={createForm.formState.isSubmitting}
               />
               {createForm.formState.errors.code && (

@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { GraduationCap, User } from "lucide-react";
+import { GraduationCap, User, Pencil } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/primitives/button";
 import type { Coordinator } from "@/lib/types";
 
 interface Column<T> {
@@ -11,7 +12,12 @@ interface Column<T> {
   render?: (item: T) => ReactNode;
 }
 
-export function getCoordinatorColumns(): Column<Coordinator>[] {
+interface GetCoordinatorColumnsOptions {
+  onViewDetails?: (coordinator: Coordinator) => void;
+}
+
+export function getCoordinatorColumns(options?: GetCoordinatorColumnsOptions): Column<Coordinator>[] {
+  const { onViewDetails } = options || {};
   return [
     {
       key: "name",
@@ -86,5 +92,24 @@ export function getCoordinatorColumns(): Column<Coordinator>[] {
         <StatusBadge isActive={coordinator.isActive ?? true} />
       ),
     },
+    ...(onViewDetails
+      ? [
+          {
+            key: "actions",
+            label: "Ações",
+            render: (coordinator: Coordinator) => (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onViewDetails(coordinator)}
+                className="gap-2 bg-primary hover:bg-primary/90 shadow-sm cursor-pointer"
+              >
+                <Pencil className="h-4 w-4" />
+                Editar
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 }

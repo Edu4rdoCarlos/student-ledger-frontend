@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/shared/card"
 import { Button } from "@/components/primitives/button"
+import { Badge } from "@/components/primitives/badge"
 import { Book, User, Eye, Pencil } from "lucide-react"
 import type { Course } from "@/lib/types"
 
@@ -26,6 +27,11 @@ export function CourseCard({ course, onViewDetails, onEdit, canEdit = false }: C
               <p className="text-sm text-muted-foreground">{course.code}</p>
             </div>
           </div>
+          {!course.active && (
+            <Badge variant="secondary" className="shrink-0 text-muted-foreground">
+              Inativo
+            </Badge>
+          )}
         </div>
       </CardHeader>
 

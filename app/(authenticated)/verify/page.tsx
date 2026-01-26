@@ -221,7 +221,7 @@ export default function VerifyPage() {
                 <label className="text-sm font-medium">Hash SHA-256</label>
                 <Input
                   placeholder="a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6..."
-                  className="font-mono text-sm h-12 bg-background/50 border-border/50"
+                  className="text-sm h-12 bg-background/50 border-border/50"
                   {...register("hash")}
                 />
                 {errors.hash && <p className="text-xs text-destructive">{errors.hash.message}</p>}
@@ -333,7 +333,7 @@ export default function VerifyPage() {
                           <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                           <p className="text-xs font-medium text-amber-900 dark:text-amber-100">Hash SHA-256</p>
                         </div>
-                        <p className="break-all font-mono text-xs text-amber-800 dark:text-amber-200 bg-amber-100/50 dark:bg-amber-950/30 p-2 rounded">
+                        <p className="break-all   text-xs text-amber-800 dark:text-amber-200 bg-amber-100/50 dark:bg-amber-950/30 p-2 rounded">
                           {result.document.documentType === "minutes" ? result.document.minutesHash : result.document.evaluationHash}
                         </p>
                       </div>
@@ -409,7 +409,7 @@ export default function VerifyPage() {
                           <Lock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                           <p className="text-xs font-medium text-emerald-900 dark:text-emerald-100">Hash SHA-256</p>
                         </div>
-                        <p className="break-all font-mono text-xs text-emerald-800 dark:text-emerald-200 bg-emerald-100/50 dark:bg-emerald-950/30 p-2 rounded">
+                        <p className="break-all text-xs text-emerald-800 dark:text-emerald-200 bg-emerald-100/50 dark:bg-emerald-950/30 p-2 rounded">
                           {result.document.documentType === "minutes" ? result.document.minutesHash : result.document.evaluationHash}
                         </p>
                       </div>

@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/shared/dialog"
 import { Button } from "@/components/primitives/button"
-import { Book, User, Mail, Calendar, Pencil } from "lucide-react"
+import { Book, User, Mail, Calendar, Pencil, CheckCircle, XCircle } from "lucide-react"
 import type { Course } from "@/lib/types"
 
 interface CourseDetailsModalProps {
@@ -56,7 +56,7 @@ export function CourseDetailsModal({
                 </div>
                 <div>
                   <p>{course.name}</p>
-                  <p className="text-sm font-normal text-muted-foreground mt-1 font-mono">
+                  <p className="text-sm font-normal text-muted-foreground mt-1  ">
                     {course.code}
                   </p>
                 </div>
@@ -77,8 +77,25 @@ export function CourseDetailsModal({
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">Código</label>
                     <div className="flex items-center gap-2">
-                      <p className="text-base font-mono">{course.code}</p>
+                      <p className="text-base">{course.code}</p>
                     </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Status</label>
+                  <div className="flex items-center gap-2">
+                    {course.active ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <p className="text-base text-green-600 dark:text-green-400">Ativo</p>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4 text-red-500" />
+                        <p className="text-base text-red-600 dark:text-red-400">Inativo</p>
+                      </>
+                    )}
                   </div>
                 </div>
 

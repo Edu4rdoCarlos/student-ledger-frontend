@@ -1,5 +1,5 @@
 import { coordinatorRepository } from "@/lib/repositories/coordinator-repository"
-import type { AddCoordinatorFormData } from "@/lib/validations/coordinator"
+import type { AddCoordinatorFormData, EditCoordinatorFormData } from "@/lib/validations/coordinator"
 
 export const coordinatorService = {
   async getAllCoordinators(page = 1, perPage = 10) {
@@ -8,5 +8,9 @@ export const coordinatorService = {
 
   async createCoordinator(data: AddCoordinatorFormData) {
     return coordinatorRepository.create(data)
+  },
+
+  async updateCoordinator(userId: string, data: EditCoordinatorFormData) {
+    return coordinatorRepository.update(userId, data)
   },
 }

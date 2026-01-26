@@ -251,7 +251,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground">Matrícula</label>
-                  <p className="text-base font-mono">{student.registration || student.matricula}</p>
+                  <p className="text-base  ">{student.registration || student.matricula}</p>
                 </div>
               </div>
 

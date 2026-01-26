@@ -587,7 +587,7 @@ export default function DefenseDetailsPage() {
                               <p className="text-xs font-medium text-muted-foreground">
                                 CID da Ata
                               </p>
-                              <p className="text-xs text-muted-foreground font-mono break-all">
+                              <p className="text-xs text-muted-foreground break-all">
                                 {doc.minutesCid}
                               </p>
                             </div>
@@ -600,7 +600,7 @@ export default function DefenseDetailsPage() {
                               <p className="text-xs font-medium text-muted-foreground">
                                 CID da Avaliação
                               </p>
-                              <p className="text-xs text-muted-foreground font-mono break-all">
+                              <p className="text-xs text-muted-foreground break-all">
                                 {doc.evaluationCid}
                               </p>
                             </div>
