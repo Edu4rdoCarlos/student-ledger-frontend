@@ -23,7 +23,7 @@ export function CourseCard({ course, onViewDetails, onEdit, canEdit = false }: C
             </div>
             <div className="min-w-0 flex-1">
               <CardTitle className="text-base break-words">{course.name}</CardTitle>
-              <p className="text-sm text-muted-foreground font-mono">{course.code}</p>
+              <p className="text-sm text-muted-foreground">{course.code}</p>
             </div>
           </div>
         </div>
