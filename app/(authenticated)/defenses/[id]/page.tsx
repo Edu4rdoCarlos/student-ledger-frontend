@@ -54,6 +54,7 @@ export default function DefenseDetailsPage() {
   const [selectedDocForNewVersion, setSelectedDocForNewVersion] = useState<{
     approvalId: string;
     documentTitle: string;
+    isReplacement: boolean;
   } | null>(null);
 
   const userRelationship = useMemo(() => {
@@ -313,7 +314,7 @@ export default function DefenseDetailsPage() {
                     <DropdownMenuItem
                       onClick={() => setFinalizeModalOpen(true)}
                       className="cursor-pointer"
-                      disabled={!canFinalizeDefense}
+                      disabled={false}
                     >
                       <FileText className="mr-2 h-4 w-4" />
                       Finalizar Defesa
@@ -369,6 +370,7 @@ export default function DefenseDetailsPage() {
                                     setSelectedDocForNewVersion({
                                       approvalId: doc.id,
                                       documentTitle: `${defense.title} - Versão ${doc.version}`,
+                                      isReplacement: false,
                                     });
                                     setNewVersionModalOpen(true);
                                   }}
@@ -383,6 +385,7 @@ export default function DefenseDetailsPage() {
                                     setSelectedDocForNewVersion({
                                       approvalId: doc.id,
                                       documentTitle: `${defense.title} - Versão ${doc.version}`,
+                                      isReplacement: true,
                                     });
                                     setNewVersionModalOpen(true);
                                   }}
@@ -831,6 +834,7 @@ export default function DefenseDetailsPage() {
           onOpenChange={setNewVersionModalOpen}
           documentTitle={selectedDocForNewVersion.documentTitle}
           approvalId={selectedDocForNewVersion.approvalId}
+          isReplacement={selectedDocForNewVersion.isReplacement}
           onSuccess={async () => {
             const updatedDefense = await defenseService.getDefenseById(
               defense.id

@@ -111,54 +111,43 @@ export default function DefensesPage() {
       >
       <CardHeader className="pb-3">
         <CardTitle className="text-lg line-clamp-2">{defense.title}</CardTitle>
-        <div className="flex flex-wrap items-center gap-3 mt-2">
-          {(defense.status === "SCHEDULED" || defense.status === "COMPLETED" || defense.status === "CANCELED") && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                Progresso:
-              </span>
-              {defense.status === "SCHEDULED" && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
-                  <Clock className="h-3 w-3" />
-                  Agendada
-                </span>
-              )}
-              {defense.status === "COMPLETED" && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Concluída
-                </span>
-              )}
-              {defense.status === "CANCELED" && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
-                  <XCircle className="h-3 w-3" />
-                  Cancelada
-                </span>
-              )}
-            </div>
+        <div className="flex items-center gap-2 mt-2 text-[10px]">
+          <span className="font-medium text-muted-foreground uppercase tracking-wide">Status:</span>
+          {defense.status === "SCHEDULED" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 font-medium text-blue-700 dark:text-blue-400">
+              <Clock className="h-2.5 w-2.5" />
+              Agendada
+            </span>
           )}
-          {(defense.status === "SCHEDULED" || defense.status === "COMPLETED" || defense.status === "CANCELED") &&
-           (defense.result === "APPROVED" || defense.result === "FAILED") && (
-            <span className="text-muted-foreground/30">|</span>
+          {defense.status === "COMPLETED" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 font-medium text-green-700 dark:text-green-400">
+              <CheckCircle2 className="h-2.5 w-2.5" />
+              Concluída
+            </span>
+          )}
+          {defense.status === "CANCELED" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 font-medium text-red-700 dark:text-red-400">
+              <XCircle className="h-2.5 w-2.5" />
+              Cancelada
+            </span>
           )}
           {(defense.result === "APPROVED" || defense.result === "FAILED") && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                Resultado:
-              </span>
+            <>
+              <span className="text-muted-foreground/30">|</span>
+              <span className="font-medium text-muted-foreground uppercase tracking-wide">Resultado:</span>
               {defense.result === "APPROVED" && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-                  <CheckCircle2 className="h-3 w-3" />
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 font-medium text-green-700 dark:text-green-400">
+                  <CheckCircle2 className="h-2.5 w-2.5" />
                   Aprovado
                 </span>
               )}
               {defense.result === "FAILED" && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
-                  <XCircle className="h-3 w-3" />
+                <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 font-medium text-red-700 dark:text-red-400">
+                  <XCircle className="h-2.5 w-2.5" />
                   Reprovado
                 </span>
               )}
-            </div>
+            </>
           )}
         </div>
       </CardHeader>

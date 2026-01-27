@@ -18,6 +18,7 @@ interface NewVersionModalProps {
   approvalId: string
   rejectionReason?: string
   approverName?: string
+  isReplacement?: boolean
   onSuccess?: () => void
 }
 
@@ -28,6 +29,7 @@ export function NewVersionModal({
   approvalId,
   rejectionReason,
   approverName,
+  isReplacement = false,
   onSuccess,
 }: NewVersionModalProps) {
   const [documentType, setDocumentType] = useState<ValidatedDocumentType>("minutes")
@@ -83,7 +85,9 @@ export function NewVersionModal({
 
     if (!reason.trim()) {
       toast.error("Motivo não informado", {
-        description: "Por favor, informe o motivo da nova versão.",
+        description: isReplacement
+          ? "Por favor, informe o motivo da substituição."
+          : "Por favor, informe o motivo da nova versão.",
       })
       return
     }
@@ -103,15 +107,17 @@ export function NewVersionModal({
     try {
       await documentRepository.uploadNewVersion(approvalId, file, documentType, reason, grade)
 
-      toast.success("Nova versão enviada!", {
-        description: "O documento foi enviado e será reavaliado.",
+      toast.success(isReplacement ? "Documento substituído!" : "Nova versão enviada!", {
+        description: isReplacement
+          ? "O documento foi substituído e será reavaliado."
+          : "O documento foi enviado e será reavaliado.",
       })
 
       handleClose()
       onSuccess?.()
     } catch (error) {
       console.error("Erro ao enviar nova versão:", error)
-      toast.error("Erro ao enviar nova versão", {
+      toast.error(isReplacement ? "Erro ao substituir documento" : "Erro ao enviar nova versão", {
         description: "Não foi possível processar sua solicitação. Tente novamente.",
       })
     } finally {
@@ -131,17 +137,21 @@ export function NewVersionModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Enviar Nova Versão do Documento</DialogTitle>
+          <DialogTitle>{isReplacement ? "Substituir Documento" : "Enviar Nova Versão do Documento"}</DialogTitle>
           <DialogDescription>
-            Envie uma versão atualizada do documento para reavaliação.
+            {isReplacement
+              ? "Substitua o documento atual por uma versão corrigida."
+              : "Envie uma versão atualizada do documento para reavaliação."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Documento Original</label>
-            <p className="text-sm text-muted-foreground">{documentTitle}</p>
-          </div>
+          {!isReplacement && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Documento Original</label>
+              <p className="text-sm text-muted-foreground">{documentTitle}</p>
+            </div>
+          )}
 
           {rejectionReason && approverName && (
             <>
@@ -248,10 +258,12 @@ export function NewVersionModal({
 
           <div className="space-y-2">
             <Label>
-              Motivo da Nova Versão <span className="text-red-500">*</span>
+              {isReplacement ? "Motivo da Substituição" : "Motivo da Nova Versão"} <span className="text-red-500">*</span>
             </Label>
             <Textarea
-              placeholder="Explique as mudanças realizadas nesta nova versão do documento..."
+              placeholder={isReplacement
+                ? "Explique o motivo da substituição do documento..."
+                : "Explique as mudanças realizadas nesta nova versão do documento..."}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={4}
@@ -259,7 +271,9 @@ export function NewVersionModal({
               disabled={submitting}
             />
             <p className="text-xs text-muted-foreground">
-              Descreva as alterações feitas para atender às solicitações do avaliador.
+              {isReplacement
+                ? "Descreva o motivo da substituição do documento."
+                : "Descreva as alterações feitas para atender às solicitações do avaliador."}
             </p>
           </div>
 
@@ -299,7 +313,7 @@ export function NewVersionModal({
             className="gap-2"
           >
             <Upload className="h-4 w-4" />
-            {submitting ? "Enviando..." : "Enviar Nova Versão"}
+            {submitting ? "Enviando..." : isReplacement ? "Substituir Documento" : "Enviar Nova Versão"}
           </Button>
         </DialogFooter>
       </DialogContent>

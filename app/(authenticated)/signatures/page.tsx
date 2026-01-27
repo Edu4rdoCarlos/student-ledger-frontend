@@ -412,7 +412,7 @@ export default function SignaturesPage() {
                   className="flex-1 gap-2 border-slate-300 hover:bg-slate-50 hover:border-slate-400 dark:border-slate-600 dark:hover:bg-slate-800 dark:hover:border-slate-500"
                 >
                   <Upload className="h-4 w-4" />
-                  Nova Versão
+                  Substituir Documento
                 </Button>
               </div>
             </div>
@@ -633,6 +633,7 @@ export default function SignaturesPage() {
           approvalId={selectedForNewVersion.approvalId}
           rejectionReason={selectedForNewVersion.rejectionReason}
           approverName={selectedForNewVersion.approverName}
+          isReplacement
           onSuccess={() => {
             setSelectedForNewVersion(null);
             refetchRejected();
