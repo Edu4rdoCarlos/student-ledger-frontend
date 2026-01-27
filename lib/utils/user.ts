@@ -1,7 +1,7 @@
 import type { User } from "@/lib/types"
 import { isStudent, isAdvisor, isCoordinator, isAdmin } from "@/lib/types"
 
-export type Permission =
+type Permission =
   | "view_defenses"
   | "create_defense"
   | "edit_defense"
@@ -46,7 +46,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   student: ["view_defenses", "approve_document"],
 }
 
-export function getUserPermissions(user: User): Permission[] {
+function getUserPermissions(user: User): Permission[] {
   if (isAdmin(user)) return ROLE_PERMISSIONS.admin
   if (isCoordinator(user)) return ROLE_PERMISSIONS.coordinator
   if (isAdvisor(user)) return ROLE_PERMISSIONS.advisor
@@ -54,15 +54,11 @@ export function getUserPermissions(user: User): Permission[] {
   return []
 }
 
-export function userCan(user: User, permission: Permission): boolean {
-  const permissions = getUserPermissions(user)
-  return permissions.includes(permission)
-}
-
 export function getUserCapabilities(user: User) {
+  const permissions = getUserPermissions(user)
   return {
-    permissions: getUserPermissions(user),
-    can: (permission: Permission) => userCan(user, permission),
+    permissions,
+    can: (permission: Permission) => permissions.includes(permission),
   }
 }
 
@@ -80,20 +76,4 @@ export function getUserInfo(user: User) {
   }
 
   return { type: "admin" as const }
-}
-
-export function canAccessDefense(user: User, _defenseId: string): boolean {
-  return isAdmin(user) || isCoordinator(user) || isAdvisor(user) || isStudent(user)
-}
-
-export function canManageUser(user: User, targetUserId: string): boolean {
-  if (isAdmin(user)) {
-    return true
-  }
-
-  if (isCoordinator(user)) {
-    return true
-  }
-
-  return user.id === targetUserId
 }

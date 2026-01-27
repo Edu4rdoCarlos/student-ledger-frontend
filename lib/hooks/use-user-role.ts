@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { useAuthStore } from "@/lib/store/auth-store"
-import { getUserCapabilities, getUserInfo } from "@/lib/helpers/user-capabilities"
+import { getUserCapabilities, getUserInfo } from "@/lib/utils/user"
 import { getNavigationItems } from "@/lib/config/navigation"
 import { getRoleConfig } from "@/lib/config/roles"
 

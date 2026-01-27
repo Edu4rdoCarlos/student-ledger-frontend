@@ -23,7 +23,7 @@ import {
   type ChangePasswordFormData,
   passwordRules,
 } from "@/lib/validations/change-password"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/cn"
 
 interface ChangePasswordModalProps {
   open: boolean

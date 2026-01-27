@@ -5,12 +5,4 @@ export const authService = {
   async login(credentials: LoginFormData) {
     return authRepository.login(credentials.email, credentials.password)
   },
-
-  async refresh() {
-    return authRepository.refresh()
-  },
-
-  async logout() {
-    return authRepository.logout()
-  },
 }

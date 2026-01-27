@@ -8,7 +8,7 @@ import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { authService } from "@/lib/services/auth-service";
 import { userService } from "@/lib/services/user-service";
 import { useAuthStore } from "@/lib/store/auth-store";
-import { getHomeRouteForUser } from "@/lib/helpers/navigation-helpers";
+import { getHomeRouteForUser } from "@/lib/utils/navigation";
 
 export function useLogin() {
   const router = useRouter();

@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/lib/store/auth-store"
-import { getHomeRouteForUser } from "@/lib/helpers/navigation-helpers"
+import { getHomeRouteForUser } from "@/lib/utils/navigation"
 
 export default function Home() {
   const router = useRouter()

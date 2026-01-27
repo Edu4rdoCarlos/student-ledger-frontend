@@ -1,5 +1,4 @@
 export * from "./user"
-export * from "./department"
 export * from "./course"
 export * from "./defense"
 

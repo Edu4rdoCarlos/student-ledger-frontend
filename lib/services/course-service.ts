@@ -5,10 +5,6 @@ export const courseService = {
     return courseRepository.getAll(page, perPage)
   },
 
-  async getCourseById(id: string) {
-    return courseRepository.getCourseById(id)
-  },
-
   async getStudentsByCourse(courseId: string) {
     return courseRepository.getStudentsByCourse(courseId)
   },
