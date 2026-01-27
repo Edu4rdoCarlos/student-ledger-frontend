@@ -328,7 +328,17 @@ export default function SignaturesPage() {
                   {approvedCount}/{totalSignatures}
                 </span>
               </div>
-              <div className="pl-6 pt-2 border-t space-y-2">
+              <div className="pt-2 border-t space-y-2">
+                {isCoordinator && hasRejection && (
+                  <p className="text-xs text-center text-muted-foreground italic">
+                    Aguardando resolução da rejeição antes de avaliar
+                  </p>
+                )}
+                {isCoordinator && !hasRejection && !allOthersApproved && (
+                  <p className="text-xs text-center text-muted-foreground italic">
+                    Aguardando as demais aprovações antes de avaliar
+                  </p>
+                )}
                 <Button
                   variant="default"
                   size="sm"
@@ -342,16 +352,6 @@ export default function SignaturesPage() {
                   <CheckCircle className="h-4 w-4" />
                   Avaliar Documento
                 </Button>
-                {isCoordinator && hasRejection && (
-                  <p className="text-xs text-muted-foreground italic">
-                    Aguardando resolução da rejeição antes de avaliar
-                  </p>
-                )}
-                {isCoordinator && !hasRejection && !allOthersApproved && (
-                  <p className="text-xs text-muted-foreground italic">
-                    Aguardando as demais aprovações antes de avaliar
-                  </p>
-                )}
               </div>
             </div>
           )}

@@ -57,24 +57,24 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <LayoutDashboard className="h-6 w-6 text-primary" />
-              <h1 className="text-3xl font-bold text-primary">
+            <div className="flex items-center gap-2 mb-1">
+              <LayoutDashboard className="h-5 w-5 text-primary" />
+              <h1 className="text-2xl font-bold text-primary">
                 Dashboard
               </h1>
             </div>
-            <p className="text-muted-foreground">Visão geral do sistema de gerenciamento de TCC</p>
+            <p className="text-sm text-muted-foreground">Visão geral do sistema de gerenciamento de TCC</p>
           </div>
-          <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
-            <Shield className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Blockchain Secured</span>
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
+            <Shield className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-medium text-primary">Blockchain Secured</span>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total de Documentos"
             value={summaryLoading ? "..." : summary?.totalDocuments ?? 0}
