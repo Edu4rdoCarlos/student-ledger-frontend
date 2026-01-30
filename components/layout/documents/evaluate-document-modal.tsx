@@ -1,9 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { Download, CheckCircle, XCircle, FileText, User } from "lucide-react"
+import { Download, CheckCircle, XCircle, FileText, User, ChevronDown } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/shared/dialog"
 import { Button } from "@/components/primitives/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/shared/dropdown-menu"
+import type { ValidatedDocumentType } from "@/lib/types"
 import { Textarea } from "@/components/primitives/textarea"
 import { toast } from "sonner"
 import { approvalService } from "@/lib/services/approval-service"
@@ -38,14 +45,15 @@ export function EvaluateDocumentModal({
   const [submitting, setSubmitting] = useState(false)
   const [downloading, setDownloading] = useState(false)
 
-  const handleDownload = async () => {
+  const handleDownload = async (documentType: ValidatedDocumentType) => {
     setDownloading(true)
     try {
-      const blob = await documentRepository.download(documentId)
+      const blob = await documentRepository.download(documentId, documentType)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `${documentTitle}.pdf`
+      const typeSuffix = documentType === "minutes" ? "Ata" : "Avaliacao"
+      a.download = `${documentTitle}_${typeSuffix}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -137,16 +145,28 @@ export function EvaluateDocumentModal({
                 <p className="text-sm font-medium">{documentTitle}</p>
                 <p className="text-xs text-muted-foreground">{courseName}</p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownload}
-                disabled={downloading}
-                className="flex-shrink-0 gap-2"
-              >
-                <Download className="h-4 w-4" />
-                {downloading ? "Baixando..." : "Baixar"}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={downloading}
+                    className="shrink-0 gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    {downloading ? "Baixando..." : "Baixar"}
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleDownload("minutes")}>
+                    Ata
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDownload("evaluation")}>
+                    Avaliação de Desempenho
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
