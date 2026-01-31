@@ -213,8 +213,7 @@ export default function SignaturesPage() {
     const hasRejection = !!rejectedSignature;
     const isCoordinator = user?.role === "COORDINATOR";
 
-    // Coordenador só pode avaliar quando todos os outros já tiverem aprovado
-    const otherSignatures = signatures.filter((s) => s.role !== "COORDINATOR");
+    const otherSignatures = signatures.filter((s) => s.approverId !== user?.id);
     const allOthersApproved =
       otherSignatures.length === 0 ||
       otherSignatures.every((s) => s.status === "APPROVED");
@@ -434,7 +433,7 @@ export default function SignaturesPage() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-muted-foreground">
-              Carregando assinaturas...
+              Carregando aprovações...
             </p>
           </div>
         </div>
@@ -454,7 +453,7 @@ export default function SignaturesPage() {
             <p className="text-muted-foreground text-center max-w-md">
               {searchQuery
                 ? "Tente ajustar os filtros de busca"
-                : "Não há assinaturas nesta categoria no momento."}
+                : "Não há aprovações nesta categoria no momento."}
             </p>
           </CardContent>
         </Card>
@@ -476,10 +475,10 @@ export default function SignaturesPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight mb-2">
-              Assinaturas
+              Aprovações
             </h1>
             <p className="text-muted-foreground">
-              Gerencie as assinaturas de documentos do sistema
+              Gerencie as aprovações de documentos do sistema
             </p>
           </div>
         </div>
@@ -488,7 +487,7 @@ export default function SignaturesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Buscar assinaturas..."
+            placeholder="Buscar aprovações..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 bg-white dark:bg-gray-800"

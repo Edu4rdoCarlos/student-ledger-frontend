@@ -173,7 +173,6 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
             </div>
           )}
 
-          {/* Progresso de Assinaturas */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Progresso de Aprovações</h3>
@@ -192,9 +191,8 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
             </div>
           </div>
 
-          {/* Lista de Assinaturas */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Assinaturas</h3>
+            <h3 className="text-lg font-semibold">Aprovações</h3>
             <div className="space-y-3">
               {displaySignatures.map((signature, index) => (
                 <div

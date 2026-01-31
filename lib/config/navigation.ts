@@ -18,7 +18,7 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Acompanhe suas defesas de TCC",
       },
       {
-        label: "Assinaturas",
+        label: "Aprovações",
         href: "/signatures",
         icon: "file",
         description: "Aprovar ou rejeitar documentos",
@@ -56,10 +56,10 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Defesas que você participa",
       },
       {
-        label: "Assinaturas",
+        label: "Aprovações",
         href: "/signatures",
         icon: "file",
-        description: "Gerenciar assinaturas de documentos",
+        description: "Gerenciar aprovações de documentos",
       },
       {
         label: "Verificar Documentos",
@@ -86,10 +86,10 @@ export function getNavigationItems(user: User): NavigationItem[] {
         description: "Gerenciar defesas do curso",
       },
       {
-        label: "Assinaturas",
+        label: "Aprovações",
         href: "/signatures",
         icon: "file",
-        description: "Gerenciar assinaturas de documentos",
+        description: "Gerenciar aprovações de documentos",
       },
       {
         label: "Estudantes",

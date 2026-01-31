@@ -636,7 +636,7 @@ export default function DefenseDetailsPage() {
                     {doc.signatures && doc.signatures.length > 0 && (
                       <div className="pt-2 border-t">
                         <p className="text-sm font-semibold mb-3">
-                          Assinaturas:
+                          Aprovações:
                         </p>
                         <div className="grid gap-3">
                           {mergeSignaturesByEmail(doc.signatures).map(
