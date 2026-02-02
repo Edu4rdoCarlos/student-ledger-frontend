@@ -7,7 +7,7 @@ Frontend do sistema de gestão acadêmica para acompanhamento de TCCs.
 - **Framework:** Next.js 16 + React 19
 - **Linguagem:** TypeScript
 - **Estilização:** Tailwind CSS 4
-- **Componentes:** Radix UI + Lucide Icons
+- **Componentes:** Radix UI + Phosphor Icons
 - **Estado:** Zustand
 - **Formulários:** React Hook Form + Zod
 
