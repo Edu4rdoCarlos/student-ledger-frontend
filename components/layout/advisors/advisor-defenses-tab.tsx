@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/utils/format";
 import { LoadingState } from "@/components/shared/loading-state";
+import { getDefenseResultLabel } from "@/lib/utils/status-utils";
 
 interface Student {
   id: string;
@@ -56,16 +57,6 @@ function getDefenseStatusIcon(result: string) {
   }
 }
 
-function getDefenseStatusText(result: string) {
-  switch (result) {
-    case "APPROVED":
-      return "Aprovado";
-    case "FAILED":
-      return "Reprovado";
-    default:
-      return "Pendente";
-  }
-}
 
 function EmptyState() {
   return (
@@ -110,7 +101,7 @@ function DefenseCard({ defense }: DefenseCardProps) {
         <div className="flex items-center gap-2">
           {getDefenseStatusIcon(defense.result)}
           <span className="text-sm font-medium">
-            {getDefenseStatusText(defense.result)}
+            {getDefenseResultLabel(defense.result)}
           </span>
         </div>
       </div>

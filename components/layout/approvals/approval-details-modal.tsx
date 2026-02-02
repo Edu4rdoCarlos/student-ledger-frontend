@@ -9,6 +9,8 @@ import { toast } from "sonner"
 import { approvalService } from "@/lib/services/approval-service"
 import type { PendingApproval } from "@/hooks/use-approvals"
 import { useState } from "react"
+import { getSignatureStatusLabel } from "@/lib/utils/status-utils"
+import { getRoleLabel } from "@/lib/utils/role-utils"
 
 interface ApprovalDetailsModalProps {
   approval: PendingApproval | null
@@ -62,33 +64,6 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
     }
   }
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "APPROVED":
-        return "Aprovado"
-      case "REJECTED":
-        return "Rejeitado"
-      case "PENDING":
-        return "Pendente"
-      default:
-        return "Desconhecido"
-    }
-  }
-
-  const getRoleText = (role: string, isCoordinatorAlsoAdvisor?: boolean) => {
-    switch (role) {
-      case "ADVISOR":
-        return "Orientador"
-      case "COORDINATOR":
-        return isCoordinatorAlsoAdvisor ? "Coordenador e Orientador" : "Coordenador"
-      case "ADMIN":
-        return "Administrador"
-      case "STUDENT":
-        return "Aluno"
-      default:
-        return role
-    }
-  }
 
   const signatures = approval.signatures || approval.approvals || []
 
@@ -211,12 +186,12 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{signature.approverName}</p>
                         <Badge variant="outline" className="text-xs">
-                          {getRoleText(signature.role, !!(isCoordinatorAlsoAdvisor && signature.role === "COORDINATOR"))}
+                          {getRoleLabel(signature.role, !!(isCoordinatorAlsoAdvisor && signature.role === "COORDINATOR"))}
                         </Badge>
                       </div>
                       {signature.approvedAt && (
                         <p className="text-xs text-muted-foreground">
-                          {getStatusText(signature.status)} em {formatDate(signature.approvedAt)}
+                          {getSignatureStatusLabel(signature.status)} em {formatDate(signature.approvedAt)}
                         </p>
                       )}
                       {signature.justification && (
@@ -248,7 +223,7 @@ export function ApprovalDetailsModal({ approval, open, onOpenChange }: ApprovalD
                           : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
                       }
                     >
-                      {getStatusText(signature.status)}
+                      {getSignatureStatusLabel(signature.status)}
                     </Badge>
                   </div>
                 </div>

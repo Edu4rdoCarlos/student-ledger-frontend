@@ -8,6 +8,7 @@ import { Input } from "@/components/primitives/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared/select"
 import type { Student } from "@/lib/types"
 import { Badge } from "@/components/primitives/badge"
+import { getDocumentStatusLabel } from "@/lib/utils/status-utils"
 import { useState, useEffect } from "react"
 import { documentService } from "@/lib/services/document-service"
 import { toast } from "sonner"
@@ -120,18 +121,6 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
     }
   }
 
-  const getDocumentStatusText = (documentStatus: string) => {
-    switch (documentStatus) {
-      case "APPROVED":
-        return "Aprovado"
-      case "INACTIVE":
-        return "Inativo"
-      case "PENDING":
-        return "Pendente"
-      default:
-        return "Desconhecido"
-    }
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -542,7 +531,7 @@ export function StudentDetailsModal({ student, open, onOpenChange, onUpdateStude
                           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50">
                             {getDocumentStatusIcon(doc.status)}
                             <div className="flex flex-col">
-                              <span className="text-sm font-medium">{getDocumentStatusText(doc.status)}</span>
+                              <span className="text-sm font-medium">{getDocumentStatusLabel(doc.status)}</span>
                               <span className="text-xs text-muted-foreground">
                                 {doc.status === "APPROVED" && "Registrado no Hyperledger"}
                                 {doc.status === "PENDING" && (() => {

@@ -36,6 +36,7 @@ import {
 } from "@/components/shared/dialog";
 import { Textarea } from "@/components/primitives/textarea";
 import { approvalService } from "@/lib/services/approval-service";
+import { getRoleLabel } from "@/lib/utils/role-utils";
 import { toast } from "sonner";
 import { useAuthStore } from "@/lib/store/auth-store";
 
@@ -167,15 +168,6 @@ export default function SignaturesPage() {
         approval.courseName.toLowerCase().includes(query) ||
         approval.students.some((s) => s.name.toLowerCase().includes(query))
     );
-  };
-
-  const getRoleLabel = (role: string, isCoordinatorAlsoAdvisor: boolean) => {
-    if (role === "COORDINATOR" && isCoordinatorAlsoAdvisor)
-      return "Coordenador e Orientador";
-    if (role === "COORDINATOR") return "Coordenador";
-    if (role === "ADVISOR") return "Orientador";
-    if (role === "STUDENT") return "Aluno";
-    return role;
   };
 
   const renderApprovalCard = (
