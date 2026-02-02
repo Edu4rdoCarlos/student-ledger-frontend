@@ -43,10 +43,6 @@ export function DefenseFormDialog({ open, onOpenChange, onSuccess, advisors = []
   const router = useRouter()
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
 
-  useEffect(() => {
-    console.log("DefenseFormDialog - Advisors:", advisors)
-    console.log("DefenseFormDialog - Students:", students)
-  }, [advisors, students])
 
   const form = useForm<CreateDefenseFormData>({
     resolver: zodResolver(createDefenseSchema),
